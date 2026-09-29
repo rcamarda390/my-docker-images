@@ -58,6 +58,8 @@ python_packages:
     - {name: apache-airflow-providers-amazon, version: constraints}
     - {name: apache-airflow-providers-ssh, version: constraints}
     - {name: apache-airflow-providers-fab, version: constraints}
+    - {name: msgpack, version: "1.2.2", note: "security fix; explicitly upgraded after providers"}
+    - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
     - {name: pip, version: unpinned, note: "upgraded before remaining packages"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
@@ -92,7 +94,7 @@ npm_packages:
     - {name: "@modelcontextprotocol/sdk", version: "1.29.0", note: "GitLab MCP dependencies only"}
     - {name: axios, version: "1.18.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
-    - {name: typescript, version: unpinned, note: "GitLab MCP dependencies only"}
+    - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
 
 source_builds:
   - name: archify
@@ -111,4 +113,4 @@ build_only:
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
   - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
   - {name: gcc, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
-  - {name: git, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
+  - {name: git, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
