@@ -13,7 +13,9 @@ check() {
     name=$1
     required=$2
     shift 2
-    if "$@" >/dev/null 2>&1; then
+    output=$("$@" 2>&1)
+    status=$?
+    if [ "$status" -eq 0 ]; then
         log "OK   $name"
         return 0
     fi
@@ -23,6 +25,7 @@ check() {
     else
         log "WARN $name (optional, not installed)"
     fi
+    [ -z "$output" ] || log "$output"
     return 1
 }
 
