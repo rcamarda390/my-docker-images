@@ -32,11 +32,11 @@ RUN apk add --no-cache ca-certificates git \
 # xdg-user-dir is a small standalone program used by Cline hooks and other
 # user-directory-aware tooling. Build only that upstream command in a UBI10
 # stage so it remains compatible with the final glibc-based image.
-FROM registry.access.redhat.com/ubi10/python-312:latest AS xdg-user-dirs-source
+FROM registry.access.redhat.com/ubi10/ubi:latest AS xdg-user-dirs-source
 ARG XDG_USER_DIRS_COMMIT
 USER 0
 RUN set -e; \
-    dnf install -y gcc git; \
+    dnf install -y gcc git python3 python3-pip; \
     python3 -m pip install --no-cache-dir meson==1.10.0 ninja==1.13.0; \
     git init /src; \
     git -C /src remote add origin https://gitlab.freedesktop.org/xdg/xdg-user-dirs.git; \
@@ -59,7 +59,7 @@ RUN set -e; \
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
 # build. Pin to a digest if this image needs to stop tracking upstream UBI10
 # security updates automatically.
-FROM registry.access.redhat.com/ubi10/python-312:latest
+FROM registry.access.redhat.com/ubi10/ubi:latest
 
 # The UBI base defaults to UID 1001. Build layers need root to install OS
 # packages and write under /etc, /opt, and /usr/local.
@@ -91,6 +91,8 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 RUN dnf install -y \
         https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
     && dnf install -y \
+        python3 \
+        python3-pip \
         vim \
         vi \
         shadow-utils \
