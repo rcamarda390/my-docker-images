@@ -77,9 +77,7 @@ python_packages:
     - {name: sqlfluff, version: "4.1.0"}
     - {name: botocore, version: "1.43.75"}
     - {name: boto3, version: "1.43.75"}
-    - {name: docutils, version: unpinned, note: "AWS CLI dependency"}
-    - {name: rsa, version: unpinned, note: "AWS CLI dependency"}
-    - {name: awscli, version: "1.45.12", note: "CLI v1; installed --no-deps"}
+    - {name: awscli, version: "1.46.1", note: "CLI v1; isolated in /opt/aws-cli virtual environment"}
     - {name: ruff, version: "0.15.11", optional: true}
     - {name: pyfiglet, version: unpinned, optional: true}
 
