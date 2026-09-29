@@ -20,7 +20,7 @@ const fixedVersions = {
   "@opentelemetry/sdk-metrics": "2.9.0",
   "@opentelemetry/sdk-trace-base": "2.9.0",
   "@opentelemetry/sdk-trace-node": "2.9.0",
-};;
+};
 
 const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 for (const [name, expected] of Object.entries(fixedVersions)) {
