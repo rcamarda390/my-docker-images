@@ -27,12 +27,12 @@ RUN apk add --no-cache ca-certificates git \
     && test "$(git -C /src rev-parse HEAD)" = "$ARCHIFY_COMMIT"
 
 # ============================================================
-# xdg-user-dirs source -- UBI9 does not package xdg-user-dirs
+# xdg-user-dirs source -- UBI10 does not package xdg-user-dirs
 # ============================================================
 # xdg-user-dir is a small standalone program used by Cline hooks and other
-# user-directory-aware tooling. Build only that upstream command in a UBI9
+# user-directory-aware tooling. Build only that upstream command in a UBI10
 # stage so it remains compatible with the final glibc-based image.
-FROM registry.access.redhat.com/ubi9/python-311:latest AS xdg-user-dirs-source
+FROM registry.access.redhat.com/ubi10/python-312:latest AS xdg-user-dirs-source
 ARG XDG_USER_DIRS_COMMIT
 USER 0
 RUN set -e; \
@@ -57,9 +57,9 @@ RUN set -e; \
 # Final image
 # ============================================================
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
-# build. Pin to a digest if this image needs to stop tracking upstream UBI9
+# build. Pin to a digest if this image needs to stop tracking upstream UBI10
 # security updates automatically.
-FROM registry.access.redhat.com/ubi9/python-311:latest
+FROM registry.access.redhat.com/ubi10/python-312:latest
 
 # The UBI base defaults to UID 1001. Build layers need root to install OS
 # packages and write under /etc, /opt, and /usr/local.
@@ -71,7 +71,7 @@ USER 0
 # the image with the local zeus-dev-image release number from image.yaml.
 ARG ZEUS_DEV_IMAGE_VERSION=1.0.0
 LABEL org.opencontainers.image.title="zeus-dev-image" \
-      org.opencontainers.image.description="UBI9/Python 3.11 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
+      org.opencontainers.image.description="UBI10/Python 3.11 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
       org.opencontainers.image.version="${ZEUS_DEV_IMAGE_VERSION}"
 
 # Archify must not check for updates when running in the restricted environment.
@@ -83,7 +83,7 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 # ============================================================
 # Install OS packages
 # ============================================================
-# UBI9 does not publish RHEL's PostgreSQL module metadata, so attempting to
+# UBI10 does not publish RHEL's PostgreSQL module metadata, so attempting to
 # enable postgresql:15 fails before package installation. Install the required
 # PostgreSQL 15 client from PGDG's official EL9 repository instead.
 #
@@ -91,8 +91,7 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 # package names resolve to whatever the default module stream is for the
 # base image's RHEL9 AppStream, not necessarily 22.x.
 RUN dnf install -y \
-        https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
-    && dnf -y module enable nodejs:22 \
+        https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
     && dnf install -y \
         vim \
         vi \
@@ -101,8 +100,8 @@ RUN dnf install -y \
         file \
         hostname \
         procps-ng \
-        nodejs \
-        npm \
+        nodejs24 \
+        nodejs24-npm \
         git \
         jq \
         tar \
@@ -113,7 +112,7 @@ RUN dnf install -y \
     && node --version \
     && npm --version \
     && case "$(node --version)" in \
-        v22.*) echo "OK: Node.js 22.x confirmed" ;; \
+        v24.*) echo "OK: Node.js 24.x confirmed" ;; \
         *) echo "ERROR: Expected Node.js v22.x, got $(node --version)"; exit 1 ;; \
     esac \
     && case "$(psql --version)" in \
@@ -125,7 +124,7 @@ COPY --from=xdg-user-dirs-source /out/usr/local/bin/xdg-user-dir /usr/local/bin/
 RUN test "$(HOME=/tmp/xdg-user-dirs-test xdg-user-dir DOCUMENTS)" = /tmp/xdg-user-dirs-test
 
 # ============================================================
-# Optional convenience packages (not in every UBI9 AppStream/BaseOS repo
+# Optional convenience packages (not in every UBI10 AppStream/BaseOS repo
 # set without extra repos enabled - continue on failure like Docker CLI
 # and unzip below).
 # ============================================================
@@ -141,7 +140,7 @@ RUN set -e; \
     echo "=== Installing Docker CLI ==="; \
     echo '[docker-ce-stable]' > /etc/yum.repos.d/docker-ce.repo; \
     echo 'name=Docker CE Stable - $basearch' >> /etc/yum.repos.d/docker-ce.repo; \
-    echo 'baseurl=https://download.docker.com/linux/rhel/9/$basearch/stable' >> /etc/yum.repos.d/docker-ce.repo; \
+    echo 'baseurl=https://download.docker.com/linux/rhel/10/$basearch/stable' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'enabled=1' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'repo_gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
@@ -156,8 +155,8 @@ RUN set -e; \
 # ============================================================
 # Install unzip (optional - continues on failure)
 # ============================================================
-RUN dnf install -y unzip-6.0-60.el9 \
-    || echo "WARNING: unzip-6.0-60.el9 not available in repository, continuing build"
+RUN dnf install -y unzip \
+    || echo "WARNING: unzip not available in repository, continuing build"
 
 # ============================================================
 # npm registry: default npmjs.org (no configuration needed)
@@ -174,13 +173,13 @@ RUN npm install -g pyright \
 # ============================================================
 
 # ============================================================
-# Apache Airflow 2.11.0 from public PyPI, constrained for Python 3.11.
+# Apache Airflow 3.3.2 from public PyPI, constrained for Python 3.11.
 # ============================================================
 RUN set -eux; \
     CONSTRAINTS=/tmp/constraints-airflow.txt; \
     curl -fsSL -o "$CONSTRAINTS" \
-        https://raw.githubusercontent.com/apache/airflow/constraints-2.11.0/constraints-3.11.txt; \
-    pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" apache-airflow==2.11.0; \
+        https://raw.githubusercontent.com/apache/airflow/constraints-3.3.2/constraints-3.12.txt; \
+    pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" apache-airflow==3.3.2; \
     pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" \
         apache-airflow-providers-common-compat \
         apache-airflow-providers-common-io \
@@ -191,11 +190,11 @@ RUN set -eux; \
         apache-airflow-providers-smtp \
         apache-airflow-providers-sqlite \
         apache-airflow-providers-amazon \
-        apache-airflow-providers-ssh; \
-    pip3 install --no-input --no-cache-dir --no-deps apache-airflow-providers-fab==1.5.3; \
+        apache-airflow-providers-ssh \
+        apache-airflow-providers-fab; \
     rm -f "$CONSTRAINTS"; \
     installed_version=$(python3 -c "import airflow; print(airflow.__version__)"); \
-    test "$installed_version" = "2.11.0"; \
+    test "$installed_version" = "3.3.2"; \
     python3 -c "from airflow.providers.fab import __version__; print('FAB version:', __version__)"
 # ============================================================
 # Python dependencies
