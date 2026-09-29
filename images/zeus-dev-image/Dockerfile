@@ -223,8 +223,9 @@ RUN set -eux; \
     pip3 install --no-input --no-cache-dir \
         botocore==1.43.75 \
         boto3==1.43.75; \
-    pip3 install --no-input --no-cache-dir docutils rsa; \
-    pip3 install --no-input --no-cache-dir --no-deps awscli==1.45.12; \
+    python3 -m venv /opt/aws-cli; \
+    /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1; \
+    ln -sf /opt/aws-cli/bin/aws /usr/local/bin/aws; \
     aws --version; \
     pip3 install --no-input --no-cache-dir ruff==0.15.11 \
         || echo "WARNING: ruff not available in repository, continuing build"; \
