@@ -2,7 +2,9 @@
 
 [Back to repository README](../../README.md) · [Image source](../../images/bifrost-mcp/)
 
-This repository has also been used for Bifrost dependency and base-image maintenance.
+Current release metadata: [image.yaml](../../images/bifrost-mcp/image.yaml).
+
+The notes below describe earlier dependency and base-image maintenance. Inspect the current Dockerfile and manifest before applying them to a newer release.
 
 For Bifrost v1.6.11, prior investigation established that the upstream release should be followed closely rather than maintaining unnecessary dependency overrides.
 
