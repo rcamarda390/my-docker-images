@@ -2,6 +2,11 @@ name: Build and publish zeus-dev-image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'images/zeus-dev-image/**'
+      - '.github/workflows/build-zeus-dev-image.yml'
+      - '.github/workflows/build-image.yml'
 
 permissions:
   contents: write
