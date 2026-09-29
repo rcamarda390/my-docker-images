@@ -87,7 +87,7 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 # enable postgresql:15 fails before package installation. Install the required
 # PostgreSQL 15 client from PGDG's official EL10 repository instead.
 #
-# RHEL 10.1 provides Node.js 24 as a named AppStream package.
+# Use RHEL 10's supported Node.js 22 AppStream packages; Node.js 24 remains Technology Preview.
 RUN dnf install -y \
         https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
     && dnf install -y \
@@ -100,8 +100,8 @@ RUN dnf install -y \
         file \
         hostname \
         procps-ng \
-        nodejs24 \
-        nodejs24-npm \
+        nodejs \
+        npm \
         git \
         jq \
         tar \
@@ -112,7 +112,7 @@ RUN dnf install -y \
     && node --version \
     && npm --version \
     && case "$(node --version)" in \
-        v24.*) echo "OK: Node.js 24.x confirmed" ;; \
+        v22.*) echo "OK: Node.js 22.x confirmed" ;; \
         *) echo "ERROR: Expected Node.js v24.x, got $(node --version)"; exit 1 ;; \
     esac \
     && case "$(psql --version)" in \
