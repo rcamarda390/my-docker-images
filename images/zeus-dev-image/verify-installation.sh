@@ -47,6 +47,7 @@ check "sqlfluff" 1 command -v sqlfluff
 check "ruff" 0 command -v ruff
 check "pyright" 0 command -v pyright
 check "cline CLI" 1 command -v cline
+check "Cline undici 6.28.1" 1 node -e 'const p=require("/opt/cline/package-lock.json").packages; const f=Object.entries(p).filter(([k])=>k.endsWith("node_modules/undici")); if (!f.length || f.some(([,v])=>v.version !== "6.28.1")) process.exit(1)'
 check "claude CLI" 1 command -v claude
 check "AgentMemory MCP entry point" 1 test -f /opt/agentmemory/node_modules/@agentmemory/agentmemory/dist/index.mjs
 check "AgentMemory CLI" 1 command -v agentmemory
