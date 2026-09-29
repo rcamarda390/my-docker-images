@@ -15,10 +15,10 @@ An agent then updates the Dockerfile and validates the resulting image. The cata
 records the current direct software choices and sources; it is not executed by
 Docker and does not prove a build has passed.
 
-- Base: UBI 9 Python 3.11
-- Node.js 22 and PostgreSQL 15 client
+- Base: UBI 10 Python 3.11
+- Node.js 24 and PostgreSQL 15 client
 - `xdg-user-dir` from pinned xdg-user-dirs commit `cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb`
-- Apache Airflow 2.11.0 with Python 3.11 constraints and the selected providers
+- Apache Airflow 3.3.2 with Python 3.12 constraints and the selected providers
 - AWS CLI 1.45.12, boto3/botocore 1.43.54
 - AgentMemory and MCP package 0.9.29
 - Cline CLI 3.0.61 and Claude Code CLI 2.1.252
