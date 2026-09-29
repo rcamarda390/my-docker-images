@@ -1,11 +1,11 @@
-# fib_docker
+# my-docker-images
 
 Docker image build repository for development and air-gapped deployment workflows.
 
 Repository:
 
 ```text
-https://github.com/rcamarda390/fib_docker
+https://github.com/rcamarda390/my-docker-images
 ```
 
 The project is used to build container images outside restricted work environments, publish or transfer those images through an approved registry/artifact path, and run them on Linux hosts where Docker is available but host-level software installation is not.
@@ -20,7 +20,7 @@ The target work environment has several important constraints:
 - The Windows work environment may not have Docker available.
 - Images therefore need to be built in a connected environment, then moved through the approved registry/Artifactory/manual import process.
 
-`fib_docker` centralizes the Dockerfiles, entrypoints, patches, documentation, and CI build logic needed for those images.
+`my-docker-images` centralizes the Dockerfiles, entrypoints, patches, documentation, and CI build logic needed for those images.
 
 ## Repository inventory
 
@@ -100,10 +100,10 @@ This makes the resulting image reproducible and suitable for import into restric
 
 The current image manifests publish to both GitHub Container Registry (GHCR) and Docker Hub.
 
-The GHCR namespace is:
+The GHCR image format is:
 
 ```text
-ghcr.io/rcamarda390/fib_docker
+ghcr.io/rcamarda390/<image-name>:<version>-v<revision>
 ```
 
 Each `images/<target>/image.yaml` controls the target's upstream version, local image revision, build arguments, and publication behavior.
@@ -337,7 +337,7 @@ for image-build-time compatibility handling.
 
 ## Bifrost image work
 
-`fib_docker` has also been used for Bifrost dependency and base-image maintenance.
+`my-docker-images` has also been used for Bifrost dependency and base-image maintenance.
 
 For Bifrost v1.6.11, prior investigation established that the upstream release should be followed closely rather than maintaining unnecessary dependency overrides.
 
@@ -419,8 +419,8 @@ For this use case:
 Clone the repository:
 
 ```bash
-git clone https://github.com/rcamarda390/fib_docker.git
-cd fib_docker
+git clone https://github.com/rcamarda390/my-docker-images.git
+cd my-docker-images
 ```
 
 Create a feature branch for changes:
@@ -526,7 +526,7 @@ A direct test at each layer generally isolates problems faster than changing mul
 
 ## Project status
 
-`fib_docker` is an active infrastructure repository rather than a single-application Docker example. Its role is to make third-party and internal tooling reproducible, portable, and deployable into restricted Docker-based environments.
+`my-docker-images` is an active infrastructure repository rather than a single-application Docker example. Its role is to make third-party and internal tooling reproducible, portable, and deployable into restricted Docker-based environments.
 
 Current image areas include:
 
