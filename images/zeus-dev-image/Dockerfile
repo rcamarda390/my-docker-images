@@ -113,7 +113,7 @@ RUN dnf install -y \
     && npm --version \
     && case "$(node --version)" in \
         v22.*) echo "OK: Node.js 22.x confirmed" ;; \
-        *) echo "ERROR: Expected Node.js v24.x, got $(node --version)"; exit 1 ;; \
+        *) echo "ERROR: Expected Node.js v22.x, got $(node --version)"; exit 1 ;; \
     esac \
     && case "$(psql --version)" in \
         'psql (PostgreSQL) 15.'*) echo "OK: PostgreSQL 15.x client confirmed" ;; \
@@ -209,7 +209,7 @@ RUN set -eux; \
         sqlparse==0.5.5 \
         cryptography==49.0.0 \
         colorama==0.4.6 \
-        PyYAML==6.0.2 \
+        PyYAML==6.0.3 \
         duckdb==1.5.3 \
         sqlglot==30.4.2 \
         s3fs==2026.3.0 \
@@ -221,8 +221,8 @@ RUN set -eux; \
     pip3 install --no-input --no-cache-dir sqlfluff==4.1.0; \
     \
     pip3 install --no-input --no-cache-dir \
-        botocore==1.43.54 \
-        boto3==1.43.54; \
+        botocore==1.43.75 \
+        boto3==1.43.75; \
     pip3 install --no-input --no-cache-dir docutils rsa; \
     pip3 install --no-input --no-cache-dir --no-deps awscli==1.45.12; \
     aws --version; \
