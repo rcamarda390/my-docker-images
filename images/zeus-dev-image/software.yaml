@@ -18,8 +18,8 @@ os_packages:
     packages:
       - {name: python3, version: repo}
       - {name: python3-pip, version: repo}
-      - {name: nodejs24, version: "24", note: "RHEL 10.1 AppStream"}
-      - {name: nodejs24-npm, version: "24", note: "RHEL 10.1 AppStream"}
+      - {name: nodejs, version: "22", note: "RHEL 10 AppStream"}
+      - {name: npm, version: repo, note: "RHEL 10 AppStream"}
       - {name: vim, version: repo}
       - {name: vi, version: repo}
       - {name: shadow-utils, version: repo}
