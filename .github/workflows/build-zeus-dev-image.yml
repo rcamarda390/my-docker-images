@@ -3,12 +3,17 @@ name: Build and publish zeus-dev-image
 on:
   workflow_dispatch:
 
+# Serialize publications so concurrent dispatches cannot select the same next tag.
+concurrency:
+  group: zeus-dev-image-publish
+  cancel-in-progress: false
+
 permissions:
+  # Required by the reusable workflow contract. Published-tag revision mode
+  # does not use the revision-PR step, but callers cannot grant less than the
+  # permissions declared by the called workflow.
   contents: write
   packages: write
-  # The shared workflow proposes the revision bump as a PR, because
-  # the base branch rejects direct pushes. A reusable workflow runs
-  # with the calling job's token scope, so the grant must be here.
   pull-requests: write
 
 jobs:
@@ -28,8 +33,11 @@ jobs:
       version_arg: ZEUS_DEV_IMAGE_VERSION
       platforms: linux/amd64
       timeout_minutes: 45
-      # The base image verification checks only the software installed here.
+      # This composite base image verifies its installed software directly.
+      # It is not a network service, so Bifrost's HTTP health check does not apply.
       smoke_command: /usr/local/bin/verify-installation.sh
       scan: true
-      auto_increment_revision: true
+      # Choose the next revision from successfully published Docker Hub tags.
+      # Failed builds consume no revision and no revision-bump PR is needed.
+      revision_from_published_tag_count: true
       publish: ${{ github.event_name != 'pull_request' }}
