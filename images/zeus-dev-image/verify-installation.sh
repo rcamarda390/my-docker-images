@@ -2,13 +2,10 @@
 # Verify the public software layer; fail if a required tool is missing.
 set -u
 
-REPORT=/tmp/installation-verification-report.txt
-: > "$REPORT"
-
 failures=0
 
 log() {
-    printf '%s\n' "$1" | tee -a "$REPORT"
+    printf '%s\n' "$1"
 }
 
 # check NAME REQUIRED(0|1) COMMAND...
