@@ -66,7 +66,7 @@ python_packages:
     - {name: sqlparse, version: "0.5.5"}
     - {name: cryptography, version: "49.0.0"}
     - {name: colorama, version: "0.4.6"}
-    - {name: PyYAML, version: "6.0.2"}
+    - {name: PyYAML, version: "6.0.3"}
     - {name: duckdb, version: "1.5.3"}
     - {name: sqlglot, version: "30.4.2"}
     - {name: s3fs, version: "2026.3.0"}
@@ -75,8 +75,8 @@ python_packages:
     - {name: html2text, version: "2025.4.15"}
     - {name: markdown-it-py, version: "3.0.0"}
     - {name: sqlfluff, version: "4.1.0"}
-    - {name: botocore, version: "1.43.54"}
-    - {name: boto3, version: "1.43.54"}
+    - {name: botocore, version: "1.43.75"}
+    - {name: boto3, version: "1.43.75"}
     - {name: docutils, version: unpinned, note: "AWS CLI dependency"}
     - {name: rsa, version: unpinned, note: "AWS CLI dependency"}
     - {name: awscli, version: "1.45.12", note: "CLI v1; installed --no-deps"}
