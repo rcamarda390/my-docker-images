@@ -36,7 +36,7 @@ check "git" 1 command -v git
 check "docker CLI" 0 command -v docker
 check "aws CLI" 1 command -v aws
 check "jira python package" 1 python3 -c "import jira"
-check "apache-airflow 3.3.2" 1 python3 -c "import airflow; assert airflow.__version__ == \"3.3.2\""
+check "apache-airflow 3.3.2" 1 python3 -c "import airflow; assert airflow.__version__ == \"3.3.2\""\ncheck "Python package dependencies" 1 pip3 check
 check "sqlfluff" 1 command -v sqlfluff
 check "ruff" 0 command -v ruff
 check "pyright" 0 command -v pyright
