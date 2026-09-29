@@ -1,0 +1,113 @@
+# Edit this list to request a Zeus software change. Keep names and sources clear.
+# "version: repo" means the Dockerfile currently accepts the repository version.
+# "version: unpinned" means the build can resolve a newer release on the next run.
+# The Dockerfile remains the executable build; an agent reviews compatibility,
+# updates it and the installation check, then records the tested result.
+# image.yaml owns the image release number and pinned Git source commits.
+
+base:
+  source: https://catalog.redhat.com/software/containers/ubi9/python-311
+  image: registry.access.redhat.com/ubi9/python-311:latest
+  python: "3.11"
+  note: Mutable base tag; review the resulting digest during each build.
+
+os_packages:
+  - source: Red Hat UBI 9 repositories
+    url: https://catalog.redhat.com/software/containers/ubi9
+    packages:
+      - {name: nodejs, version: "22", note: "RHEL module stream"}
+      - {name: npm, version: repo}
+      - {name: vim, version: repo}
+      - {name: vi, version: repo}
+      - {name: shadow-utils, version: repo}
+      - {name: findutils, version: repo}
+      - {name: file, version: repo}
+      - {name: hostname, version: repo}
+      - {name: procps-ng, version: repo}
+      - {name: git, version: repo}
+      - {name: jq, version: repo}
+      - {name: tar, version: repo}
+      - {name: htop, version: repo, optional: true}
+      - {name: btop, version: repo, optional: true}
+      - {name: unzip, version: "6.0-60.el9", optional: true}
+  - source: PostgreSQL PGDG EL9 repository
+    url: https://www.postgresql.org/download/linux/redhat/
+    packages:
+      - {name: postgresql15, version: "15.x", note: "client; repo RPM URL is unpinned"}
+  - source: Docker CE RHEL 9 repository
+    url: https://download.docker.com/linux/rhel/9/
+    packages:
+      - {name: docker-ce-cli, version: repo, optional: true}
+
+python_packages:
+  source: https://pypi.org/
+  packages:
+    # Airflow and its providers must be resolved together against Python 3.11 constraints.
+    - {name: apache-airflow, version: "2.11.0", note: "constraints-2.11.0/constraints-3.11.txt"}
+    - {name: apache-airflow-providers-common-compat, version: constraints}
+    - {name: apache-airflow-providers-common-io, version: constraints}
+    - {name: apache-airflow-providers-common-sql, version: constraints}
+    - {name: apache-airflow-providers-ftp, version: constraints}
+    - {name: apache-airflow-providers-http, version: constraints}
+    - {name: apache-airflow-providers-imap, version: constraints}
+    - {name: apache-airflow-providers-smtp, version: constraints}
+    - {name: apache-airflow-providers-sqlite, version: constraints}
+    - {name: apache-airflow-providers-amazon, version: constraints}
+    - {name: apache-airflow-providers-ssh, version: constraints}
+    - {name: apache-airflow-providers-fab, version: "1.5.3", note: "installed --no-deps"}
+    - {name: pip, version: unpinned, note: "upgraded before remaining packages"}
+    - {name: numpy, version: "1.26.4"}
+    - {name: pandas, version: "2.2.3"}
+    - {name: psycopg2-binary, version: "2.9.11"}
+    - {name: tabulate, version: "0.10.0"}
+    - {name: sqlparse, version: "0.5.5"}
+    - {name: cryptography, version: "49.0.0"}
+    - {name: colorama, version: "0.4.6"}
+    - {name: PyYAML, version: "6.0.2"}
+    - {name: duckdb, version: "1.5.3"}
+    - {name: sqlglot, version: "30.4.2"}
+    - {name: s3fs, version: "2026.3.0"}
+    - {name: jira, version: "3.10.5"}
+    - {name: beautifulsoup4, version: "4.15.0"}
+    - {name: html2text, version: "2025.4.15"}
+    - {name: markdown-it-py, version: "3.0.0"}
+    - {name: sqlfluff, version: "4.1.0"}
+    - {name: botocore, version: "1.43.54"}
+    - {name: boto3, version: "1.43.54"}
+    - {name: docutils, version: unpinned, note: "AWS CLI dependency"}
+    - {name: rsa, version: unpinned, note: "AWS CLI dependency"}
+    - {name: awscli, version: "1.45.12", note: "CLI v1; installed --no-deps"}
+    - {name: ruff, version: "0.15.11", optional: true}
+    - {name: pyfiglet, version: unpinned, optional: true}
+
+npm_packages:
+  source: https://www.npmjs.com/
+  packages:
+    - {name: pyright, version: unpinned, optional: true}
+    - {name: "@agentmemory/agentmemory", version: "0.9.29"}
+    - {name: "@agentmemory/mcp", version: "0.9.29"}
+    - {name: cline, version: "3.0.61", note: "CLI, not VS Code extension"}
+    - {name: "@anthropic-ai/claude-code", version: "2.1.252"}
+    - {name: "@modelcontextprotocol/sdk", version: "1.29.0", note: "GitLab MCP dependencies only"}
+    - {name: axios, version: "1.16.0", note: "GitLab MCP dependencies only"}
+    - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
+    - {name: typescript, version: unpinned, note: "GitLab MCP dependencies only"}
+
+source_builds:
+  - name: archify
+    source: https://github.com/tt-a1i/archify
+    version: "2.17.0-dev.1"
+    commit: 06dd052602dd9a369e4d034e24faef0917b5a60c
+    note: Git commit is also in image.yaml and Dockerfile.
+  - name: xdg-user-dir
+    source: https://gitlab.freedesktop.org/xdg/xdg-user-dirs
+    version: pinned_commit
+    commit: cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
+    note: Only the xdg-user-dir command is copied into the image.
+
+build_only:
+  - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
+  - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
+  - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
+  - {name: gcc, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
+  - {name: git, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}

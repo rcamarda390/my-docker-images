@@ -316,6 +316,20 @@ Use IAM roles, GitHub Actions secrets, runtime environment variables, secret mou
 
 Always inspect current files because versions change.
 
+### Zeus development image — `images/zeus-dev-image/`
+
+Use `images/zeus-dev-image/software.yaml` as the human-editable requested
+software inventory. It lists direct packages, source locations, current pins,
+optional items, and build-only tools. Before changing Zeus, compare it with the
+Dockerfile and `image.yaml`; resolve any drift rather than assuming the list
+is an executable lockfile. For additions, removals, or upgrades, review
+compatibility (especially Airflow constraints and providers), update the
+Dockerfile and relevant verification, then build, smoke-test, and scan through
+the existing workflow. Update the catalog to reflect the tested Dockerfile.
+Keep release metadata and Git build arguments in `image.yaml`; keep the
+actual install commands and assertions in the Dockerfile. Do not interpret
+`version: repo` or `version: unpinned` as an immutable version guarantee.
+
 ### Bifrost MCP — `images/bifrost-mcp/`
 
 - Prefer upstream-compatible source/dependency state.
