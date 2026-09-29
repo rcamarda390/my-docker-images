@@ -12,8 +12,8 @@ base:
   note: Mutable base tag; review the resulting digest during each build.
 
 os_packages:
-  - source: Red Hat UBI 9 repositories
-    url: https://catalog.redhat.com/software/containers/ubi9
+  - source: Red Hat UBI 10 repositories
+    url: https://catalog.redhat.com/software/containers/ubi10
     packages:
       - {name: nodejs24, version: "24", note: "RHEL 10.1 AppStream"}
       - {name: nodejs24-npm, version: "24", note: "RHEL 10.1 AppStream"}
@@ -30,19 +30,19 @@ os_packages:
       - {name: htop, version: repo, optional: true}
       - {name: btop, version: repo, optional: true}
       - {name: unzip, version: repo, optional: true}
-  - source: PostgreSQL PGDG EL9 repository
+  - source: PostgreSQL PGDG EL10 repository
     url: https://www.postgresql.org/download/linux/redhat/
     packages:
       - {name: postgresql15, version: "15.x", note: "client; repo RPM URL is unpinned"}
-  - source: Docker CE RHEL 9 repository
-    url: https://download.docker.com/linux/rhel/9/
+  - source: Docker CE RHEL 10 repository
+    url: https://download.docker.com/linux/rhel/10/
     packages:
       - {name: docker-ce-cli, version: repo, optional: true}
 
 python_packages:
   source: https://pypi.org/
   packages:
-    # Airflow and its providers must be resolved together against Python 3.11 constraints.
+    # Airflow and its providers must be resolved together against Python 3.12 constraints.
     - {name: apache-airflow, version: "3.3.2", note: "constraints-3.3.2/constraints-3.12.txt"}
     - {name: apache-airflow-providers-common-compat, version: constraints}
     - {name: apache-airflow-providers-common-io, version: constraints}
@@ -109,5 +109,5 @@ build_only:
   - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
   - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
-  - {name: gcc, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
+  - {name: gcc, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
   - {name: git, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
