@@ -28,15 +28,15 @@ check() {
 
 log "=== zeus-dev-image installation verification ==="
 
-check "python3" 1 command -v python3
+check "python3 3.12" 1 python3 -c "import sys; assert sys.version_info[:2] == (3, 12)"
 check "pip3" 1 command -v pip3
-check "node" 1 command -v node
+check "node 24" 1 bash -c '[[ "$(node --version)" == v24.* ]]'
 check "npm" 1 command -v npm
 check "git" 1 command -v git
 check "docker CLI" 0 command -v docker
 check "aws CLI" 1 command -v aws
 check "jira python package" 1 python3 -c "import jira"
-check "apache-airflow" 1 python3 -c "import airflow"
+check "apache-airflow 3.3.2" 1 python3 -c "import airflow; assert airflow.__version__ == \"3.3.2\""
 check "sqlfluff" 1 command -v sqlfluff
 check "ruff" 0 command -v ruff
 check "pyright" 0 command -v pyright
