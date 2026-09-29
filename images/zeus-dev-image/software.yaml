@@ -6,17 +6,17 @@
 # image.yaml owns the image release number and pinned Git source commits.
 
 base:
-  source: https://catalog.redhat.com/software/containers/ubi9/python-311
-  image: registry.access.redhat.com/ubi9/python-311:latest
-  python: "3.11"
+  source: https://catalog.redhat.com/software/containers/ubi10/python-312
+  image: registry.access.redhat.com/ubi10/python-312:latest
+  python: "3.12"
   note: Mutable base tag; review the resulting digest during each build.
 
 os_packages:
   - source: Red Hat UBI 9 repositories
     url: https://catalog.redhat.com/software/containers/ubi9
     packages:
-      - {name: nodejs, version: "22", note: "RHEL module stream"}
-      - {name: npm, version: repo}
+      - {name: nodejs24, version: "24", note: "RHEL 10.1 AppStream"}
+      - {name: nodejs24-npm, version: "24", note: "RHEL 10.1 AppStream"}
       - {name: vim, version: repo}
       - {name: vi, version: repo}
       - {name: shadow-utils, version: repo}
@@ -29,7 +29,7 @@ os_packages:
       - {name: tar, version: repo}
       - {name: htop, version: repo, optional: true}
       - {name: btop, version: repo, optional: true}
-      - {name: unzip, version: "6.0-60.el9", optional: true}
+      - {name: unzip, version: repo, optional: true}
   - source: PostgreSQL PGDG EL9 repository
     url: https://www.postgresql.org/download/linux/redhat/
     packages:
@@ -43,7 +43,7 @@ python_packages:
   source: https://pypi.org/
   packages:
     # Airflow and its providers must be resolved together against Python 3.11 constraints.
-    - {name: apache-airflow, version: "2.11.0", note: "constraints-2.11.0/constraints-3.11.txt"}
+    - {name: apache-airflow, version: "3.3.2", note: "constraints-3.3.2/constraints-3.12.txt"}
     - {name: apache-airflow-providers-common-compat, version: constraints}
     - {name: apache-airflow-providers-common-io, version: constraints}
     - {name: apache-airflow-providers-common-sql, version: constraints}
@@ -54,7 +54,7 @@ python_packages:
     - {name: apache-airflow-providers-sqlite, version: constraints}
     - {name: apache-airflow-providers-amazon, version: constraints}
     - {name: apache-airflow-providers-ssh, version: constraints}
-    - {name: apache-airflow-providers-fab, version: "1.5.3", note: "installed --no-deps"}
+    - {name: apache-airflow-providers-fab, version: constraints}
     - {name: pip, version: unpinned, note: "upgraded before remaining packages"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
