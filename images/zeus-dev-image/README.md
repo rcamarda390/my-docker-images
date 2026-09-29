@@ -20,8 +20,8 @@ Docker and does not prove a build has passed.
 - `xdg-user-dir` from pinned xdg-user-dirs commit `cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb`
 - Apache Airflow 3.3.2 with Python 3.12 constraints and the selected providers
 - AWS CLI 1.46.1, boto3/botocore 1.43.75
-- AgentMemory and MCP package 0.9.29
-- Cline CLI 3.0.61 and Claude Code CLI 2.1.252
+- AgentMemory CLI and MCP package 0.9.29, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
+- Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.252
 - SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.2 and setuptools 84.0.0
 - TypeScript 6.0.3 for the GitLab MCP dependencies
 - Archify 2.17.0-dev.1 from pinned commit `06dd052602dd9a369e4d034e24faef0917b5a60c`
