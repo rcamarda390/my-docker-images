@@ -231,6 +231,8 @@ RUN set -eux; \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
+    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.2 setuptools==84.0.0; \
+    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.2'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (78, 1)"; \
     rm -rf /root/.cache /tmp/* /var/tmp/*
 
 # ============================================================
@@ -259,7 +261,7 @@ RUN set -eux; \
         @modelcontextprotocol/sdk@1.29.0 \
         axios@1.18.0 \
         @types/node \
-        typescript; \
+        typescript@6.0.3; \
     test -d /opt/gitlab-mcp-server/node_modules/@modelcontextprotocol/sdk; \
     test -d /opt/gitlab-mcp-server/node_modules/axios; \
     test -x /opt/gitlab-mcp-server/node_modules/.bin/tsc
