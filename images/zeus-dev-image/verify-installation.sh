@@ -30,7 +30,7 @@ log "=== zeus-dev-image installation verification ==="
 
 check "python3 3.12" 1 python3 -c "import sys; assert sys.version_info[:2] == (3, 12)"
 check "pip3" 1 command -v pip3
-check "node 24" 1 bash -c '[[ "$(node --version)" == v24.* ]]'
+check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
 check "git" 1 command -v git
 check "docker CLI" 0 command -v docker
