@@ -1,0 +1,35 @@
+name: Build and publish zeus-dev-image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  # The shared workflow proposes the revision bump as a PR, because
+  # the base branch rejects direct pushes. A reusable workflow runs
+  # with the calling job's token scope, so the grant must be here.
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish zeus-dev-image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: zeus-dev-image
+      context: ./images/zeus-dev-image
+      dockerfile: ./images/zeus-dev-image/Dockerfile
+      config: images/zeus-dev-image/image.yaml
+      version_arg: ZEUS_DEV_IMAGE_VERSION
+      platforms: linux/amd64
+      timeout_minutes: 45
+      # The base image verification checks only the software installed here.
+      smoke_command: /usr/local/bin/verify-installation.sh
+      scan: true
+      auto_increment_revision: true
+      publish: ${{ github.event_name != 'pull_request' }}

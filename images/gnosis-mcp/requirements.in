@@ -1,0 +1,23 @@
+# Pinned to the PyPI release rather than a GitHub source archive: GitHub
+# generates `archive/<sha>.tar.gz` on demand and does not guarantee the gzip
+# bytes are stable, so a --require-hashes install against one breaks without
+# warning when the archive is re-compressed. PyPI artifacts are immutable.
+gnosis-mcp[embeddings]==0.17.5
+# Security fixes for transitive dependencies:
+# CVE-2026-23949: setuptools 70.3.0 → 80.10.0
+# CVE-2025-47273: setuptools 70.3.0 → 78.1.1+
+# CVE-2026-57585: msgpack 1.1.2 → 1.2.1
+setuptools>=80.10.0
+msgpack>=1.2.1
+# PyJWT 2.13.0 -> 2.14.0 for these Xray advisories:
+# XRAY-1076251 (CVSS 9.1, CWE-347)
+# XRAY-1076205 (CVSS 7.4, CWE-347)
+# XRAY-1076201 (CVSS 7.4, CWE-347)
+# XRAY-1076198 (CVSS 7.4, CWE-347)
+# XRAY-1076197 (CVSS 7.4, CWE-918 [+2])
+# XRAY-1076195 (CVSS 7.4, CWE-347)
+# XRAY-1076185 (CVSS 7.4, CWE-347)
+# XRAY-1076202 (CVSS 4.4, CWE-1333)
+# XRAY-1076196 (CVSS 4.8, CWE-180)
+# XRAY-1076193 (CVSS 5.3, CWE-770)
+PyJWT>=2.14.0

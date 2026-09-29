@@ -1,0 +1,33 @@
+name: Build and publish sqz MCP image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  # The shared workflow proposes the revision bump as a PR, because
+  # the base branch rejects direct pushes. A reusable workflow runs
+  # with the calling job's token scope, so the grant must be here.
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish sqz MCP image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: sqz-mcp
+      context: ./images/sqz-mcp
+      dockerfile: ./images/sqz-mcp/Dockerfile
+      config: images/sqz-mcp/image.yaml
+      version_arg: SQZ_VERSION
+      platforms: linux/amd64
+      smoke_command: --help
+      scan: true
+      auto_increment_revision: true
+      publish: ${{ github.event_name != 'pull_request' }}

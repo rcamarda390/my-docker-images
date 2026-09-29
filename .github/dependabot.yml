@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /images/gnosis-mcp
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /images/agentmemory-server
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /images/sooperset-mcp-atlassian
+    schedule:
+      interval: weekly

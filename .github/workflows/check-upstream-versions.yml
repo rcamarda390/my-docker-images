@@ -1,0 +1,160 @@
+name: Check upstream MCP versions
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Monday 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-versions:
+    name: Check and update upstream MCP versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check and update each image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          # Each entry: "image_name|upstream_repo|tag_strip_prefix|commit_arg"
+          #
+          #   tag_strip_prefix — text removed from the release tag to derive
+          #                      upstream_version (e.g. "transports/v" → "1.6.8")
+          #   commit_arg       — build_args key to update with the resolved
+          #                      commit SHA; empty for images that don't pin one
+          #
+          # Skipped images and reasons:
+          #   gnosis-mcp  — version bump requires regenerating requirements.lock
+          #   agentmemory — version bump requires regenerating package-lock.json
+          #                 (npm ci pins the exact @agentmemory/agentmemory tree)
+          #                 and re-checking the iii-sdk pin agentmemory declares,
+          #                 not just editing upstream_version. The compatible iii
+          #                 engine (build_args.III_VERSION in
+          #                 images/agentmemory-server/image.yaml) is a dependency
+          #                 of agentmemory's iii-sdk pin, not an independent
+          #                 release to chase — do not bump it just because a
+          #                 newer iii-hq/iii tag exists.
+          IMAGES=(
+            "bifrost-mcp|maximhq/bifrost|transports/v|BIFROST_COMMIT"
+            "headroom-mcp|headroomlabs-ai/headroom|v|HEADROOM_COMMIT"
+            "litellm|BerriAI/litellm|v|"
+            "sqz-mcp|ojuschugh1/sqz|v|SQZ_COMMIT"
+            "sooperset-mcp-atlassian|sooperset/mcp-atlassian|v|"
+          )
+
+          for entry in "${IMAGES[@]}"; do
+            IFS='|' read -r image_name upstream_repo tag_strip commit_arg <<< "$entry"
+            config="images/${image_name}/image.yaml"
+
+            echo "--- Checking ${image_name} ---"
+
+            current_version=$(sed -nE 's/^upstream_version:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$config")
+
+            # Releases may share a repository across independent component streams.
+            # Choose the newest stable release whose tag matches this image's prefix.
+            release_data=$(gh api "/repos/${upstream_repo}/releases?per_page=100" 2>/dev/null || echo "")
+            if [ -z "$release_data" ]; then
+              echo "  Could not fetch releases for ${upstream_repo}, skipping"
+              continue
+            fi
+
+            latest_tag=$(jq -r --arg prefix "$tag_strip" \
+              '[.[] | select(.draft == false and .prerelease == false) | select(.tag_name | startswith($prefix))][0].tag_name // empty' \
+              <<< "$release_data")
+            if [ -z "$latest_tag" ]; then
+              echo "  No stable release with tag prefix '${tag_strip}' in ${upstream_repo}, skipping"
+              continue
+            fi
+
+            # Derive version by stripping the known tag prefix
+            latest_version="${latest_tag#${tag_strip}}"
+
+            echo "  current: ${current_version}  latest: ${latest_version}"
+
+            if [ "$latest_version" = "$current_version" ]; then
+              echo "  Already up to date"
+              continue
+            fi
+
+            branch="chore/update-${image_name}-${latest_version}"
+
+            # Skip if the update branch already exists (PR was already opened)
+            if git ls-remote --exit-code origin "refs/heads/${branch}" &>/dev/null; then
+              echo "  Branch ${branch} already exists — skipping"
+              continue
+            fi
+
+            # Resolve commit SHA for images that pin a specific commit
+            commit_sha=""
+            if [ -n "$commit_arg" ]; then
+              ref_data=$(gh api "/repos/${upstream_repo}/git/ref/tags/${latest_tag}" 2>/dev/null || echo "")
+              if [ -z "$ref_data" ]; then
+                echo "  Could not resolve tag ${latest_tag} in ${upstream_repo}, skipping"
+                continue
+              fi
+              obj_sha=$(echo "$ref_data" | jq -r '.object.sha')
+              obj_type=$(echo "$ref_data" | jq -r '.object.type')
+              if [ "$obj_type" = "tag" ]; then
+                # Annotated tag object — dereference to the commit it points to
+                commit_sha=$(gh api "/repos/${upstream_repo}/git/tags/${obj_sha}" --jq '.object.sha')
+              else
+                commit_sha="$obj_sha"
+              fi
+              echo "  Resolved ${latest_tag} -> ${commit_sha}"
+            fi
+
+            # Create a fresh branch from the current HEAD
+            git checkout -B "$branch"
+
+            # Update upstream_version
+            sed -E -i "s|^upstream_version:[[:space:]]*.*|upstream_version: ${latest_version}|" "$config"
+
+            # Update the pinned commit SHA build arg when applicable
+            if [ -n "$commit_arg" ] && [ -n "$commit_sha" ]; then
+              sed -E -i "s/^([[:space:]]*)${commit_arg}:[[:space:]]*.*/\1${commit_arg}: ${commit_sha}/" "$config"
+            fi
+
+            git add "$config"
+            git commit \
+              -m "chore: bump ${image_name} upstream to ${latest_version}" \
+              -m "Automated version bump from ${current_version} to ${latest_version}." \
+              -m "Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+            git push origin "$branch"
+
+            {
+              printf '## Automated upstream version bump\n\n'
+              printf 'Bumps `%s` from `%s` to `%s`.\n\n' "$image_name" "$current_version" "$latest_version"
+              printf -- '- Upstream release: https://github.com/%s/releases/tag/%s\n' "$upstream_repo" "$latest_tag"
+              printf -- '- Config: `%s`\n' "$config"
+              if [ -n "$commit_arg" ] && [ -n "$commit_sha" ]; then
+                printf -- '- Updated `%s` to `%s`\n' "$commit_arg" "$commit_sha"
+              fi
+              printf '\n> After review, trigger the build workflow to publish the updated image.\n'
+            } > /tmp/pr_body.md
+
+            gh pr create \
+              --repo "$REPO" \
+              --base "$BASE_BRANCH" \
+              --head "$branch" \
+              --title "chore: bump ${image_name} to ${latest_version}" \
+              --body-file /tmp/pr_body.md \
+              || echo "  PR already exists or could not be created — continuing"
+
+            # Return to base branch for the next image
+            git checkout "$BASE_BRANCH"
+            git checkout -- .
+          done

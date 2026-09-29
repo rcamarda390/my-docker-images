@@ -1,0 +1,38 @@
+name: Build and publish LiteLLM image
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: litellm-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish LiteLLM image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: litellm
+      context: ./images/litellm
+      dockerfile: ./images/litellm/Dockerfile
+      config: images/litellm/image.yaml
+      version_arg: LITELLM_VERSION
+      platforms: linux/amd64
+      run_smoke_test: false
+      smoke_healthcheck: true
+      smoke_healthcheck_port: 4000
+      smoke_healthcheck_path: /health/liveliness
+      scan: true
+      block_on_scan_failure: true
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}

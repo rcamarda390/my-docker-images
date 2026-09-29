@@ -1,0 +1,44 @@
+name: Build and publish sooperset-mcp-atlassian image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - images/sooperset-mcp-atlassian/**
+      - .github/workflows/build-sooperset-mcp-atlassian.yml
+
+concurrency:
+  group: sooperset-mcp-atlassian-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  # The shared workflow proposes the revision bump as a PR, because
+  # the base branch rejects direct pushes. A reusable workflow runs
+  # with the calling job's token scope, so the grant must be here.
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish sooperset-mcp-atlassian image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: sooperset-mcp-atlassian
+      context: ./images/sooperset-mcp-atlassian
+      dockerfile: ./images/sooperset-mcp-atlassian/Dockerfile
+      config: images/sooperset-mcp-atlassian/image.yaml
+      version_arg: VERSION
+      platforms: linux/amd64
+      smoke_command: --help
+      scan: true
+      block_on_scan_failure: true
+      auto_increment_revision: true
+      publish: ${{ github.event_name != 'pull_request' }}

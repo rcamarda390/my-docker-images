@@ -1,0 +1,675 @@
+name: Build, smoke-test, and publish the configured MCP image
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      dockerfile:
+        required: true
+        type: string
+      config:
+        required: true
+        type: string
+      version_arg:
+        required: true
+        type: string
+      revision_arg:
+        required: false
+        default: ""
+        type: string
+      # All published images target the air-gapped RHEL EC2 deployment.
+      # Override only with explicit approval for a documented exception.
+      platforms:
+        required: false
+        default: linux/amd64
+        type: string
+      timeout_minutes:
+        required: false
+        default: 30
+        type: number
+      smoke_command:
+        required: false
+        default: ""
+        type: string
+      # Override the image entrypoint for smoke commands that need a shell or another executable.
+      smoke_entrypoint:
+        required: false
+        default: ""
+        type: string
+      smoke_env:
+        required: false
+        default: ""
+        type: string
+      # Additional bind mounts needed by health checks for services whose
+      # runtime depends on a host-provided socket or other local resource.
+      smoke_volumes:
+        required: false
+        default: ""
+        type: string
+      # Run the direct smoke command in a network-disabled container. This is
+      # separate from smoke_env because health checks need the normal Docker
+      # network/port-publishing path to reach the service.
+      smoke_network_disabled:
+        required: false
+        default: false
+        type: boolean
+      # Wall-clock budget for the whole `docker run` smoke invocation. Images
+      # whose smoke test only starts a process and exits are fine on the 15s
+      # default; images that boot a server and exercise it (headroom-mcp loads
+      # an ONNX model on the first compression request) need a larger budget.
+      # This is a ceiling, not a wait -- raising it cannot slow a fast image.
+      smoke_timeout:
+        required: false
+        default: 15
+        type: number
+      run_smoke_test:
+        required: false
+        default: true
+        type: boolean
+      smoke_healthcheck:
+        required: false
+        default: false
+        type: boolean
+      smoke_healthcheck_port:
+        required: false
+        default: 8080
+        type: number
+      smoke_healthcheck_path:
+        required: false
+        default: /health
+        type: string
+      publish:
+        required: false
+        default: true
+        type: boolean
+      publish_ghcr:
+        required: false
+        default: true
+        type: boolean
+      publish_dockerhub:
+        required: false
+        default: true
+        type: boolean
+      scan:
+        required: false
+        default: false
+        type: boolean
+      block_on_scan_failure:
+        required: false
+        default: false
+        type: boolean
+      auto_increment_revision:
+        required: false
+        default: false
+        type: boolean
+      # Derive a unique revision from this workflow's monotonically increasing
+      # run number. The configured revision acts as a stable floor, so the file
+      # does not need a follow-up bookkeeping commit after publication.
+      revision_from_run_number:
+        required: false
+        default: false
+        type: boolean
+      # Derive the next revision from the highest published numeric tag for this
+      # exact upstream version. Failed builds publish no tag and therefore do
+      # not consume a revision.
+      revision_from_published_tag_count:
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      image_tag:
+        description: Versioned image tag
+        value: ${{ jobs.build.outputs.image_tag }}
+      ghcr_image:
+        description: GHCR image reference
+        value: ${{ jobs.build.outputs.ghcr_image }}
+      dockerhub_image:
+        description: Docker Hub image reference
+        value: ${{ jobs.build.outputs.dockerhub_image }}
+
+permissions:
+  contents: write
+  packages: write
+  # Needed by the final step, which proposes the revision bump as a PR rather
+  # than pushing it to a protected branch. Callers must grant this too: for a
+  # reusable workflow the effective token scope comes from the calling job.
+  pull-requests: write
+
+jobs:
+  # A merged revision-bump PR changes only the `revision:` line of the image
+  # config -- which still matches the caller's `paths:` trigger, so it starts
+  # another build, which publishes another tag and proposes another bump. With
+  # auto-merge on those PRs that loop never terminates.
+  #
+  # `[skip ci]` on the branch commit does not survive the merge: a squash or
+  # merge commit is built from the PR title, not from the branch commit subject.
+  # The generated title carries the marker too, but that only covers
+  # squash-with-title, so this guard is the load-bearing one -- it inspects the
+  # diff, and so holds for every merge strategy regardless of commit message.
+  guard:
+    name: Check whether this push is only a revision bump
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      revision_only: ${{ steps.check.outputs.revision_only }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      # Skipped for workflow_dispatch, which leaves the output empty so the
+      # build runs: a manual dispatch is always an explicit request to build.
+      - name: Detect a revision-only change
+        id: check
+        if: github.event_name == 'push'
+        env:
+          CONFIG: ${{ inputs.config }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Diffing HEAD^..HEAD reads the merged change for a merge commit and
+          # the squashed change for a squash commit. The bump PR always lands as
+          # exactly one commit, so this window is precisely the case guarded.
+          changed=$(git diff --name-only HEAD^ HEAD)
+          if [ "$changed" != "$CONFIG" ]; then
+            echo "Files beyond ${CONFIG} changed; this is a real build."
+            exit 0
+          fi
+          # `-U0` so only changed lines appear; the `^[+-][^+-]` filter drops the
+          # `---`/`+++` file headers. If any changed line is not the revision
+          # line, something real changed and the build must run.
+          if git diff -U0 HEAD^ HEAD -- "$CONFIG" \
+            | grep -E '^[+-][^+-]' \
+            | grep -qvE '^[+-]revision:[[:space:]]*[0-9]+[[:space:]]*$'; then
+            echo "${CONFIG} changed beyond the revision line; this is a real build."
+            exit 0
+          fi
+          echo "revision_only=true" >> "$GITHUB_OUTPUT"
+          echo "Only the revision line changed; skipping to avoid a bump loop."
+
+  build:
+    name: Build, smoke-test, and publish the configured MCP image
+    needs: guard
+    if: needs.guard.outputs.revision_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      ghcr_image: ${{ steps.meta.outputs.ghcr_image }}
+      dockerhub_image: ${{ steps.meta.outputs.dockerhub_image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      # The revision bump is split in two. This step only rewrites the file in
+      # the workspace, so "Read image metadata" below tags the image with the
+      # new revision. Committing it is deferred to the end of the job so that a
+      # build which fails to publish never proposes a bump for an image nobody
+      # can pull. Nothing here touches the network, so it cannot fail the build
+      # the way the old direct push to a protected branch did.
+      - name: Compute the next image revision
+        id: revision
+        if: inputs.auto_increment_revision && inputs.publish && (inputs.publish_ghcr || inputs.publish_dockerhub) && github.event_name != 'pull_request'
+        env:
+          CONFIG: ${{ inputs.config }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          revision_count=$(grep -Ec '^revision:[[:space:]]*[0-9]+[[:space:]]*$' "$CONFIG")
+          test "$revision_count" -eq 1
+          current_revision=$(sed -nE 's/^revision:[[:space:]]*([0-9]+)[[:space:]]*$/\1/p' "$CONFIG")
+          current_version=$(sed -nE 's/^upstream_version:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$CONFIG")
+          previous_version=$(git show "HEAD^:$CONFIG" 2>/dev/null | sed -nE 's/^upstream_version:[[:space:]]*(.*)[[:space:]]*$/\1/p' || true)
+          if test -n "$previous_version" && test "$previous_version" != "$current_version"; then
+            next_revision=1
+          else
+            next_revision=$((current_revision + 1))
+          fi
+          sed -E -i "s/^revision:[[:space:]]*[0-9]+[[:space:]]*$/revision: $next_revision/" "$CONFIG"
+          echo "next_revision=$next_revision" >> "$GITHUB_OUTPUT"
+          echo "Building revision $next_revision (previous published revision: $current_revision)"
+
+      # Publish a fresh immutable tag in one action without opening a
+      # revision-bump PR. The configured revision is a floor and the calling
+      # workflow's monotonically increasing run number guarantees uniqueness.
+      - name: Compute the run-scoped image revision
+        if: inputs.revision_from_run_number && inputs.publish && (inputs.publish_ghcr || inputs.publish_dockerhub) && github.event_name != 'pull_request'
+        env:
+          CONFIG: ${{ inputs.config }}
+          RUN_NUMBER: ${{ github.run_number }}
+          AUTO_INCREMENT: ${{ inputs.auto_increment_revision }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$AUTO_INCREMENT" = "true" ]; then
+            echo "::error::revision_from_run_number and auto_increment_revision are mutually exclusive"
+            exit 1
+          fi
+          revision_count=$(grep -Ec '^revision:[[:space:]]*[0-9]+[[:space:]]*$' "$CONFIG")
+          test "$revision_count" -eq 1
+          base_revision=$(sed -nE 's/^revision:[[:space:]]*([0-9]+)[[:space:]]*$/\1/p' "$CONFIG")
+          run_revision=$((base_revision + RUN_NUMBER))
+          sed -E -i "s/^revision:[[:space:]]*[0-9]+[[:space:]]*$/revision: $run_revision/" "$CONFIG"
+          echo "Building run-scoped revision $run_revision (configured floor: $base_revision; workflow run: $RUN_NUMBER)"
+
+      - name: Compute revision from successful publications
+        if: inputs.revision_from_published_tag_count && inputs.publish && inputs.publish_dockerhub && github.event_name != 'pull_request'
+        env:
+          CONFIG: ${{ inputs.config }}
+          INPUT_IMAGE_NAME: ${{ inputs.image_name }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          AUTO_INCREMENT: ${{ inputs.auto_increment_revision }}
+          RUN_NUMBER_REVISION: ${{ inputs.revision_from_run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$AUTO_INCREMENT" = "true" ] || [ "$RUN_NUMBER_REVISION" = "true" ]; then
+            echo "::error::revision_from_published_tag_count is mutually exclusive with the other revision modes"
+            exit 1
+          fi
+          test -n "$DOCKERHUB_USERNAME"
+          version=$(sed -nE 's/^upstream_version:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$CONFIG")
+          test -n "$version"
+          tags_file=$(mktemp)
+          trap 'rm -f "$tags_file"' EXIT
+          url="https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${INPUT_IMAGE_NAME}/tags?page_size=100&name=${version}-v"
+          while [ -n "$url" ] && [ "$url" != "null" ]; do
+            response_file=$(mktemp)
+            http_code=$(curl --silent --show-error --retry 3 --retry-all-errors \
+              --output "$response_file" --write-out '%{http_code}' "$url")
+            if [ "$http_code" = "404" ]; then
+              echo "Docker Hub repository does not exist yet; treating this as the first publication."
+              rm -f "$response_file"
+              break
+            fi
+            if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+              echo "::error::Docker Hub tag lookup failed with HTTP $http_code"
+              cat "$response_file" >&2 || true
+              rm -f "$response_file"
+              exit 1
+            fi
+            response=$(cat "$response_file")
+            rm -f "$response_file"
+            jq -r --arg prefix "${version}-v" \
+              '.results[].name | select(startswith($prefix)) | select((ltrimstr($prefix) | test("^[0-9]+$")))' \
+              <<<"$response" >> "$tags_file"
+            url=$(jq -r '.next // empty' <<<"$response")
+          done
+          published_count=$(sort -u "$tags_file" | grep -c . || true)
+          max_revision=$(awk -v prefix="${version}-v" '
+            index($0, prefix) == 1 {
+              revision = substr($0, length(prefix) + 1)
+              if (revision ~ /^[0-9]+$/ && revision + 0 > max) {
+                max = revision + 0
+              }
+            }
+            END {
+              print max + 0
+            }
+          ' "$tags_file")
+          next_revision=$((max_revision + 1))
+          candidate="${version}-v${next_revision}"
+          if grep -Fxq "$candidate" "$tags_file"; then
+            echo "::error::Computed tag $candidate already exists; refusing to overwrite an immutable image"
+            exit 1
+          fi
+          sed -E -i "s/^revision:[[:space:]]*[0-9]+[[:space:]]*$/revision: $next_revision/" "$CONFIG"
+          echo "Building $candidate after $published_count successful publication(s); highest existing revision is v$max_revision for upstream $version"
+
+      - name: Read image metadata
+        id: meta
+        env:
+          CONFIG: ${{ inputs.config }}
+          INPUT_IMAGE_NAME: ${{ inputs.image_name }}
+          VERSION_ARG: ${{ inputs.version_arg }}
+          REVISION_ARG: ${{ inputs.revision_arg }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          PUBLISH: ${{ inputs.publish }}
+          PUBLISH_GHCR: ${{ inputs.publish_ghcr }}
+          PUBLISH_DOCKERHUB: ${{ inputs.publish_dockerhub }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby - "$CONFIG" "$INPUT_IMAGE_NAME" "$VERSION_ARG" "$DOCKERHUB_USERNAME" <<'RUBY' >> "$GITHUB_OUTPUT"
+          require "yaml"
+          config = YAML.safe_load(File.read(ARGV[0]), permitted_classes: [], aliases: false)
+          name = config.fetch("name")
+          abort "image name does not match caller input" unless name == ARGV[1]
+          abort "image name must be lowercase" unless name == name.downcase && name.match?(/\A[a-z0-9][a-z0-9.-]*\z/)
+          version = config.fetch("upstream_version").to_s
+          revision = config.fetch("revision").to_s
+          abort "revision must be an integer" unless revision.match?(/\A[0-9]+\z/)
+          publish = config.fetch("publish")
+          abort "latest must be false for MCP images" if publish.fetch("latest", false)
+          publish_ghcr = ENV.fetch("PUBLISH_GHCR") == "true"
+          publish_dockerhub = ENV.fetch("PUBLISH_DOCKERHUB") == "true"
+          abort "GHCR publication is not enabled" if publish_ghcr && !publish.fetch("ghcr", false)
+          abort "Docker Hub publication is not enabled" if publish_dockerhub && !publish.fetch("dockerhub", false)
+          dockerhub = ARGV[3]
+          abort "DOCKERHUB_USERNAME is not configured" if dockerhub.empty? && ENV.fetch("PUBLISH") == "true" && publish_dockerhub
+          dockerhub = "validation" if dockerhub.empty?
+          puts "image_tag=#{version}-v#{revision}"
+          puts "ghcr_image=ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{version}-v#{revision}"
+          puts "dockerhub_image=docker.io/#{dockerhub}/#{name}:#{version}-v#{revision}"
+          puts "upstream_version=#{version}"
+          puts "revision=#{revision}"
+          puts "build_args<<BUILD_ARGS"
+          revision_arg = ENV.fetch("REVISION_ARG")
+          puts "#{revision_arg}=v#{revision}" unless revision_arg.empty?
+          (config["build_args"] || {}).each do |key, value|
+            abort "build_args values must be strings" unless value.is_a?(String)
+            puts "#{key}=#{value}"
+          end
+          puts "BUILD_ARGS"
+          puts "publish_tags<<PUBLISH_TAGS"
+          puts "ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{version}-v#{revision}" if publish_ghcr
+          puts "docker.io/#{dockerhub}/#{name}:#{version}-v#{revision}" if publish_dockerhub
+          puts "PUBLISH_TAGS"
+          RUBY
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build smoke-test image
+        id: smoke_build
+        if: inputs.run_smoke_test || inputs.scan
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: linux/amd64
+          load: true
+          build-args: |
+            ${{ inputs.version_arg }}=${{ steps.meta.outputs.upstream_version }}
+            ${{ steps.meta.outputs.build_args }}
+          tags: mcp-smoke:${{ github.run_id }}
+
+      - name: Run smoke test
+        if: inputs.run_smoke_test && inputs.smoke_command != ''
+        env:
+          IMAGE: mcp-smoke:${{ github.run_id }}
+          SMOKE_ENV: ${{ inputs.smoke_env }}
+          SMOKE_NETWORK_DISABLED: ${{ inputs.smoke_network_disabled }}
+          SMOKE_COMMAND: ${{ inputs.smoke_command }}
+          SMOKE_ENTRYPOINT: ${{ inputs.smoke_entrypoint }}
+          SMOKE_TIMEOUT: ${{ inputs.smoke_timeout }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -r -a SMOKE_ARGS <<< "$SMOKE_COMMAND"
+          entrypoint_args=()
+          if [ -n "$SMOKE_ENTRYPOINT" ]; then
+            entrypoint_args+=(--entrypoint "$SMOKE_ENTRYPOINT")
+          fi
+          network_args=()
+          if [ "$SMOKE_NETWORK_DISABLED" = "true" ]; then
+            network_args+=(--network none)
+          fi
+          timeout "$SMOKE_TIMEOUT" docker run --rm "${network_args[@]}" "${entrypoint_args[@]}" $SMOKE_ENV "$IMAGE" "${SMOKE_ARGS[@]}"
+
+      - name: Run health smoke test
+        if: inputs.smoke_healthcheck
+        timeout-minutes: 5
+        env:
+          IMAGE: mcp-smoke:${{ github.run_id }}
+          SMOKE_ENV: ${{ inputs.smoke_env }}
+          SMOKE_VOLUMES: ${{ inputs.smoke_volumes }}
+          PORT: ${{ inputs.smoke_healthcheck_port }}
+          HEALTH_PATH: ${{ inputs.smoke_healthcheck_path }}
+        run: |
+          set -euo pipefail
+          container_id=$(docker run -d $SMOKE_ENV $SMOKE_VOLUMES -p "127.0.0.1:${PORT}:${PORT}" "$IMAGE")
+          cleanup() {
+            echo "----- container logs -----"
+            docker logs "$container_id" 2>&1 | tail -100 || true
+            echo "----- container state -----"
+            docker inspect -f '{{.State.Status}} exit={{.State.ExitCode}}' "$container_id" 2>&1 || true
+            docker rm -f "$container_id" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          ok=0
+          for _ in $(seq 1 30); do
+            if curl -fsS --max-time 3 "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1; then
+              ok=1
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' "$container_id" 2>/dev/null || echo false)" != "true" ]; then
+              echo "Container exited before becoming healthy."
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$ok" != "1" ]; then
+            echo "Health endpoint did not become ready within the polling window."
+            exit 1
+          fi
+          echo "health endpoint OK"
+
+      # Gated on the image actually existing: with `always()` a failed build made
+      # Trivy report "unable to find the specified image", which buried the real
+      # build error under a misleading scanner failure.
+      - name: Scan candidate image with Trivy
+        id: scan
+        if: ${{ !cancelled() && inputs.scan && steps.smoke_build.outcome == 'success' }}
+        continue-on-error: ${{ !inputs.block_on_scan_failure }}
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.74.0
+          image-ref: mcp-smoke:${{ github.run_id }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+
+      # Preserve blocking scan failures even when the action masks its own
+      # non-zero result under continue-on-error.
+      - name: Enforce blocking scan result
+        if: ${{ inputs.scan && inputs.block_on_scan_failure && steps.scan.outcome != 'success' }}
+        run: |
+          echo "::error::Blocking Trivy scan failed; refusing registry publication."
+          exit 1
+
+      - name: Log in to GHCR
+        if: inputs.publish && inputs.publish_ghcr
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: inputs.publish && inputs.publish_dockerhub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push selected registry tags
+        id: publish
+        if: inputs.publish && (inputs.publish_ghcr || inputs.publish_dockerhub)
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: true
+          provenance: false
+          build-args: |
+            ${{ inputs.version_arg }}=${{ steps.meta.outputs.upstream_version }}
+            ${{ steps.meta.outputs.build_args }}
+          tags: |
+            ${{ steps.meta.outputs.publish_tags }}
+
+      - name: Summary
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          UPSTREAM_VERSION: ${{ steps.meta.outputs.upstream_version }}
+          GHCR_IMAGE: ${{ steps.meta.outputs.ghcr_image }}
+          DOCKERHUB_IMAGE: ${{ steps.meta.outputs.dockerhub_image }}
+          PUBLISH: ${{ inputs.publish }}
+          PUBLISH_GHCR: ${{ inputs.publish_ghcr }}
+          PUBLISH_DOCKERHUB: ${{ inputs.publish_dockerhub }}
+        run: |
+          {
+            if [ "$PUBLISH" = "true" ] && [ "$PUBLISH_GHCR" = "true" -o "$PUBLISH_DOCKERHUB" = "true" ]; then
+              echo "## MCP image published"
+              echo "The build completed and pushed these exact image references:"
+              if [ "$PUBLISH_GHCR" = "true" ]; then
+                echo "- GHCR: \`$GHCR_IMAGE\`"
+              fi
+              if [ "$PUBLISH_DOCKERHUB" = "true" ]; then
+                echo "- Docker Hub: \`$DOCKERHUB_IMAGE\`"
+              fi
+            else
+              echo "## MCP image candidate validated (not published)"
+              echo "No registry push was performed."
+            fi
+            echo "- Current upstream version: \`$UPSTREAM_VERSION\`"
+            echo "- Versioned tag: \`$IMAGE_TAG\`"
+            if [ "$PUBLISH" = "true" ] && [ "$PUBLISH_GHCR" = "true" ]; then
+              echo
+              echo "### Pull from GHCR"
+              echo '```sh'
+              echo "docker pull $GHCR_IMAGE"
+              echo '```'
+            fi
+            if [ "$PUBLISH" = "true" ] && [ "$PUBLISH_DOCKERHUB" = "true" ]; then
+              echo
+              echo "### Pull from Docker Hub"
+              echo '```sh'
+              echo "docker pull $DOCKERHUB_IMAGE"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Current upstream version: $UPSTREAM_VERSION"
+          echo "MCP image versioned tag: $IMAGE_TAG"
+          if [ "$PUBLISH" = "true" ] && [ "$PUBLISH_GHCR" = "true" ]; then
+            echo "Pushed to GHCR: $GHCR_IMAGE"
+            echo "Pull from GHCR: docker pull $GHCR_IMAGE"
+          fi
+          if [ "$PUBLISH" = "true" ] && [ "$PUBLISH_DOCKERHUB" = "true" ]; then
+            echo "Pushed to Docker Hub: $DOCKERHUB_IMAGE"
+            echo "Pull from Docker Hub: docker pull $DOCKERHUB_IMAGE"
+          fi
+
+      # `main` requires changes to go through a pull request, so the bump cannot
+      # be pushed to it directly: the previous `git push origin HEAD:main` was
+      # rejected by the ruleset and failed the whole build at step 3, before it
+      # ever built, smoke-tested or scanned. The bump is therefore proposed as
+      # its own PR. It runs last and only on success, so a bump is never
+      # proposed for an image that failed to publish.
+      #
+      # The head branch is stable per image and force-pushed, so repeated builds
+      # refresh a single open PR instead of piling up one per run. It is written
+      # only by this step, and carries a single deterministic line change, so the
+      # force-push can only ever replace a superseded bump with the current one.
+      #
+      # Known caveat: the counter advances only when that PR merges. A build
+      # that starts while the bump is still open recomputes the same revision
+      # from the base branch and republishes the same tag. Merging the bump PR
+      # promptly -- or enabling auto-merge on it -- keeps the counter honest.
+      - name: Open a PR with the incremented revision
+        if: ${{ success() && steps.revision.outcome == 'success' }}
+        env:
+          CONFIG: ${{ inputs.config }}
+          BASE: ${{ github.ref_name }}
+          IMAGE_NAME: ${{ inputs.image_name }}
+          NEXT_REVISION: ${{ steps.revision.outputs.next_revision }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          REPO: ${{ github.repository }}
+          # GITHUB_TOKEN is subject to the "Allow GitHub Actions to create and
+          # approve pull requests" setting, which refused three consecutive runs
+          # with `GitHub Actions is not permitted to create or approve pull
+          # requests (createPullRequest)` even after the repo checkbox was
+          # believed to be on. A fine-grained PAT (contents + pull-requests:
+          # write) is not subject to it. Falls back to the built-in token when
+          # the secret is absent, so repos that do have the setting enabled keep
+          # working with no secret to manage.
+          #
+          # Safe against recursion: no workflow here triggers `on: pull_request`,
+          # so the PR this opens starts nothing, even though PAT-authored PRs --
+          # unlike GITHUB_TOKEN ones -- are allowed to trigger workflows.
+          GH_TOKEN: ${{ secrets.REVISION_PR_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- "$CONFIG"; then
+            echo "Revision file is unchanged; nothing to propose."
+            exit 0
+          fi
+
+          head_branch="ci/increment-revision-${IMAGE_NAME}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$head_branch"
+          git add "$CONFIG"
+          git commit \
+            -m "chore: increment ${IMAGE_NAME} image revision to ${NEXT_REVISION} [skip ci]" \
+            -m "Published as ${IMAGE_TAG}." \
+            -m "Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          git push --force origin "$head_branch"
+
+          # Checked explicitly rather than tolerating a failed `gh pr create`:
+          # swallowing the error would also swallow a 403 from the "Allow GitHub
+          # Actions to create and approve pull requests" setting being off, and
+          # the revision would then silently never advance.
+          existing=$(gh pr list --repo "$REPO" --head "$head_branch" --base "$BASE" \
+            --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            echo "Refreshed existing revision PR #${existing}"
+            echo "Revision bump updated on PR #${existing}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          {
+            printf '## Automated image revision bump\n\n'
+            printf 'This build published `%s`, so `%s` is bumped to `revision: %s`\n' "$IMAGE_TAG" "$CONFIG" "$NEXT_REVISION"
+            printf 'to stop the next build reusing that tag.\n\n'
+            printf -- '- Image: `%s`\n' "$IMAGE_NAME"
+            printf -- '- Published tag: `%s`\n' "$IMAGE_TAG"
+            printf -- '- Config: `%s`\n\n' "$CONFIG"
+            printf '`%s` requires changes to go through a pull request, so CI proposes the\n' "$BASE"
+            printf 'bump here instead of pushing it directly.\n\n'
+            printf '> **Merge this promptly.** Until it lands, the next build recomputes the\n'
+            printf '> same revision from `%s` and republishes the same tag.\n' "$BASE"
+          } > /tmp/revision_pr_body.md
+
+          # Still fatal -- a bump that never lands means the next build reuses
+          # the tag -- but the summary now says exactly what to do, so the run
+          # page alone is enough to diagnose and recover from it.
+          if pr_url=$(gh pr create \
+            --repo "$REPO" \
+            --base "$BASE" \
+            --head "$head_branch" \
+            --title "chore: increment ${IMAGE_NAME} image revision to ${NEXT_REVISION} [skip ci]" \
+            --body-file /tmp/revision_pr_body.md 2>/tmp/revision_pr_err); then
+            echo "Opened revision PR: ${pr_url}"
+            echo "Revision bump proposed: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          err=$(cat /tmp/revision_pr_err)
+          echo "::error::Could not open the revision PR: ${err}"
+          {
+            printf '## Revision bump PR could not be opened\n\n'
+            printf 'The image published fine as `%s`. Only the bookkeeping PR failed.\n\n' "$IMAGE_TAG"
+            printf 'Branch `%s` is pushed and carries the bump to `revision: %s`:\n\n' "$head_branch" "$NEXT_REVISION"
+            printf -- '- **[Open the PR](https://github.com/%s/compare/%s...%s?expand=1)**\n\n' "$REPO" "$BASE" "$head_branch"
+            printf '```\n%s\n```\n\n' "$err"
+            printf 'If that says Actions is not permitted to create pull requests, either set a\n'
+            printf '`REVISION_PR_TOKEN` secret (fine-grained PAT with contents + pull-requests\n'
+            printf 'write), or enable Settings -> Actions -> General -> Workflow permissions ->\n'
+            printf '"Allow GitHub Actions to create and approve pull requests" -- note that is a\n'
+            printf 'separate checkbox from the read/write radio above it, and an account-level\n'
+            printf 'setting at github.com/settings/actions can override the repo one.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

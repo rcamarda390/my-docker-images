@@ -1,0 +1,19 @@
+name: headroom-mcp
+upstream_version: 0.39.1
+revision: 1
+build_args:
+  HEADROOM_COMMIT: d13e1966f820220b482a33c30bde1e926743939a
+  LITELLM_VERSION: 1.101.0
+  GLIBC_DEBIAN_VERSION: 2.41-12+deb13u4
+  GLIBC_BACKPORT_VERSION: 2.41-12+deb13u4+rcamarda1
+  PYJWT_VERSION: 2.14.0
+  TOKENIZERS_VERSION: 0.23.2
+  TRANSFORMERS_VERSION: 5.17.0
+  URLLIB3_VERSION: 2.8.0
+  ANYIO_VERSION: 4.14.2
+  ZLIB_VERSION: 1.3.2
+  ZLIB_SHA256: b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

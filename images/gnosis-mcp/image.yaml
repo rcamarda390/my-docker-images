@@ -1,0 +1,14 @@
+name: gnosis-mcp
+upstream_version: 0.17.5
+revision: 11
+build_args:
+  EMBED_MODEL: "MongoDB/mdbr-leaf-ir"
+  EXTRAS: "embeddings"
+  PYTHON_VERSION: "3.13"
+  ZLIB_VERSION: "1.3.2"
+  ZLIB_SHA256: "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
+  ZLIB_CVE_PATCH_SHA256: "110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14"
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

@@ -1,0 +1,11 @@
+name: ebay-mcp
+upstream_version: 1.16.0
+revision: 1
+build_args:
+  EBAY_MCP_COMMIT: edb937b44a47bf3d353ab9afb8818b6834ac222c
+  NODE_VERSION: 22.23.2
+  PNPM_VERSION: 10.14.0
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

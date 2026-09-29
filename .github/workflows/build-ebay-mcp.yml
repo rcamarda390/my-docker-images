@@ -1,0 +1,50 @@
+name: Build and publish eBay MCP image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "images/ebay-mcp/**"
+
+concurrency:
+  group: ebay-mcp-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish eBay MCP image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: ebay-mcp
+      context: ./images/ebay-mcp
+      dockerfile: ./images/ebay-mcp/Dockerfile
+      config: images/ebay-mcp/image.yaml
+      version_arg: EBAY_MCP_VERSION
+      platforms: linux/amd64
+      run_smoke_test: true
+      smoke_command: node,runtime-smoke.mjs
+      smoke_timeout: 30
+      smoke_healthcheck: true
+      smoke_healthcheck_port: 3000
+      smoke_healthcheck_path: /health
+      smoke_env: >-
+        -e EBAY_CLIENT_ID=ci-smoke-client
+        -e EBAY_CLIENT_SECRET=ci-smoke-secret
+        -e EBAY_ENVIRONMENT=sandbox
+        -e EBAY_MCP_TOOLS=browse,developer
+        -e EBAY_READ_ONLY=true
+        -e OAUTH_ENABLED=false
+      scan: true
+      block_on_scan_failure: true
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}

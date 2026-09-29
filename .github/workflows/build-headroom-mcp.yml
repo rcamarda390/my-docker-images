@@ -1,0 +1,56 @@
+name: Build and publish Headroom MCP image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['images/headroom-mcp/**']
+
+# Serialize publications so two pushes cannot calculate the same next tag.
+concurrency:
+  group: headroom-mcp-publish
+  cancel-in-progress: false
+
+permissions:
+  # Required by the reusable workflow contract. Published-tag revision mode
+  # does not exercise the revision-PR step, but a caller cannot grant less than
+  # permissions declared by the called workflow.
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish Headroom MCP image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: headroom-mcp
+      context: ./images/headroom-mcp
+      # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
+      # action builds and publishes the complete deployable image.
+      dockerfile: ./images/headroom-mcp/Dockerfile
+      config: images/headroom-mcp/image.yaml
+      version_arg: HEADROOM_VERSION
+      platforms: linux/amd64
+      timeout_minutes: 90
+      smoke_command: __smoke
+      # Measured on run 32311533470: ~7s proxy boot, ~1s health + dashboard, and
+      # ~5s for the first /v1/compress, which lazily loads the Kompress ONNX
+      # model out of the baked-in cache -- ~14s in total. That is precisely why
+      # the 15s default failed: the work fits, but not with container startup on
+      # top of it. The model load was never the slow part it was assumed to be.
+      #
+      # 120s is ~8x the measured cost. This is a ceiling, not a wait -- a healthy
+      # run still finishes in ~15s -- so the headroom is free, while still
+      # failing a genuinely hung smoke test in two minutes rather than ten.
+      smoke_timeout: 120
+      scan: true
+      # Count tags already published for this upstream version. Failed builds
+      # publish no tag, so they do not consume a revision or open a bump PR.
+      revision_from_published_tag_count: true
+      publish: true

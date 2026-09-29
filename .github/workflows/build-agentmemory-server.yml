@@ -1,0 +1,53 @@
+name: Build and publish AgentMemory MCP image
+
+on:
+  workflow_dispatch:
+
+# Serialize publications so two dispatches cannot calculate the same next tag.
+concurrency:
+  group: agentmemory-mcp-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  # Required by the reusable workflow contract. Published-tag revision mode
+  # does not use the revision-PR step, but the called workflow declares this
+  # permission for its optional revision mode.
+  pull-requests: write
+
+jobs:
+  build-agentmemory-server-image:
+    name: Build and publish AgentMemory MCP image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: agentmemory
+      context: ./images/agentmemory-server
+      dockerfile: ./images/agentmemory-server/Dockerfile
+      config: images/agentmemory-server/image.yaml
+      version_arg: AGENTMEMORY_VERSION
+      revision_arg: AGENTMEMORY_IMAGE_VERSION
+      # Target the x86_64 RHEL EC2 deployment; avoid publishing a multi-arch manifest list.
+      platforms: linux/amd64
+      run_smoke_test: true
+      # Exercises the offline model, server startup, health, and the REST paths
+      # used by the MCP memory_save and memory_recall tools.
+      smoke_command: --runtime-smoke-test
+      smoke_network_disabled: true
+      smoke_timeout: 120
+      smoke_healthcheck: true
+      smoke_healthcheck_port: 3111
+      smoke_healthcheck_path: /agentmemory/livez
+      scan: true
+      block_on_scan_failure: true
+      # Count tags already published for this upstream version. Failed builds
+      # publish no tag, so they do not consume a revision.
+      revision_from_published_tag_count: true
+      # Branch dispatches validate the candidate without consuming or publishing
+      # an immutable tag. Only a reviewed main-branch dispatch may publish.
+      publish: ${{ github.ref == 'refs/heads/main' }}

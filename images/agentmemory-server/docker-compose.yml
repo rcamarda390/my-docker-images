@@ -1,0 +1,17 @@
+services:
+  agentmemory:
+    image: ${ARTIFACTORY_REGISTRY:-docker.io/rcamarda390}/agentmemory:0.9.29-v2
+    volumes:
+      - agentmemory-data:/data
+    ports:
+      - "3111:3111"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3111/agentmemory/livez').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  agentmemory-data:
