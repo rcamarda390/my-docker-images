@@ -89,12 +89,35 @@ npm_packages:
     - {name: pyright, version: unpinned, optional: true}
     - {name: "@agentmemory/agentmemory", version: "0.9.29"}
     - {name: "@agentmemory/mcp", version: "0.9.29"}
-    - {name: cline, version: "3.0.61", note: "CLI, not VS Code extension"}
+    - {name: cline, version: "3.0.61", note: "CLI in /opt/cline, not VS Code extension"}
     - {name: "@anthropic-ai/claude-code", version: "2.1.252"}
     - {name: "@modelcontextprotocol/sdk", version: "1.29.0", note: "GitLab MCP dependencies only"}
     - {name: axios, version: "1.18.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
     - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
+
+
+npm_overrides:
+  cline:
+    root: /opt/cline
+    packages:
+      - {name: undici, version: "6.28.1", note: "security override for the pinned Cline CLI"}
+  agentmemory:
+    roots: [/opt/agentmemory, /opt/agentmemory-mcp]
+    packages:
+      - {name: iii-sdk, version: "0.11.2", note: "matches AgentMemory's pinned engine SDK"}
+      - {name: "@opentelemetry/api-logs", version: "0.200.0"}
+      - {name: "@opentelemetry/core", version: "2.9.0"}
+      - {name: "@opentelemetry/context-async-hooks", version: "2.9.0"}
+      - {name: "@opentelemetry/instrumentation", version: "0.200.0"}
+      - {name: "@opentelemetry/otlp-transformer", version: "0.200.0"}
+      - {name: "@opentelemetry/propagator-b3", version: "2.9.0"}
+      - {name: "@opentelemetry/propagator-jaeger", version: "2.9.0"}
+      - {name: "@opentelemetry/resources", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-logs", version: "0.200.0"}
+      - {name: "@opentelemetry/sdk-metrics", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-trace-base", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-trace-node", version: "2.9.0"}
 
 source_builds:
   - name: archify
