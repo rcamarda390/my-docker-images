@@ -206,8 +206,8 @@ RUN set -eux; \
         pandas==2.2.3 \
         psycopg2-binary==2.9.11 \
         tabulate==0.10.0 \
-        sqlparse==0.5.5 \
-        cryptography==49.0.0 \
+        sqlparse==0.6.0 \
+        cryptography==50.0.0 \
         colorama==0.4.6 \
         PyYAML==6.0.3 \
         duckdb==1.5.3 \
@@ -218,7 +218,7 @@ RUN set -eux; \
         html2text==2025.4.15 \
         markdown-it-py==3.0.0; \
     \
-    pip3 install --no-input --no-cache-dir sqlfluff==4.1.0; \
+    pip3 install --no-input --no-cache-dir sqlfluff==4.2.0; \
     \
     pip3 install --no-input --no-cache-dir \
         botocore==1.43.75 \
@@ -257,7 +257,7 @@ RUN set -eux; \
 RUN set -eux; \
     npm install --prefix /opt/gitlab-mcp-server --legacy-peer-deps \
         @modelcontextprotocol/sdk@1.29.0 \
-        axios@1.16.0 \
+        axios@1.18.0 \
         @types/node \
         typescript; \
     test -d /opt/gitlab-mcp-server/node_modules/@modelcontextprotocol/sdk; \
