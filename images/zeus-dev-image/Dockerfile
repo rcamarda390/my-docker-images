@@ -69,9 +69,9 @@ USER 0
 # project, so there is no single "upstream_version" to track. This ARG is
 # the version_arg the shared build-image.yml workflow expects; it labels
 # the image with the local zeus-dev-image release number from image.yaml.
-ARG ZEUS_DEV_IMAGE_VERSION=1.0.0
+ARG ZEUS_DEV_IMAGE_VERSION=2.0.0
 LABEL org.opencontainers.image.title="zeus-dev-image" \
-      org.opencontainers.image.description="UBI10/Python 3.11 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
+      org.opencontainers.image.description="UBI10/Python 3.12 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
       org.opencontainers.image.version="${ZEUS_DEV_IMAGE_VERSION}"
 
 # Archify must not check for updates when running in the restricted environment.
@@ -85,11 +85,9 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 # ============================================================
 # UBI10 does not publish RHEL's PostgreSQL module metadata, so attempting to
 # enable postgresql:15 fails before package installation. Install the required
-# PostgreSQL 15 client from PGDG's official EL9 repository instead.
+# PostgreSQL 15 client from PGDG's official EL10 repository instead.
 #
-# nodejs:22 is still enabled explicitly -- without this, plain `npm`/`nodejs`
-# package names resolve to whatever the default module stream is for the
-# base image's RHEL9 AppStream, not necessarily 22.x.
+# RHEL 10.1 provides Node.js 24 as a named AppStream package.
 RUN dnf install -y \
         https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
     && dnf install -y \
@@ -113,7 +111,7 @@ RUN dnf install -y \
     && npm --version \
     && case "$(node --version)" in \
         v24.*) echo "OK: Node.js 24.x confirmed" ;; \
-        *) echo "ERROR: Expected Node.js v22.x, got $(node --version)"; exit 1 ;; \
+        *) echo "ERROR: Expected Node.js v24.x, got $(node --version)"; exit 1 ;; \
     esac \
     && case "$(psql --version)" in \
         'psql (PostgreSQL) 15.'*) echo "OK: PostgreSQL 15.x client confirmed" ;; \
@@ -173,7 +171,7 @@ RUN npm install -g pyright \
 # ============================================================
 
 # ============================================================
-# Apache Airflow 3.3.2 from public PyPI, constrained for Python 3.11.
+# Apache Airflow 3.3.2 from public PyPI, constrained for Python 3.12.
 # ============================================================
 RUN set -eux; \
     CONSTRAINTS=/tmp/constraints-airflow.txt; \
