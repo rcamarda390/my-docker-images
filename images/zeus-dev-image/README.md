@@ -10,6 +10,11 @@ The build does not use separately transferred `files/` or `preload/` artifacts.
 
 ## Software
 
+Edit [software.yaml](software.yaml) to request additions, removals, or version changes.
+An agent then updates the Dockerfile and validates the resulting image. The catalog
+records the current direct software choices and sources; it is not executed by
+Docker and does not prove a build has passed.
+
 - Base: UBI 9 Python 3.11
 - Node.js 22 and PostgreSQL 15 client
 - `xdg-user-dir` from pinned xdg-user-dirs commit `cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb`
