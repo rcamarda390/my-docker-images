@@ -41,6 +41,8 @@ check "aws CLI" 1 command -v aws
 check "jira python package" 1 python3 -c "import jira"
 check "apache-airflow 3.3.2" 1 python3 -c "import airflow; assert airflow.__version__ == \"3.3.2\""
 check "Python package dependencies" 1 pip3 check
+check "msgpack 1.2.2" 1 python3 -c "import msgpack; assert msgpack.__version__ == \"1.2.2\""
+check "setuptools security version" 1 python3 -c "import setuptools; assert tuple(map(int, setuptools.__version__.split(\".\")[:2])) >= (78, 1)"
 check "sqlfluff" 1 command -v sqlfluff
 check "ruff" 0 command -v ruff
 check "pyright" 0 command -v pyright
@@ -52,6 +54,7 @@ check "AgentMemory MCP" 1 command -v agentmemory-mcp
 check "Archify CLI" 1 command -v archify
 check "xdg-user-dir" 1 command -v xdg-user-dir
 check "GitLab MCP dependencies" 1 test -x /opt/gitlab-mcp-server/node_modules/.bin/tsc
+check "TypeScript 6.0.3" 1 node -e \"if (require(\x27/opt/gitlab-mcp-server/node_modules/typescript/package.json\x27).version !== \x276.0.3\x27) process.exit(1)\"
 
 log ""
 if [ "$failures" -gt 0 ]; then
