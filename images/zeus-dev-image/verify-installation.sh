@@ -39,7 +39,7 @@ from pathlib import Path
 import pip
 assert pip.__version__ == "26.2.1"
 vendor = Path(pip.__file__).parent / "_vendor"
-components = {item["name"]: item["version"] for item in json.loads((vendor / "bom.cdx.json").read_text())["components"]}
+components = {item["name"]: item.get("version") for item in json.loads((vendor / "bom.cdx.json").read_text())["components"]}
 assert components["msgpack"] == "1.1.2"
 assert components["setuptools"] == "70.3.0"
 assert not (vendor / "setuptools" / "package_index.py").exists()
