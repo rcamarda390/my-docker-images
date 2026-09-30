@@ -65,6 +65,12 @@ FROM registry.access.redhat.com/ubi9/python-311:latest
 # packages and write under /etc, /opt, and /usr/local.
 USER 0
 
+# Match the Bifrost build's explicit base-package security updates. UBI's
+# mutable `latest` tag alone does not update packages already in the base layer.
+RUN dnf upgrade -y \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf /var/cache/yum
+
 # This image is a composite base image, not a build of one upstream
 # project, so there is no single "upstream_version" to track. This ARG is
 # the version_arg the shared build-image.yml workflow expects; it labels
