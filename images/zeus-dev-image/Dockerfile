@@ -27,16 +27,16 @@ RUN apk add --no-cache ca-certificates git \
     && test "$(git -C /src rev-parse HEAD)" = "$ARCHIFY_COMMIT"
 
 # ============================================================
-# xdg-user-dirs source -- UBI9 does not package xdg-user-dirs
+# xdg-user-dirs source -- UBI10 does not package xdg-user-dirs
 # ============================================================
 # xdg-user-dir is a small standalone program used by Cline hooks and other
-# user-directory-aware tooling. Build only that upstream command in a UBI9
+# user-directory-aware tooling. Build only that upstream command in a UBI10
 # stage so it remains compatible with the final glibc-based image.
-FROM registry.access.redhat.com/ubi9/python-311:latest AS xdg-user-dirs-source
+FROM registry.access.redhat.com/ubi10/ubi:latest AS xdg-user-dirs-source
 ARG XDG_USER_DIRS_COMMIT
 USER 0
 RUN set -e; \
-    dnf install -y gcc git; \
+    dnf install -y gcc git python3 python3-pip; \
     python3 -m pip install --no-cache-dir meson==1.10.0 ninja==1.13.0; \
     git init /src; \
     git -C /src remote add origin https://gitlab.freedesktop.org/xdg/xdg-user-dirs.git; \
@@ -57,9 +57,9 @@ RUN set -e; \
 # Final image
 # ============================================================
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
-# build. Pin to a digest if this image needs to stop tracking upstream UBI9
+# build. Pin to a digest if this image needs to stop tracking upstream UBI10
 # security updates automatically.
-FROM registry.access.redhat.com/ubi9/python-311:latest
+FROM registry.access.redhat.com/ubi10/ubi:latest
 
 # The UBI base defaults to UID 1001. Build layers need root to install OS
 # packages and write under /etc, /opt, and /usr/local.
@@ -75,9 +75,9 @@ RUN dnf upgrade -y \
 # project, so there is no single "upstream_version" to track. This ARG is
 # the version_arg the shared build-image.yml workflow expects; it labels
 # the image with the local zeus-dev-image release number from image.yaml.
-ARG ZEUS_DEV_IMAGE_VERSION=1.0.0
+ARG ZEUS_DEV_IMAGE_VERSION=2.0.0
 LABEL org.opencontainers.image.title="zeus-dev-image" \
-      org.opencontainers.image.description="UBI9/Python 3.11 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
+      org.opencontainers.image.description="UBI10/Python 3.12 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
       org.opencontainers.image.version="${ZEUS_DEV_IMAGE_VERSION}"
 
 # Archify must not check for updates when running in the restricted environment.
@@ -89,17 +89,16 @@ ENV PATH=/usr/pgsql-15/bin:${PATH}
 # ============================================================
 # Install OS packages
 # ============================================================
-# UBI9 does not publish RHEL's PostgreSQL module metadata, so attempting to
+# UBI10 does not publish RHEL's PostgreSQL module metadata, so attempting to
 # enable postgresql:15 fails before package installation. Install the required
-# PostgreSQL 15 client from PGDG's official EL9 repository instead.
+# PostgreSQL 15 client from PGDG's official EL10 repository instead.
 #
-# nodejs:22 is still enabled explicitly -- without this, plain `npm`/`nodejs`
-# package names resolve to whatever the default module stream is for the
-# base image's RHEL9 AppStream, not necessarily 22.x.
+# Use RHEL 10's supported Node.js 22 AppStream packages; Node.js 24 remains Technology Preview.
 RUN dnf install -y \
-        https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
-    && dnf -y module enable nodejs:22 \
+        https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
     && dnf install -y \
+        python3 \
+        python3-pip \
         vim \
         vi \
         shadow-utils \
@@ -131,7 +130,7 @@ COPY --from=xdg-user-dirs-source /out/usr/local/bin/xdg-user-dir /usr/local/bin/
 RUN test "$(HOME=/tmp/xdg-user-dirs-test xdg-user-dir DOCUMENTS)" = /tmp/xdg-user-dirs-test
 
 # ============================================================
-# Optional convenience packages (not in every UBI9 AppStream/BaseOS repo
+# Optional convenience packages (not in every UBI10 AppStream/BaseOS repo
 # set without extra repos enabled - continue on failure like Docker CLI
 # and unzip below).
 # ============================================================
@@ -139,31 +138,31 @@ RUN dnf install -y htop btop \
     || echo "WARNING: htop/btop not available in repository, continuing build"
 
 # ============================================================
-# Install Docker CLI (optional - continues on failure)
+# Install Docker CLI without the Buildx weak dependency
 # ============================================================
 # Base image uses microdnf which doesn't support config-manager.
-# Create repo file directly instead.
+# Create repo file directly instead. Keep Compose if pulled as a weak dependency.
 RUN set -e; \
-    echo "=== Installing Docker CLI ==="; \
+    echo "=== Installing Docker CLI without Buildx ==="; \
     echo '[docker-ce-stable]' > /etc/yum.repos.d/docker-ce.repo; \
     echo 'name=Docker CE Stable - $basearch' >> /etc/yum.repos.d/docker-ce.repo; \
-    echo 'baseurl=https://download.docker.com/linux/rhel/9/$basearch/stable' >> /etc/yum.repos.d/docker-ce.repo; \
+    echo 'baseurl=https://download.docker.com/linux/rhel/10/$basearch/stable' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'enabled=1' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'repo_gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
-    if dnf install -y docker-ce-cli; then \
-        echo "Docker CLI installed successfully"; \
-        docker --version; \
-    else \
-        echo "WARNING: Docker CLI installation failed; continuing without it"; \
-    fi; \
+    dnf install -y --exclude=docker-buildx-plugin docker-ce-cli; \
+    rpm -q docker-ce-cli; \
+    ! rpm -q docker-buildx-plugin; \
+    test ! -e /usr/libexec/docker/cli-plugins/docker-buildx; \
+    docker --version; \
+    docker exec --help >/dev/null; \
     dnf clean all
 
 # ============================================================
 # Install unzip (optional - continues on failure)
 # ============================================================
-RUN dnf install -y unzip-6.0-60.el9 \
-    || echo "WARNING: unzip-6.0-60.el9 not available in repository, continuing build"
+RUN dnf install -y unzip \
+    || echo "WARNING: unzip not available in repository, continuing build"
 
 # ============================================================
 # npm registry: default npmjs.org (no configuration needed)
@@ -180,13 +179,13 @@ RUN npm install -g pyright \
 # ============================================================
 
 # ============================================================
-# Apache Airflow 2.11.0 from public PyPI, constrained for Python 3.11.
+# Apache Airflow 3.3.2 from public PyPI, constrained for Python 3.12.
 # ============================================================
 RUN set -eux; \
     CONSTRAINTS=/tmp/constraints-airflow.txt; \
     curl -fsSL -o "$CONSTRAINTS" \
-        https://raw.githubusercontent.com/apache/airflow/constraints-2.11.0/constraints-3.11.txt; \
-    pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" apache-airflow==2.11.0; \
+        https://raw.githubusercontent.com/apache/airflow/constraints-3.3.2/constraints-3.12.txt; \
+    pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" apache-airflow==3.3.2; \
     pip3 install --no-input --no-cache-dir --constraint "$CONSTRAINTS" \
         apache-airflow-providers-common-compat \
         apache-airflow-providers-common-io \
@@ -197,26 +196,26 @@ RUN set -eux; \
         apache-airflow-providers-smtp \
         apache-airflow-providers-sqlite \
         apache-airflow-providers-amazon \
-        apache-airflow-providers-ssh; \
-    pip3 install --no-input --no-cache-dir --no-deps apache-airflow-providers-fab==1.5.3; \
+        apache-airflow-providers-ssh \
+        apache-airflow-providers-fab; \
     rm -f "$CONSTRAINTS"; \
     installed_version=$(python3 -c "import airflow; print(airflow.__version__)"); \
-    test "$installed_version" = "2.11.0"; \
+    test "$installed_version" = "3.3.2"; \
     python3 -c "from airflow.providers.fab import __version__; print('FAB version:', __version__)"
 # ============================================================
 # Python dependencies
 # ============================================================
 RUN set -eux; \
-    pip3 install --no-input --no-cache-dir --upgrade pip; \
+    pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
     pip3 install --no-input --no-cache-dir \
         numpy==1.26.4 \
         pandas==2.2.3 \
         psycopg2-binary==2.9.11 \
         tabulate==0.10.0 \
-        sqlparse==0.5.5 \
-        cryptography==49.0.0 \
+        sqlparse==0.6.0 \
+        cryptography==50.0.0 \
         colorama==0.4.6 \
-        PyYAML==6.0.2 \
+        PyYAML==6.0.3 \
         duckdb==1.5.3 \
         sqlglot==30.4.2 \
         s3fs==2026.3.0 \
@@ -225,18 +224,21 @@ RUN set -eux; \
         html2text==2025.4.15 \
         markdown-it-py==3.0.0; \
     \
-    pip3 install --no-input --no-cache-dir sqlfluff==4.1.0; \
+    pip3 install --no-input --no-cache-dir sqlfluff==4.2.0; \
     \
     pip3 install --no-input --no-cache-dir \
-        botocore==1.43.54 \
-        boto3==1.43.54; \
-    pip3 install --no-input --no-cache-dir docutils rsa; \
-    pip3 install --no-input --no-cache-dir --no-deps awscli==1.45.12; \
+        botocore==1.43.75 \
+        boto3==1.43.75; \
+    python3 -m venv /opt/aws-cli; \
+    /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1; \
+    ln -sf /opt/aws-cli/bin/aws /usr/local/bin/aws; \
     aws --version; \
     pip3 install --no-input --no-cache-dir ruff==0.15.11 \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
+    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.2 setuptools==84.0.0; \
+    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.2'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (78, 1)"; \
     rm -rf /root/.cache /tmp/* /var/tmp/*
 
 # ============================================================
@@ -245,15 +247,27 @@ RUN set -eux; \
 # Install packages directly from their public npm sources. The internal
 # air-gapped Dockerfile consumes the resulting commands and paths; it does
 # not need the original artifact files.
+COPY patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
 RUN set -eux; \
+    mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}' > /opt/agentmemory/package.json; \
+    cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
     npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.29; \
     npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.29; \
+    for prefix in /opt/agentmemory /opt/agentmemory-mcp; do \
+        AGENTMEMORY_ROOT="$prefix" node /tmp/patch-iii-otel2.mjs; \
+        (cd "$prefix" && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk OpenTelemetry compatibility smoke OK')"); \
+    done; \
     ln -sf /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
-    npm install -g cline@3.0.61; \
+    mkdir -p /opt/cline; \
+    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1"}}' > /opt/cline/package.json; \
+    npm install --prefix /opt/cline cline@3.0.61; \
+    ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
     npm install -g @anthropic-ai/claude-code@2.1.252; \
     cline --version; \
-    claude --version
+    claude --version; \
+    rm -f /tmp/patch-iii-otel2.mjs
 
 # ============================================================
 # GitLab MCP server dependencies
@@ -263,9 +277,9 @@ RUN set -eux; \
 RUN set -eux; \
     npm install --prefix /opt/gitlab-mcp-server --legacy-peer-deps \
         @modelcontextprotocol/sdk@1.29.0 \
-        axios@1.16.0 \
+        axios@1.18.0 \
         @types/node \
-        typescript; \
+        typescript@6.0.3; \
     test -d /opt/gitlab-mcp-server/node_modules/@modelcontextprotocol/sdk; \
     test -d /opt/gitlab-mcp-server/node_modules/axios; \
     test -x /opt/gitlab-mcp-server/node_modules/.bin/tsc

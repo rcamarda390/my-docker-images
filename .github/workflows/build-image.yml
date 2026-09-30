@@ -103,6 +103,10 @@ on:
         required: false
         default: false
         type: boolean
+      scan_vex_file:
+        required: false
+        default: ""
+        type: string
       auto_increment_revision:
         required: false
         default: false
@@ -462,6 +466,9 @@ jobs:
         if: ${{ !cancelled() && inputs.scan && steps.smoke_build.outcome == 'success' }}
         continue-on-error: ${{ !inputs.block_on_scan_failure }}
         uses: aquasecurity/trivy-action@v0.36.0
+        env:
+          TRIVY_VEX: ${{ inputs.scan_vex_file }}
+          TRIVY_SHOW_SUPPRESSED: ${{ inputs.scan_vex_file != '' }}
         with:
           version: v0.74.0
           image-ref: mcp-smoke:${{ github.run_id }}

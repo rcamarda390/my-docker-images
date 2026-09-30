@@ -2,6 +2,11 @@ name: Build and publish zeus-dev-image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'images/zeus-dev-image/**'
+      - '.github/workflows/build-zeus-dev-image.yml'
+      - '.github/workflows/build-image.yml'
 
 # Serialize publications so concurrent dispatches cannot select the same next tag.
 concurrency:
@@ -9,11 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  contents: write
+  packages: write
   # Required by the reusable workflow contract. Published-tag revision mode
   # does not use the revision-PR step, but callers cannot grant less than the
   # permissions declared by the called workflow.
-  contents: write
-  packages: write
   pull-requests: write
 
 jobs:
@@ -33,10 +38,10 @@ jobs:
       version_arg: ZEUS_DEV_IMAGE_VERSION
       platforms: linux/amd64
       timeout_minutes: 45
-      # This composite base image verifies its installed software directly.
-      # It is not a network service, so Bifrost's HTTP health check does not apply.
+      # The base image verification checks only the software installed here.
       smoke_command: /usr/local/bin/verify-installation.sh
       scan: true
+      scan_vex_file: images/zeus-dev-image/pip-vendored.openvex.json
       # Choose the next revision from successfully published Docker Hub tags.
       # Failed builds consume no revision and no revision-bump PR is needed.
       revision_from_published_tag_count: true

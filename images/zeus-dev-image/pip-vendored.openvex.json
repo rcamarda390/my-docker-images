@@ -1,0 +1,35 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/rcamarda390/my-docker-images/blob/main/images/zeus-dev-image/pip-vendored.openvex.json",
+  "author": "Codex GPT-6 for Rob",
+  "timestamp": "2026-09-30T00:50:00Z",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "GHSA-6v7p-g79w-8964"
+      },
+      "products": [
+        {
+          "@id": "pkg:pypi/msgpack@1.1.2"
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "Only pip 26.2.1's pure-Python vendored copy has this version in Zeus. pip's cache serializer uses one-shot pack/unpack calls and does not reuse a streaming Unpacker after errors. The separately installed msgpack is 1.2.2. This assessment is limited to the pinned pip bundle."
+    },
+    {
+      "vulnerability": {
+        "name": "CVE-2025-47273"
+      },
+      "products": [
+        {
+          "@id": "pkg:pypi/setuptools@70.3.0"
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "pip 26.2.1 vendors only pkg_resources from setuptools 70.3.0; it does not include setuptools/package_index.py containing the vulnerable PackageIndex.download code. The separately installed setuptools is 84.0.0. This assessment is limited to the pinned pip bundle."
+    }
+  ]
+}

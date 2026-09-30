@@ -6,17 +6,20 @@
 # image.yaml owns the image release number and pinned Git source commits.
 
 base:
-  source: https://catalog.redhat.com/software/containers/ubi9/python-311
-  image: registry.access.redhat.com/ubi9/python-311:latest
-  python: "3.11"
+  source: https://catalog.redhat.com/software/containers/ubi10/ubi
+  image: registry.access.redhat.com/ubi10/ubi:latest
+  python: "3.12"
+  python_packages: [python3, python3-pip]
   note: Mutable base tag; review the resulting digest during each build.
 
 os_packages:
-  - source: Red Hat UBI 9 repositories
-    url: https://catalog.redhat.com/software/containers/ubi9
+  - source: Red Hat UBI 10 repositories
+    url: https://catalog.redhat.com/software/containers/ubi10
     packages:
-      - {name: nodejs, version: "22", note: "RHEL module stream"}
-      - {name: npm, version: repo}
+      - {name: python3, version: repo}
+      - {name: python3-pip, version: repo}
+      - {name: nodejs, version: "22", note: "RHEL 10 AppStream"}
+      - {name: npm, version: repo, note: "RHEL 10 AppStream"}
       - {name: vim, version: repo}
       - {name: vi, version: repo}
       - {name: shadow-utils, version: repo}
@@ -29,21 +32,21 @@ os_packages:
       - {name: tar, version: repo}
       - {name: htop, version: repo, optional: true}
       - {name: btop, version: repo, optional: true}
-      - {name: unzip, version: "6.0-60.el9", optional: true}
-  - source: PostgreSQL PGDG EL9 repository
+      - {name: unzip, version: repo, optional: true}
+  - source: PostgreSQL PGDG EL10 repository
     url: https://www.postgresql.org/download/linux/redhat/
     packages:
       - {name: postgresql15, version: "15.x", note: "client; repo RPM URL is unpinned"}
-  - source: Docker CE RHEL 9 repository
-    url: https://download.docker.com/linux/rhel/9/
+  - source: Docker CE RHEL 10 repository
+    url: https://download.docker.com/linux/rhel/10/
     packages:
-      - {name: docker-ce-cli, version: repo, optional: true}
+      - {name: docker-ce-cli, version: repo, note: "Buildx weak dependency excluded; Docker CLI and docker exec retained"}
 
 python_packages:
   source: https://pypi.org/
   packages:
-    # Airflow and its providers must be resolved together against Python 3.11 constraints.
-    - {name: apache-airflow, version: "2.11.0", note: "constraints-2.11.0/constraints-3.11.txt"}
+    # Airflow and its providers must be resolved together against Python 3.12 constraints.
+    - {name: apache-airflow, version: "3.3.2", note: "constraints-3.3.2/constraints-3.12.txt"}
     - {name: apache-airflow-providers-common-compat, version: constraints}
     - {name: apache-airflow-providers-common-io, version: constraints}
     - {name: apache-airflow-providers-common-sql, version: constraints}
@@ -54,16 +57,18 @@ python_packages:
     - {name: apache-airflow-providers-sqlite, version: constraints}
     - {name: apache-airflow-providers-amazon, version: constraints}
     - {name: apache-airflow-providers-ssh, version: constraints}
-    - {name: apache-airflow-providers-fab, version: "1.5.3", note: "installed --no-deps"}
-    - {name: pip, version: unpinned, note: "upgraded before remaining packages"}
+    - {name: apache-airflow-providers-fab, version: constraints}
+    - {name: msgpack, version: "1.2.2", note: "security fix; explicitly upgraded after providers"}
+    - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
+    - {name: pip, version: "26.2.1", note: "pinned for vendored dependency VEX assessment; upgraded before remaining packages"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
     - {name: psycopg2-binary, version: "2.9.11"}
     - {name: tabulate, version: "0.10.0"}
-    - {name: sqlparse, version: "0.5.5"}
-    - {name: cryptography, version: "49.0.0"}
+    - {name: sqlparse, version: "0.6.0"}
+    - {name: cryptography, version: "50.0.0"}
     - {name: colorama, version: "0.4.6"}
-    - {name: PyYAML, version: "6.0.2"}
+    - {name: PyYAML, version: "6.0.3"}
     - {name: duckdb, version: "1.5.3"}
     - {name: sqlglot, version: "30.4.2"}
     - {name: s3fs, version: "2026.3.0"}
@@ -71,12 +76,10 @@ python_packages:
     - {name: beautifulsoup4, version: "4.15.0"}
     - {name: html2text, version: "2025.4.15"}
     - {name: markdown-it-py, version: "3.0.0"}
-    - {name: sqlfluff, version: "4.1.0"}
-    - {name: botocore, version: "1.43.54"}
-    - {name: boto3, version: "1.43.54"}
-    - {name: docutils, version: unpinned, note: "AWS CLI dependency"}
-    - {name: rsa, version: unpinned, note: "AWS CLI dependency"}
-    - {name: awscli, version: "1.45.12", note: "CLI v1; installed --no-deps"}
+    - {name: sqlfluff, version: "4.2.0"}
+    - {name: botocore, version: "1.43.75"}
+    - {name: boto3, version: "1.43.75"}
+    - {name: awscli, version: "1.46.1", note: "CLI v1; isolated in /opt/aws-cli virtual environment"}
     - {name: ruff, version: "0.15.11", optional: true}
     - {name: pyfiglet, version: unpinned, optional: true}
 
@@ -86,12 +89,35 @@ npm_packages:
     - {name: pyright, version: unpinned, optional: true}
     - {name: "@agentmemory/agentmemory", version: "0.9.29"}
     - {name: "@agentmemory/mcp", version: "0.9.29"}
-    - {name: cline, version: "3.0.61", note: "CLI, not VS Code extension"}
+    - {name: cline, version: "3.0.61", note: "CLI in /opt/cline, not VS Code extension"}
     - {name: "@anthropic-ai/claude-code", version: "2.1.252"}
     - {name: "@modelcontextprotocol/sdk", version: "1.29.0", note: "GitLab MCP dependencies only"}
-    - {name: axios, version: "1.16.0", note: "GitLab MCP dependencies only"}
+    - {name: axios, version: "1.18.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
-    - {name: typescript, version: unpinned, note: "GitLab MCP dependencies only"}
+    - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
+
+
+npm_overrides:
+  cline:
+    root: /opt/cline
+    packages:
+      - {name: undici, version: "6.28.1", note: "security override for the pinned Cline CLI"}
+  agentmemory:
+    roots: [/opt/agentmemory, /opt/agentmemory-mcp]
+    packages:
+      - {name: iii-sdk, version: "0.11.2", note: "matches AgentMemory's pinned engine SDK"}
+      - {name: "@opentelemetry/api-logs", version: "0.200.0"}
+      - {name: "@opentelemetry/core", version: "2.9.0"}
+      - {name: "@opentelemetry/context-async-hooks", version: "2.9.0"}
+      - {name: "@opentelemetry/instrumentation", version: "0.200.0"}
+      - {name: "@opentelemetry/otlp-transformer", version: "0.200.0"}
+      - {name: "@opentelemetry/propagator-b3", version: "2.9.0"}
+      - {name: "@opentelemetry/propagator-jaeger", version: "2.9.0"}
+      - {name: "@opentelemetry/resources", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-logs", version: "0.200.0"}
+      - {name: "@opentelemetry/sdk-metrics", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-trace-base", version: "2.9.0"}
+      - {name: "@opentelemetry/sdk-trace-node", version: "2.9.0"}
 
 source_builds:
   - name: archify
@@ -109,5 +135,5 @@ build_only:
   - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
   - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
-  - {name: gcc, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
-  - {name: git, version: repo, source: "Red Hat UBI 9 repositories", note: "xdg-user-dir build stage"}
+  - {name: gcc, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
+  - {name: git, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
