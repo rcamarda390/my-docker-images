@@ -40,7 +40,7 @@ os_packages:
   - source: Docker CE RHEL 10 repository
     url: https://download.docker.com/linux/rhel/10/
     packages:
-      - {name: docker-ce-cli, version: repo, optional: true}
+      - {name: docker-ce-cli, version: repo, note: "Buildx weak dependency excluded; Docker CLI and docker exec retained"}
 
 python_packages:
   source: https://pypi.org/

@@ -132,24 +132,24 @@ RUN dnf install -y htop btop \
     || echo "WARNING: htop/btop not available in repository, continuing build"
 
 # ============================================================
-# Install Docker CLI (optional - continues on failure)
+# Install Docker CLI without the Buildx weak dependency
 # ============================================================
 # Base image uses microdnf which doesn't support config-manager.
-# Create repo file directly instead.
+# Create repo file directly instead. Keep Compose if pulled as a weak dependency.
 RUN set -e; \
-    echo "=== Installing Docker CLI ==="; \
+    echo "=== Installing Docker CLI without Buildx ==="; \
     echo '[docker-ce-stable]' > /etc/yum.repos.d/docker-ce.repo; \
     echo 'name=Docker CE Stable - $basearch' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'baseurl=https://download.docker.com/linux/rhel/10/$basearch/stable' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'enabled=1' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'repo_gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
-    if dnf install -y docker-ce-cli; then \
-        echo "Docker CLI installed successfully"; \
-        docker --version; \
-    else \
-        echo "WARNING: Docker CLI installation failed; continuing without it"; \
-    fi; \
+    dnf install -y --exclude=docker-buildx-plugin docker-ce-cli; \
+    rpm -q docker-ce-cli; \
+    ! rpm -q docker-buildx-plugin; \
+    test ! -e /usr/libexec/docker/cli-plugins/docker-buildx; \
+    docker --version; \
+    docker exec --help >/dev/null; \
     dnf clean all
 
 # ============================================================

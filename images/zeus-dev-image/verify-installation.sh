@@ -36,7 +36,9 @@ check "pip3" 1 command -v pip3
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
 check "git" 1 command -v git
-check "docker CLI" 0 command -v docker
+check "docker CLI" 1 docker --version
+check "docker exec command" 1 docker exec --help
+check "Buildx plugin absent" 1 test ! -e /usr/libexec/docker/cli-plugins/docker-buildx
 check "aws CLI" 1 command -v aws
 check "jira python package" 1 python3 -c "import jira"
 check "apache-airflow 3.3.2" 1 python3 -c "import airflow; assert airflow.__version__ == \"3.3.2\""
