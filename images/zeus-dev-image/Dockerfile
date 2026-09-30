@@ -256,8 +256,8 @@ RUN set -eux; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
     mkdir -p /opt/cline; \
     printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1"}}' > /opt/cline/package.json; \
-    npm install --prefix /opt/cline @cline/cli@3.0.61; \
-    ln -sf /opt/cline/node_modules/.bin/cline /usr/local/bin/cline; \
+    npm install --prefix /opt/cline cline@3.0.61; \
+    ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
     npm install -g @anthropic-ai/claude-code@2.1.252; \
     cline --version; \
     claude --version; \
