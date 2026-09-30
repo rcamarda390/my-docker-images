@@ -55,7 +55,7 @@ check "AgentMemory MCP" 1 command -v agentmemory-mcp
 check "Archify CLI" 1 command -v archify
 check "xdg-user-dir" 1 command -v xdg-user-dir
 check "GitLab MCP dependencies" 1 test -x /opt/gitlab-mcp-server/node_modules/.bin/tsc
-check "TypeScript 6.0.3" 1 node -e \"if (require(\x27/opt/gitlab-mcp-server/node_modules/typescript/package.json\x27).version !== \x276.0.3\x27) process.exit(1)\"
+check "TypeScript 6.0.3" 1 node -e 'if (require("/opt/gitlab-mcp-server/node_modules/typescript/package.json").version !== "6.0.3") process.exit(1)'
 
 log ""
 if [ "$failures" -gt 0 ]; then
