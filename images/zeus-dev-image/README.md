@@ -49,9 +49,11 @@ own site configuration and verify the final image separately.
 ## Build and release
 
 Dispatch `.github/workflows/build-zeus-dev-image.yml`. It builds, verifies,
-scans with Trivy, and publishes the image using the version and revision from
-`image.yaml`. The workflow automatically proposes the next revision after
-publication. Import the exact published image for internal Xray scanning.
+scans with Trivy, and publishes the image using the version from `image.yaml`
+and the next revision derived from successfully published Docker Hub tags.
+Publications are serialized; failed builds consume no revision and no revision
+PR is created. Pull requests build and scan without publishing.
+Import the exact published image for internal Xray scanning.
 
 The software versions listed above describe the current image. A separate
 version review and compatibility test is required before upgrading them.
