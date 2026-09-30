@@ -24,10 +24,20 @@ Docker and does not prove a build has passed.
 - AgentMemory CLI and MCP package 0.9.29, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
 - Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.252
 - SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.2 and setuptools 84.0.0
+- pip 26.2.1 for developer package management
 - TypeScript 6.0.3 for the GitLab MCP dependencies
 - Archify 2.17.0-dev.1 from pinned commit `06dd052602dd9a369e4d034e24faef0917b5a60c`
 - GitLab MCP Node dependencies under `/opt/gitlab-mcp-server/node_modules`
 - OS utilities and optional convenience tools in the Dockerfile
+
+pip also bundles separate, older copies of msgpack and part of setuptools.
+[The scoped OpenVEX assessment](pip-vendored.openvex.json) classifies two
+findings against that bundle as not affected: pip does not use msgpack's
+vulnerable Unpacker path, and its setuptools subset has no vulnerable
+PackageIndex code. Trivy still displays both in its suppressed section.
+The verification script pins and checks the assessed pip bundle, while the
+standalone Python packages remain at their fixed versions. This assessment
+applies to the Trivy PR scan; internal Xray review remains separate.
 
 SQZ and the Cline VS Code extension are excluded.
 

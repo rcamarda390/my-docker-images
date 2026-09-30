@@ -33,6 +33,18 @@ log "=== zeus-dev-image installation verification ==="
 
 check "python3 3.12" 1 python3 -c "import sys; assert sys.version_info[:2] == (3, 12)"
 check "pip3" 1 command -v pip3
+check "pip 26.2.1 vendored assessment" 1 python3 -c '
+import json
+from pathlib import Path
+import pip
+assert pip.__version__ == "26.2.1"
+vendor = Path(pip.__file__).parent / "_vendor"
+components = {item["name"]: item["version"] for item in json.loads((vendor / "bom.cdx.json").read_text())["components"]}
+assert components["msgpack"] == "1.1.2"
+assert components["setuptools"] == "70.3.0"
+assert not (vendor / "setuptools" / "package_index.py").exists()
+assert not list((vendor / "msgpack").glob("*cmsgpack*"))
+'
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
 check "git" 1 command -v git

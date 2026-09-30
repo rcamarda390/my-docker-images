@@ -60,7 +60,7 @@ python_packages:
     - {name: apache-airflow-providers-fab, version: constraints}
     - {name: msgpack, version: "1.2.2", note: "security fix; explicitly upgraded after providers"}
     - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
-    - {name: pip, version: unpinned, note: "upgraded before remaining packages"}
+    - {name: pip, version: "26.2.1", note: "pinned for vendored dependency VEX assessment; upgraded before remaining packages"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
     - {name: psycopg2-binary, version: "2.9.11"}

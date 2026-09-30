@@ -36,5 +36,6 @@ jobs:
       # The base image verification checks only the software installed here.
       smoke_command: /usr/local/bin/verify-installation.sh
       scan: true
+      scan_vex_file: images/zeus-dev-image/pip-vendored.openvex.json
       auto_increment_revision: true
       publish: ${{ github.event_name != 'pull_request' }}

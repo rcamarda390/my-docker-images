@@ -200,7 +200,7 @@ RUN set -eux; \
 # Python dependencies
 # ============================================================
 RUN set -eux; \
-    pip3 install --no-input --no-cache-dir --upgrade pip; \
+    pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
     pip3 install --no-input --no-cache-dir \
         numpy==1.26.4 \
         pandas==2.2.3 \
