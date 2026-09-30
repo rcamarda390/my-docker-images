@@ -82,6 +82,8 @@ LABEL org.opencontainers.image.title="zeus-dev-image" \
 
 # Archify must not check for updates when running in the restricted environment.
 ENV ARCHIFY_UPDATE_CHECK_DISABLED=1
+# Supported upstream switch: skip public CLI update checks in the air gap.
+ENV BIFROST_NO_UPDATE_CHECK=1
 # PostgreSQL 15 from PGDG installs its client binaries outside the default
 # RHEL path.
 ENV PATH=/usr/pgsql-15/bin:${PATH}

@@ -83,8 +83,8 @@ provided/configured in the downstream runtime if persistence is required.
 Installing a keyring package alone does not establish that session. Without
 it, upstream warns and requires the key again next session. Never put the key
 in the image or config file. Keep the user's `.bifrost` state in persistent
-storage. Upstream also checks for updates; public update requests can fail in
-the air gap, and updates should be delivered by rebuilding this image.
+storage. `BIFROST_NO_UPDATE_CHECK=1` disables upstream public update checks
+using its supported environment switch. Deliver updates by rebuilding the image.
 
 Source inspection matched the binary's embedded commit
 [`a0d7aaf`](https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli).

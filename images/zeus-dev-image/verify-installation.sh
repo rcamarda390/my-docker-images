@@ -63,6 +63,7 @@ check "pyright" 0 command -v pyright
 check "cline CLI" 1 command -v cline
 check "Cline undici 6.28.1" 1 node -e 'const p=require("/opt/cline/package-lock.json").packages; const f=Object.entries(p).filter(([k])=>k.endsWith("node_modules/undici")); if (!f.length || f.some(([,v])=>v.version !== "6.28.1")) process.exit(1)'
 check "claude CLI" 1 command -v claude
+check "Bifrost update checks disabled" 1 test "${BIFROST_NO_UPDATE_CHECK:-}" = 1
 check "Bifrost CLI help" 1 bifrost --help
 check "Bifrost CLI 0.10.6 checksum" 1 bash -c 'printf "%s  %s\n" 0f162f1e1de7148251e722bcfaddd981e4798d5391b24808cacc08d0b5a4c886 /usr/local/bin/bifrost | sha256sum -c -'
 check "AgentMemory MCP entry point" 1 test -f /opt/agentmemory/node_modules/@agentmemory/agentmemory/dist/index.mjs
