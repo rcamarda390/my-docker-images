@@ -3,12 +3,13 @@ name: Build and publish sqz MCP image
 on:
   workflow_dispatch:
 
+concurrency:
+  group: sqz-mcp-publish
+  cancel-in-progress: false
+
 permissions:
   contents: write
   packages: write
-  # The shared workflow proposes the revision bump as a PR, because
-  # the base branch rejects direct pushes. A reusable workflow runs
-  # with the calling job's token scope, so the grant must be here.
   pull-requests: write
 
 jobs:
@@ -29,5 +30,7 @@ jobs:
       platforms: linux/amd64
       smoke_command: --help
       scan: true
-      auto_increment_revision: true
+      # Choose the next revision from successfully published Docker Hub tags.
+      # Failed builds consume no revision and existing tags are never reused.
+      revision_from_published_tag_count: true
       publish: ${{ github.event_name != 'pull_request' }}
