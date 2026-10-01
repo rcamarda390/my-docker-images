@@ -119,6 +119,14 @@ npm_overrides:
       - {name: "@opentelemetry/sdk-trace-base", version: "2.9.0"}
       - {name: "@opentelemetry/sdk-trace-node", version: "2.9.0"}
 
+downloaded_binaries:
+  - name: bifrost-cli
+    version: "0.10.6"
+    source: https://downloads.getmaxim.ai/bifrost-cli/v0.10.6/linux/amd64/bifrost
+    installer: "@maximhq/bifrost-cli@1.0.1 (npm; Node >=18; no npm dependencies)"
+    sha256: 0f162f1e1de7148251e722bcfaddd981e4798d5391b24808cacc08d0b5a4c886
+    note: Static linux/amd64 binary in /usr/local/bin; Claude CLI already installed. Linux Secret Service is optional for virtual-key persistence and requires runtime session setup.
+
 source_builds:
   - name: archify
     source: https://github.com/tt-a1i/archify

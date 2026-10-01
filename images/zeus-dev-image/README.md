@@ -22,6 +22,7 @@ Docker and does not prove a build has passed.
 - Apache Airflow 3.3.2 with Python 3.12 constraints and the selected providers
 - AWS CLI 1.46.1, boto3/botocore 1.43.75
 - AgentMemory CLI and MCP package 0.9.29, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
+- Bifrost CLI 0.10.6, installed and checksum-verified during the connected build
 - Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.252
 - SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.2 and setuptools 84.0.0
 - pip 26.2.1 for developer package management
@@ -57,3 +58,36 @@ Import the exact published image for internal Xray scanning.
 
 The software versions listed above describe the current image. A separate
 version review and compatibility test is required before upgrading them.
+
+## Bifrost CLI
+
+Run `bifrost` in an interactive VS Code terminal. It launches the **Claude Code
+CLI** already installed in Zeus through your existing Bifrost gateway; it does
+not configure the Cline VS Code extension. Choose the reachable gateway URL,
+virtual key (if required), and model at runtime. Gateway/Bedrock credentials
+are not baked into the image. Other supported agents (Codex, Gemini, OpenCode)
+are not dependencies and are not added by this change; installing them from
+the chooser requires npm connectivity.
+
+The [documented npm command](https://docs.getbifrost.ai/quickstart/cli/getting-started)
+is an installer. The npm wrapper version (1.0.1) differs from the actual CLI
+version (0.10.6). The Dockerfile runs the pinned installer at build time, checks
+the pinned SHA-256, and copies the static linux/amd64 binary to the system PATH.
+Node 22/npm, Git, and Claude CLI are already present; no additional shared
+libraries are required by the static binary. The attached air-gap tarball recipe
+for npm binary packages would only package the downloader, so it is not used.
+
+Virtual-key persistence uses Linux Secret Service over a user D-Bus session.
+An unlocked keyring (such as GNOME Keyring) and accessible session bus must be
+provided/configured in the downstream runtime if persistence is required.
+Installing a keyring package alone does not establish that session. Without
+it, upstream warns and requires the key again next session. Never put the key
+in the image or config file. Keep the user's `.bifrost` state in persistent
+storage. `BIFROST_NO_UPDATE_CHECK=1` disables upstream public update checks
+using its supported environment switch. Deliver updates by rebuilding the image.
+
+Source inspection matched the binary's embedded commit
+[`a0d7aaf`](https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli).
+The upstream checksum was independently retrieved from the versioned download
+URL. Build/smoke checks verify the exact installed bytes and help command;
+a live gateway/Bedrock session must be tested in the deployment environment.

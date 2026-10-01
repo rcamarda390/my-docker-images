@@ -82,6 +82,8 @@ LABEL org.opencontainers.image.title="zeus-dev-image" \
 
 # Archify must not check for updates when running in the restricted environment.
 ENV ARCHIFY_UPDATE_CHECK_DISABLED=1
+# Supported upstream switch: skip public CLI update checks in the air gap.
+ENV BIFROST_NO_UPDATE_CHECK=1
 # PostgreSQL 15 from PGDG installs its client binaries outside the default
 # RHEL path.
 ENV PATH=/usr/pgsql-15/bin:${PATH}
@@ -268,6 +270,18 @@ RUN set -eux; \
     cline --version; \
     claude --version; \
     rm -f /tmp/patch-iii-otel2.mjs
+
+# Bifrost's npm package is a downloader, not the CLI binary. Run it only
+# during the connected build, then install the verified static binary for
+# every runtime user; no npx/public download is needed in the air gap.
+ARG BIFROST_CLI_VERSION=v0.10.6
+ARG BIFROST_CLI_SHA256=0f162f1e1de7148251e722bcfaddd981e4798d5391b24808cacc08d0b5a4c886
+RUN set -eux; \
+    npx -y @maximhq/bifrost-cli@1.0.1 --cli-version "$BIFROST_CLI_VERSION"; \
+    printf '%s  %s\n' "$BIFROST_CLI_SHA256" /root/.bifrost/bin/bifrost | sha256sum -c -; \
+    install -m 0755 /root/.bifrost/bin/bifrost /usr/local/bin/bifrost; \
+    bifrost --help; \
+    rm -rf /root/.bifrost /root/.npm/_npx
 
 # ============================================================
 # GitLab MCP server dependencies
