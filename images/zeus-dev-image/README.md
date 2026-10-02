@@ -17,15 +17,18 @@ Docker and does not prove a build has passed.
 
 - Base: UBI 10 with Python 3.12 from UBI AppStream
 - Node.js 22 and PostgreSQL 15 client
+- Docker Compose 5.6.0 official binary, checksum-verified with Go 1.26.8 and containerd 2.4.1
 - Docker CLI with `docker exec` for use through the host daemon; Buildx is excluded
 - `xdg-user-dir` from pinned xdg-user-dirs commit `cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb`
 - Apache Airflow 3.3.2 with Python 3.12 constraints and the selected providers
 - AWS CLI 1.46.1, boto3/botocore 1.43.75
 - AgentMemory CLI and MCP package 0.9.29, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
-- Bifrost CLI 0.10.6, installed and checksum-verified during the connected build
-- Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.252
-- SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.2 and setuptools 84.0.0
-- pip 26.2.1 for developer package management
+- Bifrost CLI 0.10.6, installed and built from the same pinned source using Go 1.26.6
+- Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.260
+- SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.3 and setuptools 84.0.0
+- Security pins: urllib3 2.8.0 (main Python and AWS CLI), PyJWT 2.15.0, Mako 1.4.2, Werkzeug 3.1.9
+- GitLab MCP SDK 1.31.0 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
+- pip 26.2.1 for developer package management and the AWS CLI virtual environment, with vendored urllib3 upgraded to 2.8.0 and pip compatibility patches retained
 - TypeScript 6.0.3 for the GitLab MCP dependencies
 - Archify 2.17.0-dev.1 from pinned commit `06dd052602dd9a369e4d034e24faef0917b5a60c`
 - GitLab MCP Node dependencies under `/opt/gitlab-mcp-server/node_modules`
@@ -36,7 +39,10 @@ pip also bundles separate, older copies of msgpack and part of setuptools.
 findings against that bundle as not affected: pip does not use msgpack's
 vulnerable Unpacker path, and its setuptools subset has no vulnerable
 PackageIndex code. Trivy still displays both in its suppressed section.
-The verification script pins and checks the assessed pip bundle, while the
+Only pip's urllib3 subtree is upgraded to 2.8.0, retaining pip's vendoring patches;
+its SBOM and installation record reflect the actual replacement code. The
+msgpack/setuptools assessment above is unchanged. The verification script checks
+the assessed components, while the
 standalone Python packages remain at their fixed versions. This assessment
 applies to the Trivy PR scan; internal Xray review remains separate.
 
@@ -69,13 +75,10 @@ are not baked into the image. Other supported agents (Codex, Gemini, OpenCode)
 are not dependencies and are not added by this change; installing them from
 the chooser requires npm connectivity.
 
-The [documented npm command](https://docs.getbifrost.ai/quickstart/cli/getting-started)
-is an installer. The npm wrapper version (1.0.1) differs from the actual CLI
-version (0.10.6). The Dockerfile runs the pinned installer at build time, checks
-the pinned SHA-256, and copies the static linux/amd64 binary to the system PATH.
-Node 22/npm, Git, and Claude CLI are already present; no additional shared
-libraries are required by the static binary. The attached air-gap tarball recipe
-for npm binary packages would only package the downloader, so it is not used.
+The CLI is now compiled from the previously verified upstream commit using Go
+1.26.6. This preserves CLI 0.10.6 while addressing the Go compiler findings.
+The builder runs upstream tests and records `go version -m` output and a checksum;
+only the static linux/amd64 binary and verification metadata enter the final image.
 
 Virtual-key persistence uses Linux Secret Service over a user D-Bus session.
 An unlocked keyring (such as GNOME Keyring) and accessible session bus must be
@@ -88,6 +91,17 @@ using its supported environment switch. Deliver updates by rebuilding the image.
 
 Source inspection matched the binary's embedded commit
 [`a0d7aaf`](https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli).
-The upstream checksum was independently retrieved from the versioned download
-URL. Build/smoke checks verify the exact installed bytes and help command;
-a live gateway/Bedrock session must be tested in the deployment environment.
+The source-build checksum is checked during build and smoke validation.
+A live gateway/Bedrock session must be tested in the deployment environment.
+
+## Xray follow-up
+
+The October 2 report omits installed versions, component paths and image digest.
+The build verifies fixed Python/npm versions, including nested npm copies and the
+AWS CLI venv, and refreshes RPM packages after installation. The Bifrost toolchain
+fix covers that binary; Docker Compose is upgraded to its official fixed release with containerd 2.4.1.
+Any remaining Go/containerd findings still require attribution to their actual binary. node-forge 1.4.0 carries the nested DigestAlgorithm validation fix proposed in
+upstream PR #1152 for CVE-2026-85393. Its regression rejects malformed signatures
+and verifies valid ones during build/smoke. The upstream package version remains
+1.4.0, so scanners can still report it; this is a tested backport, not a released
+package upgrade. Unfixed RPMs remain subject to the rebuilt image's scan. Required developer tools are retained.
