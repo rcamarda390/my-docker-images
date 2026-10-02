@@ -254,6 +254,7 @@ RUN set -eux; \
 # Python dependencies
 # Resolve S3FS and the AWS SDK together; aiobotocore matches Airflow constraints.
 # ============================================================
+COPY upgrade-pip-urllib3.py /tmp/upgrade-pip-urllib3.py
 RUN set -eux; \
     pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
     pip3 install --no-input --no-cache-dir \
@@ -289,6 +290,10 @@ RUN set -eux; \
     pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
         urllib3==2.8.0 PyJWT==2.15.0 Mako==1.4.2 Werkzeug==3.1.9; \
     python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
+    python3 /tmp/upgrade-pip-urllib3.py; \
+    /opt/aws-cli/bin/python /tmp/upgrade-pip-urllib3.py; \
+    python3 -m pip check; \
+    /opt/aws-cli/bin/python -m pip check; \
     rm -rf /root/.cache /tmp/* /var/tmp/*
 
 # ============================================================

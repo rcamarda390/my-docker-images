@@ -42,6 +42,7 @@ vendor = Path(pip.__file__).parent / "_vendor"
 components = {item["name"]: item.get("version") for item in json.loads((vendor / "bom.cdx.json").read_text())["components"]}
 assert components["msgpack"] == "1.1.2"
 assert components["setuptools"] == "70.3.0"
+assert components["urllib3"] == "2.8.0"
 assert not (vendor / "setuptools" / "package_index.py").exists()
 assert not list((vendor / "msgpack").glob("*cmsgpack*"))
 '

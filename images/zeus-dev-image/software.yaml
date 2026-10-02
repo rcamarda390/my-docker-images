@@ -59,12 +59,12 @@ python_packages:
     - {name: apache-airflow-providers-ssh, version: constraints}
     - {name: apache-airflow-providers-fab, version: constraints}
     - {name: msgpack, version: "1.2.3", note: "security fix; explicitly upgraded after providers"}
-    - {name: urllib3, version: "2.8.0", note: "also pinned in the AWS CLI venv"}
+    - {name: urllib3, version: "2.8.0", note: "also pinned in AWS CLI venv and both pip vendor trees"}
     - {name: PyJWT, version: "2.15.0"}
     - {name: Mako, version: "1.4.2"}
     - {name: Werkzeug, version: "3.1.9"}
     - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
-    - {name: pip, version: "26.2.1", note: "pinned for vendored dependency VEX assessment; upgraded before remaining packages"}
+    - {name: pip, version: "26.2.1", note: "pinned for msgpack/setuptools VEX assessment; vendored urllib3 upgraded to 2.8.0 with pip patches, SBOM and installation record preserved"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
     - {name: psycopg2-binary, version: "2.9.11"}

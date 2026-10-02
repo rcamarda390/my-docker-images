@@ -7,6 +7,16 @@ import subprocess
 
 from packaging.version import Version
 
+from pip._vendor import urllib3 as pip_urllib3
+from pip._vendor.requests.adapters import PoolManager
+from pip._internal.network.session import PipSession
+
+assert pip_urllib3.__version__ == "2.8.0"
+assert PoolManager is pip_urllib3.PoolManager
+with PipSession() as session:
+    assert session.adapters["https://"].poolmanager.__class__ is PoolManager
+print("Main pip vendored urllib3 2.8.0 transport OK")
+
 python_fixes = {"msgpack": "1.2.3", "setuptools": "80.10.0", "urllib3": "2.8.0",
                 "PyJWT": "2.15.0", "Mako": "1.4.2", "Werkzeug": "3.1.9"}
 for name, minimum in python_fixes.items():
@@ -18,6 +28,10 @@ for name, minimum in python_fixes.items():
 subprocess.run(["/opt/aws-cli/bin/python", "-c", "import importlib.metadata as m; "
                 "assert m.version('pip') == '26.2.1'; "
                 "assert m.version('urllib3') == '2.8.0'; "
+                "from pip._vendor import urllib3; "
+                "assert urllib3.__version__ == '2.8.0'; "
+                "from pip._vendor.requests.adapters import PoolManager; "
+                "assert PoolManager is urllib3.PoolManager; "
                 "print('AWS CLI pip/urllib3 versions OK')"], check=True)
 subprocess.run(["/opt/aws-cli/bin/pip", "check"], check=True)
 
