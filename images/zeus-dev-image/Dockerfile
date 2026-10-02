@@ -301,7 +301,7 @@ COPY patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
 COPY patch-cline-simple-git.mjs /tmp/patch-cline-simple-git.mjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
-    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1"}}' > /opt/agentmemory/package.json; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
     cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
     npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.29; \
     npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.29; \
@@ -312,7 +312,7 @@ RUN set -eux; \
     ln -sf /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
     mkdir -p /opt/cline; \
-    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
+    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
     npm install --prefix /opt/cline cline@3.0.61; \
     node /tmp/patch-cline-simple-git.mjs; \
     ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
