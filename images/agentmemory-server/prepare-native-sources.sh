@@ -22,6 +22,8 @@ ncurses ncurses.orig.tar.gz 3b91eb714ba61b9ebfcfe09cf8e7c1c45cf2e8a6282f5887fb94
 ncurses ncurses.debian.tar.xz 52a49c453121bd90d21edef53903beac9d9d8229e0ef4f49d3b0252e49932f4c https://deb.debian.org/debian/pool/main/n/ncurses/ncurses_6.6+20260608-2.debian.tar.xz
 util-linux util-linux.orig.tar.xz e596083744e746be7d2823b62b43f4418dd7bf56303b4dc09e6fe8112fe3d7ed https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.41/util-linux-2.41.6.tar.xz
 util-linux util-linux.debian.tar.xz 5b327ccd22f0f4ed28a389870aa51d04ecedb8693e52a1d122850f2b3188cbf6 https://deb.debian.org/debian/pool/main/u/util-linux/util-linux_2.41.5-0+deb13u1.debian.tar.xz
+zlib zlib.orig.tar.gz 7b6903eb019983987b7112eccf90f1703f1c6c0e0cede36564bf611d19ca579d https://deb.debian.org/debian/pool/main/z/zlib/zlib_1.3.dfsg+really1.3.2.orig.tar.gz
+zlib zlib.debian.tar.xz 48f7309bccf9c81e9f68a7e22cf06e08a1f70b275535b953632fccb525c5439e https://deb.debian.org/debian/pool/main/z/zlib/zlib_1.3.dfsg+really1.3.2-3.debian.tar.xz
 SOURCES
 
 # These two Trixie backports are already in 2.41.6. Prove that before removing
@@ -37,12 +39,14 @@ SOURCES
     done
 )
 
-for entry in attr:1:2.6.0-1 acl:2.4.0-1 ncurses:6.6+20260608-2 util-linux:2.41.6-0; do
+for entry in attr:1:2.6.0-1 acl:2.4.0-1 ncurses:6.6+20260608-2 util-linux:2.41.6-0 zlib:1:1.3.dfsg+really1.3.2-3; do
     package=${entry%%:*}
     version=${entry#*:}
     changelog="$package/debian/changelog"
     {
-        printf '%s (%s+rcamarda1) trixie; urgency=high\n\n' "$package" "$version"
+        revision=1
+        if [ "$package" = util-linux ]; then revision=2; fi
+        printf '%s (%s+rcamarda%s) trixie; urgency=high\n\n' "$package" "$version" "$revision"
         printf '  * Rebuild fixed upstream sources for the AgentMemory Trixie runtime.\n\n'
         printf ' -- rcamarda390 image build <rcamarda390@users.noreply.github.com>  Tue, 15 Sep 2026 00:00:00 +0000\n\n'
         cat "$changelog"
@@ -127,3 +131,31 @@ UTIL_LINUX_OPENAT2_PATCH
     git apply --check /tmp/util-linux-openat2.patch
     git apply /tmp/util-linux-openat2.patch
 )
+
+# prepare-native-sources.sh: extra upstream fixes absent from the pinned releases.
+# CVE-2026-3184: preserve the caller's FQDN for PAM_RHOST.
+# CVE-2026-85091: fix stale gzwrite pointers after a non-blocking write stall.
+while read -r package commit checksum; do
+    patch="/tmp/${package}-${commit}.patch"
+    case "$package" in
+        util-linux) repo=util-linux/util-linux ;;
+        zlib) repo=madler/zlib ;;
+    esac
+    curl --fail --location --silent --show-error --retry 3 \
+        "https://github.com/$repo/commit/$commit.patch" -o "$patch"
+    printf '%s  %s\n' "$checksum" "$patch" | sha256sum -c -
+    (
+        cd "$package"
+        if git apply --check "$patch"; then
+            git apply "$patch"
+        elif git apply --reverse --check "$patch"; then
+            echo "Upstream fix already present: $commit"
+        else
+            echo "Cannot apply or prove upstream fix: $commit" >&2
+            exit 1
+        fi
+    )
+done <<'PATCHES'
+util-linux 8b29aeb081e297e48c4c1ac53d88ae07e1331984 6c2213341fe4dc23dc0182b8057605af54563ac434f4fa60430d7a483649112e
+zlib df84af25dc1942490e1d1c899a07619152a46148 110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14
+PATCHES
