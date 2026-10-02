@@ -34,12 +34,14 @@ Updated regular-expression syntax documentation from the same PCRE2 source.
 %make_build check
 
 %install
-# UBI10's pcre2 RPM is the 8-bit runtime. Do not add development files or tools.
+# Use libtool's install/relink step so the POSIX library has no build-directory RPATH.
+%make_build install DESTDIR=%{_builddir}/pcre2-stage
+# Package only the two existing runtimes and selected syntax documentation.
 install -d %{buildroot}%{_libdir} %{buildroot}%{_mandir}/man3
-install -pm755 .libs/libpcre2-8.so.0.* %{buildroot}%{_libdir}/
-ln -s "$(basename .libs/libpcre2-8.so.0.*)" %{buildroot}%{_libdir}/libpcre2-8.so.0
-install -pm755 .libs/libpcre2-posix.so.3.* %{buildroot}%{_libdir}/
-ln -s "$(basename .libs/libpcre2-posix.so.3.*)" %{buildroot}%{_libdir}/libpcre2-posix.so.3
+install -pm755 %{_builddir}/pcre2-stage%{_libdir}/libpcre2-8.so.0.* %{buildroot}%{_libdir}/
+ln -s "$(basename %{_builddir}/pcre2-stage%{_libdir}/libpcre2-8.so.0.*)" %{buildroot}%{_libdir}/libpcre2-8.so.0
+install -pm755 %{_builddir}/pcre2-stage%{_libdir}/libpcre2-posix.so.3.* %{buildroot}%{_libdir}/
+ln -s "$(basename %{_builddir}/pcre2-stage%{_libdir}/libpcre2-posix.so.3.*)" %{buildroot}%{_libdir}/libpcre2-posix.so.3
 install -pm644 doc/pcre2pattern.3 doc/pcre2syntax.3 doc/pcre2unicode.3 %{buildroot}%{_mandir}/man3/
 
 %files
