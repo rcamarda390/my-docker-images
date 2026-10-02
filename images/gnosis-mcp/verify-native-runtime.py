@@ -21,7 +21,7 @@ from tokenizers import Tokenizer, models
 # These extension modules pulled in every native package removed for the v17
 # findings. Gnosis does not import them; fail if a future base image restores
 # one and silently reintroduces the dependency.
-for module in ("_bz2", "_curses", "_curses_panel", "_uuid", "readline"):
+for module in ("_bz2", "_curses", "_curses_panel", "_uuid", "_tkinter", "readline"):
     assert importlib.util.find_spec(module) is None, f"Unexpected optional module: {module}"
 
 assert uuid.uuid4().version == 4

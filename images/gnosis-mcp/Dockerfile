@@ -272,7 +272,6 @@ COPY --from=builder /gnosis-model-cache  /gnosis-model-cache
 COPY verify-native-runtime.py /usr/local/share/gnosis/verify-native-runtime.py
 COPY runtime-smoke.py /usr/local/share/gnosis/runtime-smoke.py
 COPY verify-no-libgomp.py /tmp/verify-no-libgomp.py
-RUN python /tmp/verify-no-libgomp.py && rm /tmp/verify-no-libgomp.py
 
 # Remove pip and its vendored vulnerable dependencies from the runtime.
 # CVE-2026-23949, CVE-2025-47273 (setuptools); CVE-2026-57585 (msgpack)
@@ -320,7 +319,10 @@ RUN rm -f \
         /usr/local/lib/python*/lib-dynload/_bz2*.so \
         /usr/local/lib/python*/lib-dynload/_curses*.so \
         /usr/local/lib/python*/lib-dynload/_uuid*.so \
+        /usr/local/lib/python*/lib-dynload/_tkinter*.so \
         /usr/local/lib/python*/lib-dynload/readline*.so \
+    && python /tmp/verify-no-libgomp.py \
+    && rm /tmp/verify-no-libgomp.py \
     && mkdir -p /usr/share/debconf \
     && printf '#!/bin/sh\nexit 0\n' > /usr/share/debconf/frontend \
     && chmod 0755 /usr/share/debconf/frontend \
