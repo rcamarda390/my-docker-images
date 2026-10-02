@@ -50,6 +50,8 @@ jobs:
       smoke_healthcheck_port: 3111
       smoke_healthcheck_path: /agentmemory/livez
       scan: true
+      # The exact util-linux packages are covered by the pinned-source assertion.
+      scan_vex_file: images/agentmemory-server/util-linux.openvex.json
       block_on_scan_failure: true
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision.

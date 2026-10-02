@@ -132,8 +132,10 @@ UTIL_LINUX_OPENAT2_PATCH
     git apply /tmp/util-linux-openat2.patch
 )
 
-# prepare-native-sources.sh: extra upstream fixes absent from the pinned releases.
+# prepare-native-sources.sh: extra upstream fixes absent from the pinned releases
+# and verify fixes already present in pinned source.
 # CVE-2026-3184: preserve the caller's FQDN for PAM_RHOST.
+# CVE-2026-76642: v2.41.6 already includes the failed-helper hook guards.
 # CVE-2026-85091: fix stale gzwrite pointers after a non-blocking write stall.
 while read -r package commit checksum; do
     patch="/tmp/${package}-${commit}.patch"
@@ -159,3 +161,21 @@ done <<'PATCHES'
 util-linux 8b29aeb081e297e48c4c1ac53d88ae07e1331984 6c2213341fe4dc23dc0182b8057605af54563ac434f4fa60430d7a483649112e
 zlib df84af25dc1942490e1d1c899a07619152a46148 110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14
 PATCHES
+
+# CVE-2026-76642 is already fixed in the pinned v2.41.6 source. Check the
+# security-relevant libmount hunk against upstream, allowing Debian's harmless
+# debug-macro difference, and verify cleanup when the post-mount hook is skipped.
+patch=/tmp/util-linux-f57cea130839c0af8dc0525274267ae4cfd66bbf.patch
+curl --fail --location --silent --show-error --retry 3 \
+    https://github.com/util-linux/util-linux/commit/f57cea130839c0af8dc0525274267ae4cfd66bbf.patch \
+    -o "$patch"
+printf '%s  %s\n' \
+    229a079c614cfe551d8b1b0aa09c10d2f051a7fc9b9b1db270eac87fa12e11f5 "$patch" \
+    | sha256sum -c -
+(
+    cd util-linux
+    git apply --reverse --check --include='libmount/src/context_mount.c' "$patch"
+    grep -Fq 'cleanup after skipped MOUNT_POST hook' libmount/src/hook_loopdev.c
+    grep -Fq 'if (hd->loopdev_fd > -1)' libmount/src/hook_loopdev.c
+    grep -Fq 'delete_loopdev(cxt, hd);' libmount/src/hook_loopdev.c
+)
