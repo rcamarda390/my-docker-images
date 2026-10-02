@@ -1,5 +1,8 @@
 # Gnosis MCP v17 Xray remediation
 
+Historical patch assessment. See [2026-10-02 follow-up](SECURITY-20261002.md)
+for the current glibc revision and remaining finding dispositions.
+
 The supplied 2026-09-17 Xray report contains 51 findings across 20
 components in `rcamarda390/gnosis-mcp:0.14.1-v17`. This change remediates the
 applicable findings without deleting dpkg metadata or masking packages from
@@ -55,19 +58,19 @@ present in the Debian source.
 CVE-2026-89092 applies to the `nscd` service; neither the `nscd` package nor
 its service is present. Debian and upstream classify CVE-2018-20796,
 CVE-2019-9192, and CVE-2019-1010022 through CVE-2019-1010025 as disputed or
-non-security issues. `libc-bin` removal eliminates CVE-2019-1010022 from this
-image, but a scanner may continue to associate the other historical records
-with load-bearing `libc6`. They are not hidden or suppressed by this change.
+non-security issues. `libc-bin` removal does not eliminate findings associated with the still-installed
+`libc6` package, including CVE-2019-1010022. They are not hidden or suppressed by this change.
 
-## Open upstream issue
+## Historical upstream issue
 
 CVE-2026-85670 remains open upstream in `tokenizers`; the report's stated fix
 version, 0.23.1, is the affected version already installed, and the latest
 0.23.2 source still contains the affected implementation. The air-gap service
-does not accept arbitrary tokenizer files: it loads only the fixed model
-tokenizer downloaded during the image build. Runtime verification pins
-tokenizers 0.23.1 and parses that exact bundled file. Upgrade when upstream
-publishes a supported fix.
+does not accept arbitrary tokenizer files: its normal default-model path loads the bundled tokenizer downloaded during
+the image build. The cache is writable and the upstream model URL is mutable;
+bundling is not a checksum pin or a library fix. Runtime verification pins
+tokenizers 0.23.1 and parses that exact bundled file. The 2026-10-02 follow-up adds a tested downstream source fix; this section
+records the earlier upstream-only assessment.
 
 ## Build-time assertions
 

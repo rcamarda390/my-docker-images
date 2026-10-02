@@ -17,13 +17,14 @@ ARG PYTHON_VERSION=3.13
 # ---------------------------------------------------------------------------
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda2
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
 
 FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
 ARG GLIBC_DEBIAN_VERSION
 ARG GLIBC_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
+COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
@@ -39,7 +40,8 @@ RUN set -eux; \
       "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
       "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
       "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
-      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3"; do \
+      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
+      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
       commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
       patch="/tmp/glibc-${commit}.patch"; \
       curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
@@ -63,15 +65,24 @@ RUN set -eux; \
         exit 1; \
       fi; \
     done; \
+    gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
+    /tmp/verify-glibc-normalize; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Backport glibc fixes through release/2.41 commit f806c451, including CVE-2026-19499 and the 2026 resolver/iconv fixes."; \
+      "Retain rcamarda2 fixes; add CVE-2026-8674 resolver and CVE-2026-86805/CVE-2026-95818 secure-loader backports."; \
     DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
 
+FROM rust:1.94.0-slim-trixie AS rust_toolchain
+
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS builder
+COPY --from=rust_toolchain /usr/local/cargo /usr/local/cargo
+COPY --from=rust_toolchain /usr/local/rustup /usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo \
+    RUSTUP_HOME=/usr/local/rustup \
+    PATH=/usr/local/cargo/bin:$PATH
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -136,6 +147,24 @@ RUN test "$EXTRAS" = "embeddings" \
     && pip install --require-hashes --prefix=/install -r /build/requirements.lock \
     && SITE_PACKAGES="$(find /install/lib -type d -name site-packages -print -quit)" \
     && test "$(PYTHONPATH="$SITE_PACKAGES" python -c 'import importlib.metadata; print(importlib.metadata.version("gnosis-mcp"))')" = "$GNOSIS_VERSION"
+
+# The public 0.23.1/0.23.2 wheels remain affected by CVE-2026-85670.
+# Build a visibly versioned downstream wheel from the checksum-pinned sdist.
+# Rust/maturin and all source/build dependencies stay in the builder only.
+ARG TOKENIZERS_SOURCE_SHA256=1feeeadf865a7915adc25445dea30e9933e593c31bb96c277cee36de227c8bfa
+COPY patches/tokenizers/ /tmp/tokenizers-patches/
+RUN curl -fsSL https://files.pythonhosted.org/packages/c1/60/21f715d9faba5f5407ff759472ade058ec4a507ad62bcea47cb847239a73/tokenizers-0.23.1.tar.gz -o /tmp/tokenizers.tar.gz \
+    && echo "${TOKENIZERS_SOURCE_SHA256}  /tmp/tokenizers.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/tokenizers.tar.gz -C /tmp \
+    && cd /tmp/tokenizers-0.23.1 \
+    && patch -p1 < /tmp/tokenizers-patches/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch \
+    && python -c "from pathlib import Path; p=Path('bindings/python/Cargo.toml'); s=p.read_text(); assert s.count('version = \"0.23.1\"') == 1; p.write_text(s.replace('version = \"0.23.1\"', 'version = \"0.23.1+rcamarda1\"')); p=Path('bindings/python/Cargo.lock'); s=p.read_text(); old='name = \"tokenizers-python\"\\nversion = \"0.23.1\"'; assert s.count(old) == 1; p.write_text(s.replace(old, old.replace('0.23.1', '0.23.1+rcamarda1')))" \
+    && pip install maturin==1.9.6 \
+    && maturin build --release --locked --out /tmp/tokenizers-wheel --interpreter python \
+    && SITE_PACKAGES="$(find /install/lib -type d -name site-packages -print -quit)" \
+    && rm -rf "$SITE_PACKAGES/tokenizers" "$SITE_PACKAGES/tokenizers-0.23.1.dist-info" \
+    && pip install --no-deps --prefix=/install /tmp/tokenizers-wheel/*.whl \
+    && test "$(PYTHONPATH="$SITE_PACKAGES" python -c 'from importlib.metadata import version; print(version("tokenizers"))')" = '0.23.1+rcamarda1'
 
 # Download exactly the files local_embed.py needs.
 ARG EMBED_MODEL="MongoDB/mdbr-leaf-ir"
