@@ -58,3 +58,21 @@ gnosis-mcp serve --transport streamable-http --rest
 ```
 
 The image also includes security-hardening work, including Python 3.13 and Debian package updates. Security scanner findings should remain a release gate when a critical base-library vulnerability does not yet have an upstream distribution fix.
+
+### Build and publish
+
+The Gnosis workflow validates relevant pull requests without publishing. Changes
+under the image directory merged to main build and publish automatically; manual
+workflow dispatch also publishes. Run titles explicitly identify Gnosis.
+
+Before publishing, the candidate must pass database checks, HTTP health,
+Streamable HTTP initialization, and a search_docs call with Docker networking
+disabled. Trivy HIGH/CRITICAL findings, including unfixed findings, block release.
+
+Successful publication pushes the same immutable 0.17.5-vN tag to Docker Hub
+(rcamarda390/gnosis-mcp) and GHCR. The next N is one above the highest existing
+Docker Hub revision for the upstream version; failed builds do not consume it.
+The workflow summary supplies the exact image reference to import into Artifactory.
+
+New PyPI upstream releases require updating image.yaml and requirements.in,
+regenerating requirements.lock, and validating compatibility before publication.
