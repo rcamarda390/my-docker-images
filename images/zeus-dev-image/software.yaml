@@ -102,6 +102,13 @@ npm_packages:
     - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
 
 
+source_backports:
+  - name: node-forge
+    version: "1.4.0"
+    advisory: CVE-2026-85393
+    source: https://github.com/digitalbazaar/forge/pull/1152
+    note: Nested DigestAlgorithm validation; malformed/valid signature regressions; upstream package version preserved. Remove carry when an upstream fixed release is installed.
+
 npm_overrides:
   cline:
     root: /opt/cline

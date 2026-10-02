@@ -97,5 +97,8 @@ The October 2 report omits installed versions, component paths and image digest.
 The build verifies fixed Python/npm versions, including nested npm copies and the
 AWS CLI venv, and refreshes RPM packages after installation. The Bifrost toolchain
 fix covers that binary; Docker Compose is upgraded to its official fixed release with containerd 2.4.1.
-Any remaining Go/containerd findings still require attribution to their actual binary. Unfixed RPMs and node-forge remain
-subject to the rebuilt image's scan. Required developer tools are retained.
+Any remaining Go/containerd findings still require attribution to their actual binary. node-forge 1.4.0 carries the nested DigestAlgorithm validation fix proposed in
+upstream PR #1152 for CVE-2026-85393. Its regression rejects malformed signatures
+and verifies valid ones during build/smoke. The upstream package version remains
+1.4.0, so scanners can still report it; this is a tested backport, not a released
+package upgrade. Unfixed RPMs remain subject to the rebuilt image's scan. Required developer tools are retained.

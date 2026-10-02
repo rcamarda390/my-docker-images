@@ -53,7 +53,7 @@ check "docker exec command" 1 docker exec --help
 check "Docker Compose 5.6.0" 1 bash -c '[[ "$(docker compose version --short)" == 5.6.0 ]]'
 check "Docker Compose checksum" 1 bash -c 'printf "%s  %s\n" 40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a /usr/libexec/docker/cli-plugins/docker-compose | sha256sum -c -'
 check "Compose containerd 2.4.1" 1 grep -Eq 'github.com/containerd/containerd/v2[[:space:]]+v2.4.1' /usr/local/share/zeus/compose-build-info.txt
-check "Compose config compatibility" 1 bash -c 'printf "services:\n  smoke:\n    image: busybox\n" | docker compose -f - config --quiet'
+check "Compose config compatibility" 1 bash -c 'printf "services:\n  smoke:\n    image: busybox\n" | docker compose -p zeus-smoke -f - config --quiet'
 check "Buildx plugin absent" 1 test ! -e /usr/libexec/docker/cli-plugins/docker-buildx
 check "aws CLI" 1 command -v aws
 check "jira python package" 1 python3 -c "import jira"
@@ -81,6 +81,7 @@ check "GitLab MCP dependencies" 1 test -x /opt/gitlab-mcp-server/node_modules/.b
 check "TypeScript 6.0.3" 1 node -e 'if (require("/opt/gitlab-mcp-server/node_modules/typescript/package.json").version !== "6.0.3") process.exit(1)'
 
 check "Xray fixed package versions" 1 python3 /usr/local/bin/verify-security.py
+check "node-forge CVE-2026-85393 backport" 1 node /usr/local/bin/patch-node-forge.cjs --check
 
 log ""
 if [ "$failures" -gt 0 ]; then
