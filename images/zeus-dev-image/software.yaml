@@ -72,6 +72,7 @@ python_packages:
     - {name: duckdb, version: "1.5.3"}
     - {name: sqlglot, version: "30.4.2"}
     - {name: s3fs, version: "2026.3.0"}
+    - {name: aiobotocore, version: "3.9.1", note: "Airflow constraint; resolved together with S3FS and boto3/botocore 1.43.75"}
     - {name: jira, version: "3.10.5"}
     - {name: beautifulsoup4, version: "4.15.0"}
     - {name: html2text, version: "2025.4.15"}
