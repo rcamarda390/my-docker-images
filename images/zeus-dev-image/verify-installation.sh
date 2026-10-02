@@ -1,5 +1,5 @@
 #!/bin/bash
-# Verify the public software layer; fail if a required tool is missing.
+# verify-installation.sh: verify the public software layer; fail if a required tool is missing.
 set -u
 
 failures=0
@@ -33,7 +33,8 @@ log "=== zeus-dev-image installation verification ==="
 
 check "python3 3.12" 1 python3 -c "import sys; assert sys.version_info[:2] == (3, 12)"
 check "pip3" 1 command -v pip3
-check "pip 26.2.1 vendored assessment" 1 python3 -c '
+for python in python3 /opt/aws-cli/bin/python; do
+check "$python pip 26.2.1 vendored assessment" 1 "$python" -c '
 import json
 from pathlib import Path
 import pip
@@ -43,9 +44,26 @@ components = {item["name"]: item.get("version") for item in json.loads((vendor /
 assert components["msgpack"] == "1.1.2"
 assert components["setuptools"] == "70.3.0"
 assert components["urllib3"] == "2.8.0"
-assert not (vendor / "setuptools" / "package_index.py").exists()
+# The setuptools SBOM entry describes pkg_resources only. Neither affected
+# code path is shipped: PackageIndex (CVE-2025-47273) or jaraco.context.tarball
+# (CVE-2026-23949). Check actual files, including nested vendored copies.
+assert not list(vendor.rglob("package_index.py"))
+assert not list(vendor.rglob("jaraco/context.py"))
+assert not list(vendor.rglob("jaraco/context/__init__.py"))
 assert not list((vendor / "msgpack").glob("*cmsgpack*"))
+from pip._vendor import msgpack
+assert msgpack.Unpacker.__module__ == "pip._vendor.msgpack.fallback"
+# Exercise the real pip cache serializer using the pure-Python msgpack copy.
+from pip._vendor.cachecontrol.serialize import Serializer
+from pip._vendor.requests import Request
+from pip._vendor.urllib3 import HTTPResponse
+request = Request("GET", "https://example.invalid/").prepare()
+serializer = Serializer()
+encoded = serializer.dumps(request, HTTPResponse(status=200), body=b"zeus-cache")
+assert serializer.loads(request, encoded).read() == b"zeus-cache"
+assert serializer.loads(request, b"cc=4,\xc1") is None
 '
+done
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
 check "git" 1 command -v git
