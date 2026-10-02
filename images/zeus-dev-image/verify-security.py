@@ -1,11 +1,38 @@
 #!/usr/bin/env python3
 """verify-security.py: check fixed Python and npm versions in the final image."""
+import ctypes
 import importlib.metadata
 import json
 from pathlib import Path
 import subprocess
+import tempfile
 
 from packaging.version import Version
+
+# Xray's pcre2-syntax rows refer to the source RPM's actual regex library.
+# Check both RPM ownership/version and the loaded runtime bytes.
+for package in ("pcre2", "pcre2-syntax"):
+    version = subprocess.check_output(["rpm", "-q", "--qf", "%{VERSION}", package], text=True)
+    assert version == "10.49", (package, version)
+pcre2 = ctypes.CDLL("libpcre2-8.so.0")
+pcre2.pcre2_config_8.argtypes = [ctypes.c_uint32, ctypes.c_void_p]
+pcre2.pcre2_config_8.restype = ctypes.c_int
+version_buffer = ctypes.create_string_buffer(64)
+assert pcre2.pcre2_config_8(11, version_buffer) > 0
+assert version_buffer.value.startswith(b"10.49 "), version_buffer.value
+for option in (1, 9):  # PCRE2_CONFIG_JIT, PCRE2_CONFIG_UNICODE
+    enabled = ctypes.c_uint32()
+    assert pcre2.pcre2_config_8(option, ctypes.byref(enabled)) == 0
+    assert enabled.value == 1, (option, enabled.value)
+subprocess.run(["grep", "-P", "^[a-z]+[0-9]+$"], input="zeus123\n", text=True, check=True)
+with tempfile.TemporaryDirectory(prefix="zeus-pcre2-") as directory:
+    (Path(directory) / "sample.txt").write_text("zeus123\n")
+    subprocess.run(["git", "grep", "--no-index", "-P", "^[a-z]+[0-9]+$", "--", "sample.txt"],
+                   cwd=directory, check=True)
+with tempfile.TemporaryDirectory(prefix="zeus-dnf-") as directory:
+    subprocess.run(["dnf", "--setopt=cachedir=" + directory, "--setopt=logdir=" + directory,
+                    "--setopt=persistdir=" + directory, "check"], check=True)
+print("PCRE2 10.49: RPMs, loaded ABI, JIT, Unicode, grep, Git and DNF OK")
 
 from pip._vendor import urllib3 as pip_urllib3
 from pip._vendor.requests.adapters import PoolManager

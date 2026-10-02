@@ -95,6 +95,31 @@ RUN set -eux; \
     /out/docker-compose version
 
 # ============================================================
+# PCRE2 security update: UBI10-native RPMs, preserving libpcre2-8.so.0.
+# ============================================================
+FROM registry.access.redhat.com/ubi10/ubi:latest AS pcre2-security-build
+USER 0
+RUN dnf install -y rpm-build gcc make binutils curl tar gzip pcre2 \
+    && mkdir -p /build/SOURCES /build/SPECS /out \
+    && nm -D --defined-only /usr/lib64/libpcre2-8.so.0 \
+        | awk '$3 ~ /^pcre2_.*_8$/ {print $3}' | sort -u > /out/pcre2-ubi-symbols.txt \
+    && test -s /out/pcre2-ubi-symbols.txt
+COPY pcre2-security.spec /build/SPECS/pcre2-security.spec
+RUN set -eux; \
+    curl --retry 3 -fsSL https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.gz \
+        -o /build/SOURCES/pcre2-10.49.tar.gz; \
+    printf '%s  %s\n' 929f0b20e62879252a15886b06c89f1edef61a363cbd5826fb041080a5e557ae /build/SOURCES/pcre2-10.49.tar.gz | sha256sum -c -; \
+    rpmbuild -ba --define '_topdir /build' /build/SPECS/pcre2-security.spec; \
+    cp /build/RPMS/x86_64/pcre2-10.49-*.rpm /build/RPMS/noarch/pcre2-syntax-10.49-*.rpm /out/; \
+    dnf install -y /out/*.rpm; \
+    nm -D --defined-only /usr/lib64/libpcre2-8.so.0 \
+        | awk '$3 ~ /^pcre2_.*_8$/ {print $3}' | sort -u > /tmp/pcre2-new-symbols.txt; \
+    comm -23 /out/pcre2-ubi-symbols.txt /tmp/pcre2-new-symbols.txt > /tmp/pcre2-missing-symbols.txt; \
+    cat /tmp/pcre2-missing-symbols.txt; \
+    test ! -s /tmp/pcre2-missing-symbols.txt; \
+    dnf check
+
+# ============================================================
 # Final image
 # ============================================================
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
@@ -369,6 +394,15 @@ RUN dnf upgrade --refresh -y \
     && rpm -qa | sort \
     && dnf clean all \
     && rm -rf /var/cache/dnf /var/cache/yum /root/.npm/_cacache /root/.cache
+
+# Install after the final repository refresh so the fixed library and documentation
+# remain together. These RPMs own their real files; distro metadata is not hidden.
+# ponytail: carry upstream 10.49 until UBI10 supplies an equivalent security fix.
+COPY --from=pcre2-security-build /out/*.rpm /tmp/pcre2-security/
+RUN dnf install -y --setopt=install_weak_deps=False /tmp/pcre2-security/*.rpm \
+    && dnf check \
+    && dnf clean all \
+    && rm -rf /tmp/pcre2-security /var/cache/dnf /var/cache/yum
 
 COPY verify-security.py /usr/local/bin/verify-security.py
 # Fail the build if required software is missing.
