@@ -18,18 +18,22 @@ ARG PYTHON_VERSION=3.13
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
 ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+ARG DASH_DEBIAN_VERSION=0.5.12-12
+ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 
 FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
 ARG GLIBC_DEBIAN_VERSION
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_DEBIAN_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
-    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}" "dash=${DASH_DEBIAN_VERSION}"; \
     mkdir -p /build /out; cd /build; \
     apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
@@ -74,6 +78,24 @@ RUN set -eux; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
+
+# CVE-2026-102473 affects Dash's recursive internal pattern matcher.
+# Use its existing libc fnmatch build option rather than removing /bin/sh,
+# which is required by Docker's CMD-SHELL health checks.
+RUN set -eux; \
+    cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
+    cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
+    grep -q -- '--disable-fnmatch' debian/rules; \
+    sed -i 's/--disable-fnmatch/--enable-fnmatch/' debian/rules; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${DASH_BACKPORT_VERSION}" \
+      "Use libc fnmatch instead of recursive pmatch for CVE-2026-102473."; \
+    dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    grep -Fx '#define HAVE_FNMATCH 1' config.h; \
+    cp ../dash_*_*.deb /out/; \
+    dpkg-deb -f /out/dash_*_*.deb Version | grep -Fx "${DASH_BACKPORT_VERSION}"; \
+    dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
+    readelf -Ws "$(find /tmp/dash-check -type f -name dash -print -quit)" | grep -E 'UND.* fnmatch@'
 
 FROM rust:1.94.0-slim-trixie AS rust_toolchain
 
@@ -196,6 +218,7 @@ FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs
 ARG SQLITE_VERSION=3.53.4
 ARG ZLIB_VERSION=1.3.2
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY --from=builder /opt/sqlite/lib/libsqlite3.so* /usr/local/lib/
 COPY --from=builder /opt/zlib/lib/libz.so* /usr/local/lib/
 COPY --from=glibc_patched /out/ /tmp/glibc/
@@ -211,7 +234,7 @@ ARG GZIP_MIN_VERSION=1.13-1+deb13u1
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb \
+    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
     && apt-get install -y --no-install-recommends \
         libgomp1 \
         libssl3t64 \
@@ -237,6 +260,7 @@ RUN apt-get update \
        done \
     && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
     && test "$(dpkg-query -W -f='${Version}' libc-bin)" = "${GLIBC_BACKPORT_VERSION}" \
+    && test "$(dpkg-query -W -f='${Version}' dash)" = "${DASH_BACKPORT_VERSION}" \
     && useradd --system --create-home --home-dir /home/gnosis --shell /bin/false gnosis \
     && rm -rf /tmp/glibc /var/lib/apt/lists/* \
     && ldconfig \

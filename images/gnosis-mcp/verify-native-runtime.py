@@ -33,6 +33,24 @@ ctypes.CDLL("/usr/local/lib/libsqlite3.so.0")
 assert ssl.OPENSSL_VERSION.startswith("OpenSSL 3.")
 assert onnxruntime.get_device() in {"CPU", "GPU"}
 
+# CVE-2026-102473: the libc-backed matcher must reject an adversarial
+# multi-star pattern within a bounded time. Keep ordinary matching intact.
+subprocess.run(
+    ["/bin/sh", "-c", 'case "$1" in *.*.*.*.*.tar.gz) exit 1;; esac',
+     "verify", "." * 400 + "x"], check=True, timeout=5,
+)
+subprocess.run(
+    ["/bin/sh", "-c", 'case "$1" in a[bc]*.txt) exit 0;; *) exit 1;; esac',
+     "verify", "abc.txt"], check=True, timeout=5,
+)
+# CVE-2026-102474: this pinned Debian source has no Unicode escape encoder.
+# Its printf leaves these escapes literal, so the reported encoder is absent.
+for escape in (r"\uFFFF", r"\U7fffffff"):
+    output = subprocess.check_output(
+        ["/bin/sh", "-c", 'printf "%b" "$1"', "verify", escape], timeout=5,
+    )
+    assert output == escape.encode(), output
+
 # CVE-2026-8674: initializing the resolver must not abort when LOCALDOMAIN
 # exceeds the legacy 256-byte buffer, whether its first entry fits or not.
 # Run each initialization in a fresh process; __res_init reads LOCALDOMAIN.
