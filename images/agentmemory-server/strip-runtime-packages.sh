@@ -72,6 +72,10 @@ done
 
 chroot "$runtime_root" /sbin/ldconfig
 chroot "$runtime_root" /usr/local/bin/verify-native-runtime
+for package in global-agent roarr sprintf-js; do
+    test ! -e "$runtime_root/opt/agentmemory/node_modules/$package"
+done
+test ! -e "$runtime_root/opt/agentmemory/node_modules/onnxruntime-node/script"
 chroot "$runtime_root" /usr/local/bin/pcre2grep -V \
     | grep -F 'pcre2grep version 10.49'
 

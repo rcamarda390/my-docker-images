@@ -251,6 +251,11 @@ RUN apt-get purge -y --auto-remove curl \
 
 COPY --chmod=0644 transformers-offline.mjs /opt/agentmemory/transformers-offline.mjs
 COPY --chmod=0755 offline-embedding-smoke.mjs /opt/agentmemory/offline-embedding-smoke.mjs
+COPY --chmod=0644 prune-onnx-installer.mjs /tmp/prune-onnx-installer.mjs
+
+# ONNX's installer proxy/logger is build-only. Remove it after npm and native
+# installation, with installed reverse-dependency guards and a native import.
+RUN node /tmp/prune-onnx-installer.mjs && rm /tmp/prune-onnx-installer.mjs
 
 # This is deliberately a network-disabled build step. It proves the staged
 # model is sufficient before the image can be published.
