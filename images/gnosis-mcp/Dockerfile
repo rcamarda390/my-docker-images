@@ -74,7 +74,9 @@ RUN set -eux; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
       "Retain rcamarda2 fixes; add CVE-2026-8674 resolver and CVE-2026-86805/CVE-2026-95818 secure-loader backports."; \
-    DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
+      tail -n 200 /tmp/glibc-build.log; exit 1; \
+    fi; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
@@ -236,7 +238,6 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
     && apt-get install -y --no-install-recommends \
-        libgomp1 \
         libssl3t64 \
         openssl \
         openssl-provider-legacy \
@@ -270,6 +271,8 @@ COPY --from=builder /install             /usr/local
 COPY --from=builder /gnosis-model-cache  /gnosis-model-cache
 COPY verify-native-runtime.py /usr/local/share/gnosis/verify-native-runtime.py
 COPY runtime-smoke.py /usr/local/share/gnosis/runtime-smoke.py
+COPY verify-no-libgomp.py /tmp/verify-no-libgomp.py
+RUN python /tmp/verify-no-libgomp.py && rm /tmp/verify-no-libgomp.py
 
 # Remove pip and its vendored vulnerable dependencies from the runtime.
 # CVE-2026-23949, CVE-2025-47273 (setuptools); CVE-2026-57585 (msgpack)
@@ -359,7 +362,7 @@ RUN ! command -v pip \
     && test -z "$(find /usr/local /usr/lib -type f -path '*/ensurepip/_bundled/*' -print -quit)" \
     && for package in \
         apt libapt-pkg7.0 bash bsdutils coreutils diffutils gzip sed tar \
-        libacl1 libattr1 libbz2-1.0 libc-bin libmount1 libncursesw6 libsystemd0 \
+        libacl1 libattr1 libbz2-1.0 libc-bin libgomp1 libmount1 libncursesw6 libsystemd0 \
         libudev1 libuuid1 liblastlog2-2 login.defs ncurses-base util-linux zlib1g \
         libpam0g libpam-modules libpam-modules-bin libpam-runtime libsqlite3-0 perl-base; do \
         package_state="$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null || true)"; \
