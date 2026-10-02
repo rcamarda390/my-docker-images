@@ -1,4 +1,5 @@
 name: Build and publish Gnosis MCP image
+run-name: Gnosis MCP — ${{ github.event_name }} — ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
@@ -41,8 +42,10 @@ jobs:
       revision_arg: GNOSIS_IMAGE_VERSION
       platforms: linux/amd64
       smoke_env: -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1
-      smoke_entrypoint: /bin/sh
-      smoke_command: -c,gnosis-mcp init-db && gnosis-mcp check
+      smoke_entrypoint: python
+      smoke_command: /usr/local/share/gnosis/runtime-smoke.py
+      smoke_network_disabled: true
+      smoke_timeout: 90
       scan: true
       block_on_scan_failure: true
       # Count tags already published for this upstream version. Failed builds

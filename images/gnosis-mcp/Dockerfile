@@ -216,6 +216,7 @@ RUN apt-get update \
 COPY --from=builder /install             /usr/local
 COPY --from=builder /gnosis-model-cache  /gnosis-model-cache
 COPY verify-native-runtime.py /usr/local/share/gnosis/verify-native-runtime.py
+COPY runtime-smoke.py /usr/local/share/gnosis/runtime-smoke.py
 
 # Remove pip and its vendored vulnerable dependencies from the runtime.
 # CVE-2026-23949, CVE-2025-47273 (setuptools); CVE-2026-57585 (msgpack)
