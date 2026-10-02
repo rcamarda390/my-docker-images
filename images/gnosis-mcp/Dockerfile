@@ -97,7 +97,7 @@ RUN set -eux; \
     cp ../dash_*_*.deb /out/; \
     dpkg-deb -f /out/dash_*_*.deb Version | grep -Fx "${DASH_BACKPORT_VERSION}"; \
     dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
-    readelf -Ws "$(find /tmp/dash-check -type f -name dash -print -quit)" | grep -E 'UND.* fnmatch@'
+    readelf -Ws /tmp/dash-check/usr/bin/dash | grep -E 'UND.* fnmatch@'
 
 FROM rust:1.94.0-slim-trixie AS rust_toolchain
 
