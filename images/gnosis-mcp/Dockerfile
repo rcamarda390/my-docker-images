@@ -17,18 +17,23 @@ ARG PYTHON_VERSION=3.13
 # ---------------------------------------------------------------------------
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda2
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+ARG DASH_DEBIAN_VERSION=0.5.12-12
+ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 
 FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
 ARG GLIBC_DEBIAN_VERSION
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_DEBIAN_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
+COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
-    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}" "dash=${DASH_DEBIAN_VERSION}"; \
     mkdir -p /build /out; cd /build; \
     apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
@@ -39,7 +44,8 @@ RUN set -eux; \
       "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
       "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
       "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
-      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3"; do \
+      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
+      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
       commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
       patch="/tmp/glibc-${commit}.patch"; \
       curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
@@ -63,15 +69,42 @@ RUN set -eux; \
         exit 1; \
       fi; \
     done; \
+    gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
+    /tmp/verify-glibc-normalize; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Backport glibc fixes through release/2.41 commit f806c451, including CVE-2026-19499 and the 2026 resolver/iconv fixes."; \
+      "Retain rcamarda2 fixes; add CVE-2026-8674 resolver and CVE-2026-86805/CVE-2026-95818 secure-loader backports."; \
     DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
 
+# CVE-2026-102473 affects Dash's recursive internal pattern matcher.
+# Use its existing libc fnmatch build option rather than removing /bin/sh,
+# which is required by Docker's CMD-SHELL health checks.
+RUN set -eux; \
+    cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
+    cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
+    grep -q -- '--disable-fnmatch' debian/rules; \
+    sed -i 's/--disable-fnmatch/--enable-fnmatch/' debian/rules; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${DASH_BACKPORT_VERSION}" \
+      "Use libc fnmatch instead of recursive pmatch for CVE-2026-102473."; \
+    dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    grep -Fx '#define HAVE_FNMATCH 1' config.h; \
+    cp ../dash_*_*.deb /out/; \
+    dpkg-deb -f /out/dash_*_*.deb Version | grep -Fx "${DASH_BACKPORT_VERSION}"; \
+    dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
+    readelf -Ws "$(find /tmp/dash-check -type f -name dash -print -quit)" | grep -E 'UND.* fnmatch@'
+
+FROM rust:1.94.0-slim-trixie AS rust_toolchain
+
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS builder
+COPY --from=rust_toolchain /usr/local/cargo /usr/local/cargo
+COPY --from=rust_toolchain /usr/local/rustup /usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo \
+    RUSTUP_HOME=/usr/local/rustup \
+    PATH=/usr/local/cargo/bin:$PATH
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -137,6 +170,24 @@ RUN test "$EXTRAS" = "embeddings" \
     && SITE_PACKAGES="$(find /install/lib -type d -name site-packages -print -quit)" \
     && test "$(PYTHONPATH="$SITE_PACKAGES" python -c 'import importlib.metadata; print(importlib.metadata.version("gnosis-mcp"))')" = "$GNOSIS_VERSION"
 
+# The public 0.23.1/0.23.2 wheels remain affected by CVE-2026-85670.
+# Build a visibly versioned downstream wheel from the checksum-pinned sdist.
+# Rust/maturin and all source/build dependencies stay in the builder only.
+ARG TOKENIZERS_SOURCE_SHA256=1feeeadf865a7915adc25445dea30e9933e593c31bb96c277cee36de227c8bfa
+COPY patches/tokenizers/ /tmp/tokenizers-patches/
+RUN curl -fsSL https://files.pythonhosted.org/packages/c1/60/21f715d9faba5f5407ff759472ade058ec4a507ad62bcea47cb847239a73/tokenizers-0.23.1.tar.gz -o /tmp/tokenizers.tar.gz \
+    && echo "${TOKENIZERS_SOURCE_SHA256}  /tmp/tokenizers.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/tokenizers.tar.gz -C /tmp \
+    && cd /tmp/tokenizers-0.23.1 \
+    && patch -p1 < /tmp/tokenizers-patches/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch \
+    && python -c "from pathlib import Path; p=Path('bindings/python/Cargo.toml'); s=p.read_text(); assert s.count('version = \"0.23.1\"') == 1; p.write_text(s.replace('version = \"0.23.1\"', 'version = \"0.23.1+rcamarda1\"')); p=Path('bindings/python/Cargo.lock'); s=p.read_text(); old='name = \"tokenizers-python\"\\nversion = \"0.23.1\"'; assert s.count(old) == 1; p.write_text(s.replace(old, old.replace('0.23.1', '0.23.1+rcamarda1')))" \
+    && pip install maturin==1.9.6 \
+    && maturin build --release --locked --out /tmp/tokenizers-wheel --interpreter python \
+    && SITE_PACKAGES="$(find /install/lib -type d -name site-packages -print -quit)" \
+    && rm -rf "$SITE_PACKAGES/tokenizers" "$SITE_PACKAGES/tokenizers-0.23.1.dist-info" \
+    && pip install --no-deps --prefix=/install /tmp/tokenizers-wheel/*.whl \
+    && test "$(PYTHONPATH="$SITE_PACKAGES" python -c 'from importlib.metadata import version; print(version("tokenizers"))')" = '0.23.1+rcamarda1'
+
 # Download exactly the files local_embed.py needs.
 ARG EMBED_MODEL="MongoDB/mdbr-leaf-ir"
 ENV XDG_DATA_HOME=/gnosis-model-cache
@@ -167,6 +218,7 @@ FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs
 ARG SQLITE_VERSION=3.53.4
 ARG ZLIB_VERSION=1.3.2
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY --from=builder /opt/sqlite/lib/libsqlite3.so* /usr/local/lib/
 COPY --from=builder /opt/zlib/lib/libz.so* /usr/local/lib/
 COPY --from=glibc_patched /out/ /tmp/glibc/
@@ -182,7 +234,7 @@ ARG GZIP_MIN_VERSION=1.13-1+deb13u1
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb \
+    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
     && apt-get install -y --no-install-recommends \
         libgomp1 \
         libssl3t64 \
@@ -208,6 +260,7 @@ RUN apt-get update \
        done \
     && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
     && test "$(dpkg-query -W -f='${Version}' libc-bin)" = "${GLIBC_BACKPORT_VERSION}" \
+    && test "$(dpkg-query -W -f='${Version}' dash)" = "${DASH_BACKPORT_VERSION}" \
     && useradd --system --create-home --home-dir /home/gnosis --shell /bin/false gnosis \
     && rm -rf /tmp/glibc /var/lib/apt/lists/* \
     && ldconfig \
