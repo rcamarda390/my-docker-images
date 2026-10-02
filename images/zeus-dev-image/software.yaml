@@ -40,7 +40,7 @@ os_packages:
   - source: Docker CE RHEL 10 repository
     url: https://download.docker.com/linux/rhel/10/
     packages:
-      - {name: docker-ce-cli, version: repo, note: "Buildx weak dependency excluded; Docker CLI and docker exec retained"}
+      - {name: docker-ce-cli, version: repo, note: "Buildx/Compose RPM weak dependencies excluded; Docker CLI and docker exec retained"}
 
 python_packages:
   source: https://pypi.org/
@@ -113,7 +113,7 @@ npm_overrides:
       - {name: "@hono/node-server", version: "2.1.3"}
       - {name: "@ai-sdk/provider-utils@5.0.0", version: "5.0.1", note: "only affected 5.0.0 copy; preserve other supported major versions"}
       - {name: "@opentelemetry/core", version: "2.9.0"}
-      - {name: undici, version: "6.28.1", note: "security override for the pinned Cline CLI"}
+      - {name: undici, version: "6.28.1", note: "security override for the pinned Cline CLI; simple-git 4 named-import compatibility patch also applied"}
   agentmemory:
     roots: [/opt/agentmemory, /opt/agentmemory-mcp]
     packages:
@@ -137,6 +137,13 @@ npm_overrides:
       - {name: "@opentelemetry/sdk-trace-base", version: "2.9.0"}
       - {name: "@opentelemetry/sdk-trace-node", version: "2.9.0"}
 
+downloaded_binaries:
+  - name: docker-compose
+    version: "5.6.0"
+    source: https://github.com/docker/compose/releases/download/v5.6.0/docker-compose-linux-x86_64
+    sha256: 40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a
+    note: Official binary with Go 1.26.8 and containerd 2.4.1; replaces older RPM dependency.
+
 source_binaries:
   - name: bifrost-cli
     version: "0.10.6"
@@ -158,6 +165,7 @@ source_builds:
     note: Only the xdg-user-dir command is copied into the image.
 
 build_only:
+  - {name: golang, version: "1.26.8-alpine3.23", source: "https://hub.docker.com/_/golang", note: "Compose binary build-info verification only"}
   - {name: golang, version: "1.26.6-alpine3.23", source: "https://hub.docker.com/_/golang", note: "Bifrost CLI source build; compiler excluded from final image"}
   - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}

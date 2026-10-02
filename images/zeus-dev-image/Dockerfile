@@ -79,6 +79,22 @@ RUN set -eux; \
     cd /out; sha256sum bifrost > bifrost.sha256
 
 # ============================================================
+# Docker Compose's official fixed binary; verify its embedded dependency graph.
+# ============================================================
+FROM golang:1.26.8-alpine3.23 AS compose-verified
+RUN set -eux; \
+    apk add --no-cache curl; \
+    mkdir -p /out; \
+    curl --retry 3 -fsSL https://github.com/docker/compose/releases/download/v5.6.0/docker-compose-linux-x86_64 -o /out/docker-compose; \
+    printf '%s  %s\n' 40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a /out/docker-compose | sha256sum -c -; \
+    chmod 0755 /out/docker-compose; \
+    go version -m /out/docker-compose > /out/compose-build-info.txt; \
+    cat /out/compose-build-info.txt; \
+    grep -q 'go1.26.8' /out/compose-build-info.txt; \
+    grep -Eq 'github.com/containerd/containerd/v2[[:space:]]+v2.4.1' /out/compose-build-info.txt; \
+    /out/docker-compose version
+
+# ============================================================
 # Final image
 # ============================================================
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
@@ -168,7 +184,8 @@ RUN dnf install -y htop btop \
 # Install Docker CLI without the Buildx weak dependency
 # ============================================================
 # Base image uses microdnf which doesn't support config-manager.
-# Create repo file directly instead. Keep Compose if pulled as a weak dependency.
+# Create repo file directly instead. Compose is installed from its verified
+# upstream release below, rather than the older RPM weak dependency.
 RUN set -e; \
     echo "=== Installing Docker CLI without Buildx ==="; \
     echo '[docker-ce-stable]' > /etc/yum.repos.d/docker-ce.repo; \
@@ -177,13 +194,17 @@ RUN set -e; \
     echo 'enabled=1' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
     echo 'repo_gpgcheck=0' >> /etc/yum.repos.d/docker-ce.repo; \
-    dnf install -y --exclude=docker-buildx-plugin docker-ce-cli; \
+    dnf install -y --exclude=docker-buildx-plugin --exclude=docker-compose-plugin docker-ce-cli; \
     rpm -q docker-ce-cli; \
     ! rpm -q docker-buildx-plugin; \
     test ! -e /usr/libexec/docker/cli-plugins/docker-buildx; \
     docker --version; \
     docker exec --help >/dev/null; \
     dnf clean all
+
+COPY --from=compose-verified /out/docker-compose /usr/libexec/docker/cli-plugins/docker-compose
+COPY --from=compose-verified /out/compose-build-info.txt /usr/local/share/zeus/compose-build-info.txt
+RUN docker compose version
 
 # ============================================================
 # Install unzip (optional - continues on failure)
@@ -277,6 +298,7 @@ RUN set -eux; \
 # air-gapped Dockerfile consumes the resulting commands and paths; it does
 # not need the original artifact files.
 COPY patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
+COPY patch-cline-simple-git.mjs /tmp/patch-cline-simple-git.mjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
     printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1"}}' > /opt/agentmemory/package.json; \
@@ -292,11 +314,12 @@ RUN set -eux; \
     mkdir -p /opt/cline; \
     printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
     npm install --prefix /opt/cline cline@3.0.61; \
+    node /tmp/patch-cline-simple-git.mjs; \
     ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
     npm install -g @anthropic-ai/claude-code@2.1.260; \
     cline --version; \
     claude --version; \
-    rm -f /tmp/patch-iii-otel2.mjs
+    rm -f /tmp/patch-iii-otel2.mjs /tmp/patch-cline-simple-git.mjs
 
 # Preserve the CLI release and source commit; only its Go toolchain changes.
 COPY --from=bifrost-cli-build /out/bifrost /usr/local/bin/bifrost
