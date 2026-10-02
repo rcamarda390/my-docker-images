@@ -1,14 +1,17 @@
 # syntax=docker/dockerfile:1.7
 
 ARG ALPINE_VERSION=3.24
-ARG PYTHON_APK_VERSION=3.14.7-r1
+ARG PYTHON_APK_VERSION=3.14.8-r0
+ARG EXPAT_MIN_VERSION=2.8.5-r0
+ARG MCP_VERSION=1.30.0
+ARG OAUTHLIB_VERSION=4.0.0
 
 # Exact application dependency versions already resolved in the hardened
 # uv.lock. These are promoted to explicit build inputs so the Docker build
 # fails closed if lock resolution ever drifts below the Xray-remediated set.
 ARG CRYPTOGRAPHY_VERSION=50.0.0
-ARG PYJWT_VERSION=2.14.0
-ARG URLLIB3_VERSION=2.7.0
+ARG PYJWT_VERSION=2.15.1
+ARG URLLIB3_VERSION=2.8.0
 ARG CLICK_VERSION=8.4.2
 ARG IDNA_VERSION=3.19
 ARG SOUPSIEVE_VERSION=2.9.2
@@ -20,6 +23,9 @@ ARG PYGMENTS_VERSION=2.21.0
 FROM alpine:${ALPINE_VERSION} AS builder
 
 ARG PYTHON_APK_VERSION
+ARG EXPAT_MIN_VERSION
+ARG MCP_VERSION
+ARG OAUTHLIB_VERSION
 ARG CRYPTOGRAPHY_VERSION
 ARG PYJWT_VERSION
 ARG URLLIB3_VERSION
@@ -40,6 +46,7 @@ RUN apk upgrade --no-cache \
         libgcc \
         libstdc++ \
         "python3=${PYTHON_APK_VERSION}" \
+        "libexpat>=${EXPAT_MIN_VERSION}" \
     && apk info -e "python3=${PYTHON_APK_VERSION}" \
     && python3 -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()"
 
@@ -73,7 +80,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Xray-remediated application dependency resolved to the exact intended version
 # before anything is copied into the runtime image.
 RUN /app/.venv/bin/python -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && find /app/.venv -name '__pycache__' -type d -exec rm -rf {} + \
     && find /app/.venv -name '*.pyc' -delete \
     && find /app/.venv -name '*.pyo' -delete \
@@ -83,6 +90,9 @@ RUN /app/.venv/bin/python -c "import platform; assert platform.python_version() 
 FROM alpine:${ALPINE_VERSION}
 
 ARG PYTHON_APK_VERSION
+ARG EXPAT_MIN_VERSION
+ARG MCP_VERSION
+ARG OAUTHLIB_VERSION
 ARG CRYPTOGRAPHY_VERSION
 ARG PYJWT_VERSION
 ARG URLLIB3_VERSION
@@ -105,6 +115,7 @@ RUN apk upgrade --no-cache \
         libgcc \
         libstdc++ \
         "python3=${PYTHON_APK_VERSION}" \
+        "libexpat>=${EXPAT_MIN_VERSION}" \
         "sqlite-libs>=${SQLITE_MIN_VERSION}" \
     && rm -rf /usr/lib/python3.*/ensurepip \
     && rm -rf /var/cache/apk/* \
@@ -114,13 +125,17 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 # Verify the final artifact, not merely the builder inputs. Xray should see the
-# APK package record for Python 3.14.7-r1, while the runtime check proves the
+# APK package record for Python 3.14.8-r0, while the runtime check proves the
 # venv uses that same interpreter and retains every fixed dependency version.
 RUN apk info -e "python3=${PYTHON_APK_VERSION}" \
-    && apk info -v python3 sqlite-libs \
+        "libexpat>=${EXPAT_MIN_VERSION}" \
+    && apk info -v python3 python3-pyc python3-pycache-pyc0 pyc libexpat sqlite-libs \
+    && test "$(apk version -t "$(apk info -v libexpat | sed 's/^libexpat-//')" "${EXPAT_MIN_VERSION}")" != "<" \
+    && for package in python3-pyc python3-pycache-pyc0 pyc; do if apk info -e "$package"; then apk info -e "${package}=${PYTHON_APK_VERSION}" || exit 1; fi; done \
+    && /app/.venv/bin/python -c "import ssl, pyexpat; assert tuple(map(int, pyexpat.EXPAT_VERSION.removeprefix('expat_').split('.'))) >= (2,8,5), pyexpat.EXPAT_VERSION; assert pyexpat.ParserCreate().Parse('<root/>', True) == 1" \
     && python3 -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
     && /app/.venv/bin/python -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && /app/.venv/bin/python -c "import importlib.util, pathlib, sqlite3; from importlib.metadata import distributions; from packaging.version import Version; assert importlib.util.find_spec('pip') is None, importlib.util.find_spec('pip'); assert importlib.util.find_spec('setuptools') is None, importlib.util.find_spec('setuptools'); roots=(pathlib.Path('/app/.venv'), pathlib.Path('/usr/lib')); forbidden=[str(path) for root in roots for path in root.rglob('*') if path.is_file() and ('/pip/_vendor/' in str(path) or '/ensurepip/_bundled/' in str(path))]; assert not forbidden, forbidden[:20]; packages={d.metadata['Name'].lower(): d.version for d in distributions() if d.metadata.get('Name')}; assert sqlite3.sqlite_version_info >= (3,53,4), sqlite3.sqlite_version; assert 'msgpack' not in packages or Version(packages['msgpack']) >= Version('1.2.1'), packages.get('msgpack'); import mcp_atlassian; from mcp_atlassian import main; assert callable(main)" \
     && /app/.venv/bin/mcp-atlassian --help
 

@@ -10,7 +10,7 @@ dependencies = [
     "requests[socks]>=2.34.0",
     "beautifulsoup4>=4.12.3",
     "httpx>=0.28.0",
-    "mcp>=1.27.0,<2.0.0",
+    "mcp>=1.30.0,<2.0.0",
     "fastmcp>=3.4.4,<4.0.0",
     "fakeredis>=2.32.1,<2.35.0",
     "python-dotenv>=1.0.1",
@@ -22,7 +22,7 @@ dependencies = [
     "click>=8.1.7",
     "uvicorn>=0.27.1",
     "starlette>=1.0.1",
-    "urllib3>=2.7.0",
+    "urllib3>=2.8.0",
     "thefuzz>=0.22.1",
     "python-dateutil>=2.9.0.post0",
     "types-python-dateutil>=2.9.0.20241206",
@@ -171,3 +171,10 @@ vcs = "git"
 style = "pep440"
 bump = true
 fallback-version = "0.0.0"
+
+# Xray remediation floors for runtime dependencies supplied transitively.
+[tool.uv]
+constraint-dependencies = [
+    "oauthlib>=4.0.0,<5.0.0",
+    "PyJWT>=2.15.0,<3.0.0",
+]

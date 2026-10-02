@@ -2,6 +2,10 @@ name: Build and publish sooperset-mcp-atlassian image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - images/sooperset-mcp-atlassian/**
+      - .github/workflows/build-sooperset-mcp-atlassian.yml
   push:
     branches:
       - main
