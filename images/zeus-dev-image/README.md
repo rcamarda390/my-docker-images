@@ -53,6 +53,9 @@ applies to the Trivy PR scan; internal Xray review remains separate.
 
 SQZ and the Cline VS Code extension are excluded.
 
+vi and Vim are excluded, including inherited Vim RPMs. Use VS Code for editing
+or install an approved editor in the downstream internal image.
+
 This image has no internal user roster, site wrappers, custom shell prompt,
 host-specific directories, or entrypoint. Its installation check fails the
 build when required software is missing. The downstream build must add its
