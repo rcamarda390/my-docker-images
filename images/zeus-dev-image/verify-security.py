@@ -14,6 +14,9 @@ from packaging.version import Version
 for package in ("pcre2", "pcre2-syntax"):
     version = subprocess.check_output(["rpm", "-q", "--qf", "%{VERSION}", package], text=True)
     assert version == "10.49", (package, version)
+posix = ctypes.CDLL("libpcre2-posix.so.3")
+for symbol in ("pcre2_regcomp", "pcre2_regexec", "pcre2_regerror", "pcre2_regfree"):
+    assert getattr(posix, symbol)
 pcre2 = ctypes.CDLL("libpcre2-8.so.0")
 pcre2.pcre2_config_8.argtypes = [ctypes.c_uint32, ctypes.c_void_p]
 pcre2.pcre2_config_8.restype = ctypes.c_int

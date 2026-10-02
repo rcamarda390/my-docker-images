@@ -12,7 +12,7 @@ Requires:       %{name}-syntax = %{version}-%{release}
 
 %description
 PCRE2 8-bit runtime built on UBI10 from the checksum-verified upstream release.
-Replaces the distro runtime with the same libpcre2-8.so.0 ABI.
+Replaces the distro runtime with the same libpcre2-8.so.0 and libpcre2-posix.so.3 ABIs.
 
 %package syntax
 Summary:        Documentation for PCRE2 regular expressions
@@ -38,14 +38,17 @@ Updated regular-expression syntax documentation from the same PCRE2 source.
 install -d %{buildroot}%{_libdir} %{buildroot}%{_mandir}/man3
 install -pm755 .libs/libpcre2-8.so.0.* %{buildroot}%{_libdir}/
 ln -s "$(basename .libs/libpcre2-8.so.0.*)" %{buildroot}%{_libdir}/libpcre2-8.so.0
+install -pm755 .libs/libpcre2-posix.so.3.* %{buildroot}%{_libdir}/
+ln -s "$(basename .libs/libpcre2-posix.so.3.*)" %{buildroot}%{_libdir}/libpcre2-posix.so.3
 install -pm644 doc/pcre2pattern.3 doc/pcre2syntax.3 doc/pcre2unicode.3 %{buildroot}%{_mandir}/man3/
 
 %files
-%license LICENCE
+%license LICENCE.md
 %{_libdir}/libpcre2-8.so.0*
+%{_libdir}/libpcre2-posix.so.3*
 
 %files syntax
-%license LICENCE
+%license LICENCE.md
 %{_mandir}/man3/pcre2pattern.3*
 %{_mandir}/man3/pcre2syntax.3*
 %{_mandir}/man3/pcre2unicode.3*

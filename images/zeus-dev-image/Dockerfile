@@ -101,9 +101,11 @@ FROM registry.access.redhat.com/ubi10/ubi:latest AS pcre2-security-build
 USER 0
 RUN dnf install -y rpm-build gcc make binutils curl tar gzip pcre2 \
     && mkdir -p /build/SOURCES /build/SPECS /out \
-    && nm -D --defined-only /usr/lib64/libpcre2-8.so.0 \
-        | awk '$3 ~ /^pcre2_.*_8$/ {print $3}' | sort -u > /out/pcre2-ubi-symbols.txt \
-    && test -s /out/pcre2-ubi-symbols.txt
+    && for library in libpcre2-8.so.0 libpcre2-posix.so.3; do \
+        nm -D --defined-only "/usr/lib64/$library" \
+            | awk 'NF == 3 {print $3}' | sort -u > "/out/$library.ubi-symbols.txt"; \
+        test -s "/out/$library.ubi-symbols.txt" || exit 1; \
+    done
 COPY pcre2-security.spec /build/SPECS/pcre2-security.spec
 RUN set -eux; \
     curl --retry 3 -fsSL https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.gz \
@@ -112,11 +114,13 @@ RUN set -eux; \
     rpmbuild -ba --define '_topdir /build' /build/SPECS/pcre2-security.spec; \
     cp /build/RPMS/x86_64/pcre2-10.49-*.rpm /build/RPMS/noarch/pcre2-syntax-10.49-*.rpm /out/; \
     dnf install -y /out/*.rpm; \
-    nm -D --defined-only /usr/lib64/libpcre2-8.so.0 \
-        | awk '$3 ~ /^pcre2_.*_8$/ {print $3}' | sort -u > /tmp/pcre2-new-symbols.txt; \
-    comm -23 /out/pcre2-ubi-symbols.txt /tmp/pcre2-new-symbols.txt > /tmp/pcre2-missing-symbols.txt; \
-    cat /tmp/pcre2-missing-symbols.txt; \
-    test ! -s /tmp/pcre2-missing-symbols.txt; \
+    for library in libpcre2-8.so.0 libpcre2-posix.so.3; do \
+        nm -D --defined-only "/usr/lib64/$library" \
+            | awk 'NF == 3 {print $3}' | sort -u > /tmp/pcre2-new-symbols.txt; \
+        comm -23 "/out/$library.ubi-symbols.txt" /tmp/pcre2-new-symbols.txt > /tmp/pcre2-missing-symbols.txt; \
+        cat /tmp/pcre2-missing-symbols.txt; \
+        test ! -s /tmp/pcre2-missing-symbols.txt; \
+    done; \
     dnf check
 
 # ============================================================
