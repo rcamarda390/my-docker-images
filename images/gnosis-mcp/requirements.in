@@ -20,4 +20,8 @@ msgpack>=1.2.1
 # XRAY-1076202 (CVSS 4.4, CWE-1333)
 # XRAY-1076196 (CVSS 4.8, CWE-180)
 # XRAY-1076193 (CVSS 5.3, CWE-770)
-PyJWT>=2.14.0
+# CVE-2026-101918 and CVE-2026-102275: fixed in 2.15.0.
+PyJWT>=2.15.0,<3
+# XRAY-1097496, CVE-2026-59951, XRAY-1094841, XRAY-1094609.
+# Keep the supported 1.x API used by Gnosis and its Streamable HTTP smoke test.
+mcp>=1.30.0,<2
