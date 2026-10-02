@@ -1,3 +1,4 @@
+<!-- README.md: Zeus software image documentation. -->
 # zeus-dev-image
 
 Public software base for the internal Zeus developer image. GitHub Actions builds
@@ -35,14 +36,18 @@ Docker and does not prove a build has passed.
 - OS utilities and optional convenience tools in the Dockerfile
 
 pip also bundles separate, older copies of msgpack and part of setuptools.
-[The scoped OpenVEX assessment](pip-vendored.openvex.json) classifies two
+[The scoped OpenVEX assessment](pip-vendored.openvex.json) classifies three
 findings against that bundle as not affected: pip does not use msgpack's
 vulnerable Unpacker path, and its setuptools subset has no vulnerable
-PackageIndex code. Trivy still displays both in its suppressed section.
+PackageIndex or jaraco.context tarball extraction code. This covers
+CVE-2025-47273, CVE-2026-23949, and the msgpack advisory
+GHSA-6v7p-g79w-8964 (reported by Xray as CVE-2026-57585).
+Trivy displays matching assessments in its suppressed section.
 Only pip's urllib3 subtree is upgraded to 2.8.0, retaining pip's vendoring patches;
 its SBOM and installation record reflect the actual replacement code. The
-msgpack/setuptools assessment above is unchanged. The verification script checks
-the assessed components, while the
+verification script checks the assessed components in both the main
+interpreter and AWS CLI venv, verifies the vulnerable setuptools files are
+absent, and exercises pip cache serialization through pure-Python msgpack. The
 standalone Python packages remain at their fixed versions. This assessment
 applies to the Trivy PR scan; internal Xray review remains separate.
 
