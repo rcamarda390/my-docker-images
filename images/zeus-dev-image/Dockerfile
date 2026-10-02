@@ -206,6 +206,7 @@ RUN set -eux; \
     python3 -c "from airflow.providers.fab import __version__; print('FAB version:', __version__)"
 # ============================================================
 # Python dependencies
+# Resolve S3FS and the AWS SDK together; aiobotocore matches Airflow constraints.
 # ============================================================
 RUN set -eux; \
     pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
@@ -221,6 +222,9 @@ RUN set -eux; \
         duckdb==1.5.3 \
         sqlglot==30.4.2 \
         s3fs==2026.3.0 \
+        aiobotocore==3.9.1 \
+        botocore==1.43.75 \
+        boto3==1.43.75 \
         jira==3.10.5 \
         beautifulsoup4==4.15.0 \
         html2text==2025.4.15 \
@@ -228,9 +232,6 @@ RUN set -eux; \
     \
     pip3 install --no-input --no-cache-dir sqlfluff==4.2.0; \
     \
-    pip3 install --no-input --no-cache-dir \
-        botocore==1.43.75 \
-        boto3==1.43.75; \
     python3 -m venv /opt/aws-cli; \
     /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1; \
     ln -sf /opt/aws-cli/bin/aws /usr/local/bin/aws; \
