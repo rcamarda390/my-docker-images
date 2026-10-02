@@ -54,6 +54,31 @@ RUN set -e; \
     test "$(HOME=/tmp/xdg-user-dirs-test /out/usr/local/bin/xdg-user-dir DOCUMENTS)" = /tmp/xdg-user-dirs-test
 
 # ============================================================
+# Rebuild the unchanged Bifrost CLI source with Xray's fixed Go toolchain.
+# ============================================================
+FROM golang:1.26.6-alpine3.23 AS bifrost-cli-build
+ARG BIFROST_CLI_COMMIT=a0d7aafab999509121154452e455d970ae2572b4
+ENV GOTOOLCHAIN=local GOWORK=off CGO_ENABLED=0
+RUN apk add --no-cache git \
+    && git init /src \
+    && git -C /src remote add origin https://github.com/maximhq/bifrost.git \
+    && git -C /src fetch --depth 1 origin "$BIFROST_CLI_COMMIT" \
+    && git -C /src checkout --detach FETCH_HEAD \
+    && test "$(git -C /src rev-parse HEAD)" = "$BIFROST_CLI_COMMIT"
+WORKDIR /src/cli
+RUN set -eux; \
+    test "$(go env GOVERSION)" = go1.26.6; \
+    go list -m all; \
+    go test ./...; \
+    mkdir -p /out; \
+    go build -trimpath -ldflags "-s -w -buildid= -X main.version=v0.10.6 -X main.commit=${BIFROST_CLI_COMMIT}" -o /out/bifrost .; \
+    go version -m /out/bifrost > /out/bifrost-build-info.txt; \
+    cat /out/bifrost-build-info.txt; \
+    grep -q 'go1.26.6' /out/bifrost-build-info.txt; \
+    /out/bifrost version; \
+    cd /out; sha256sum bifrost > bifrost.sha256
+
+# ============================================================
 # Final image
 # ============================================================
 # ponytail: base image uses the mutable `:latest` tag, matching the internal
@@ -233,15 +258,16 @@ RUN set -eux; \
     pip3 install --no-input --no-cache-dir sqlfluff==4.2.0; \
     \
     python3 -m venv /opt/aws-cli; \
-    /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1; \
+    /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1 pip==26.2.1 urllib3==2.8.0; \
     ln -sf /opt/aws-cli/bin/aws /usr/local/bin/aws; \
     aws --version; \
     pip3 install --no-input --no-cache-dir ruff==0.15.11 \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
-    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.2 setuptools==84.0.0; \
-    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.2'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (78, 1)"; \
+    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
+        urllib3==2.8.0 PyJWT==2.15.0 Mako==1.4.2 Werkzeug==3.1.9; \
+    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
     rm -rf /root/.cache /tmp/* /var/tmp/*
 
 # ============================================================
@@ -253,7 +279,7 @@ RUN set -eux; \
 COPY patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
-    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}' > /opt/agentmemory/package.json; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1"}}' > /opt/agentmemory/package.json; \
     cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
     npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.29; \
     npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.29; \
@@ -264,25 +290,19 @@ RUN set -eux; \
     ln -sf /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
     mkdir -p /opt/cline; \
-    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1"}}' > /opt/cline/package.json; \
+    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@5.0.0":"5.0.1","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
     npm install --prefix /opt/cline cline@3.0.61; \
     ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
-    npm install -g @anthropic-ai/claude-code@2.1.252; \
+    npm install -g @anthropic-ai/claude-code@2.1.260; \
     cline --version; \
     claude --version; \
     rm -f /tmp/patch-iii-otel2.mjs
 
-# Bifrost's npm package is a downloader, not the CLI binary. Run it only
-# during the connected build, then install the verified static binary for
-# every runtime user; no npx/public download is needed in the air gap.
-ARG BIFROST_CLI_VERSION=v0.10.6
-ARG BIFROST_CLI_SHA256=0f162f1e1de7148251e722bcfaddd981e4798d5391b24808cacc08d0b5a4c886
-RUN set -eux; \
-    npx -y @maximhq/bifrost-cli@1.0.1 --cli-version "$BIFROST_CLI_VERSION"; \
-    printf '%s  %s\n' "$BIFROST_CLI_SHA256" /root/.bifrost/bin/bifrost | sha256sum -c -; \
-    install -m 0755 /root/.bifrost/bin/bifrost /usr/local/bin/bifrost; \
-    bifrost --help; \
-    rm -rf /root/.bifrost /root/.npm/_npx
+# Preserve the CLI release and source commit; only its Go toolchain changes.
+COPY --from=bifrost-cli-build /out/bifrost /usr/local/bin/bifrost
+COPY --from=bifrost-cli-build /out/bifrost.sha256 /usr/local/share/zeus/bifrost.sha256
+COPY --from=bifrost-cli-build /out/bifrost-build-info.txt /usr/local/share/zeus/bifrost-build-info.txt
+RUN cd /usr/local/bin && sha256sum -c /usr/local/share/zeus/bifrost.sha256 && bifrost --help
 
 # ============================================================
 # GitLab MCP server dependencies
@@ -291,8 +311,8 @@ RUN set -eux; \
 # @modelcontextprotocol/sdk, axios, TypeScript, and Node.js types.
 RUN set -eux; \
     npm install --prefix /opt/gitlab-mcp-server --legacy-peer-deps \
-        @modelcontextprotocol/sdk@1.29.0 \
-        axios@1.18.0 \
+        @modelcontextprotocol/sdk@1.31.0 \
+        axios@1.20.0 \
         @types/node \
         typescript@6.0.3; \
     test -d /opt/gitlab-mcp-server/node_modules/@modelcontextprotocol/sdk; \
@@ -310,6 +330,14 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
     && echo "Archify version: ${archify_version}" \
     && test "${archify_version}" = "2.17.0-dev.1"
 
+# Refresh packages after every installation, including dependencies introduced
+# by optional packages. Record actual RPM versions for Xray follow-up.
+RUN dnf upgrade --refresh -y \
+    && rpm -qa | sort \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf /var/cache/yum /root/.npm/_cacache /root/.cache
+
+COPY verify-security.py /usr/local/bin/verify-security.py
 # Fail the build if required software is missing.
 COPY verify-installation.sh /usr/local/bin/verify-installation.sh
 RUN chmod 755 /usr/local/bin/verify-installation.sh \

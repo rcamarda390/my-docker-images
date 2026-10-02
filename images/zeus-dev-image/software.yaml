@@ -58,7 +58,11 @@ python_packages:
     - {name: apache-airflow-providers-amazon, version: constraints}
     - {name: apache-airflow-providers-ssh, version: constraints}
     - {name: apache-airflow-providers-fab, version: constraints}
-    - {name: msgpack, version: "1.2.2", note: "security fix; explicitly upgraded after providers"}
+    - {name: msgpack, version: "1.2.3", note: "security fix; explicitly upgraded after providers"}
+    - {name: urllib3, version: "2.8.0", note: "also pinned in the AWS CLI venv"}
+    - {name: PyJWT, version: "2.15.0"}
+    - {name: Mako, version: "1.4.2"}
+    - {name: Werkzeug, version: "3.1.9"}
     - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
     - {name: pip, version: "26.2.1", note: "pinned for vendored dependency VEX assessment; upgraded before remaining packages"}
     - {name: numpy, version: "1.26.4"}
@@ -80,7 +84,7 @@ python_packages:
     - {name: sqlfluff, version: "4.2.0"}
     - {name: botocore, version: "1.43.75"}
     - {name: boto3, version: "1.43.75"}
-    - {name: awscli, version: "1.46.1", note: "CLI v1; isolated in /opt/aws-cli virtual environment"}
+    - {name: awscli, version: "1.46.1", note: "CLI v1; isolated in /opt/aws-cli with pip 26.2.1 and urllib3 2.8.0"}
     - {name: ruff, version: "0.15.11", optional: true}
     - {name: pyfiglet, version: unpinned, optional: true}
 
@@ -91,9 +95,9 @@ npm_packages:
     - {name: "@agentmemory/agentmemory", version: "0.9.29"}
     - {name: "@agentmemory/mcp", version: "0.9.29"}
     - {name: cline, version: "3.0.61", note: "CLI in /opt/cline, not VS Code extension"}
-    - {name: "@anthropic-ai/claude-code", version: "2.1.252"}
-    - {name: "@modelcontextprotocol/sdk", version: "1.29.0", note: "GitLab MCP dependencies only"}
-    - {name: axios, version: "1.18.0", note: "GitLab MCP dependencies only"}
+    - {name: "@anthropic-ai/claude-code", version: "2.1.260"}
+    - {name: "@modelcontextprotocol/sdk", version: "1.31.0", note: "GitLab MCP dependencies only"}
+    - {name: axios, version: "1.20.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
     - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
 
@@ -102,10 +106,23 @@ npm_overrides:
   cline:
     root: /opt/cline
     packages:
+      - {name: axios, version: "1.20.0"}
+      - {name: simple-git, version: "4.0.1"}
+      - {name: "@simple-git/argv-parser", version: "2.0.1"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.31.0"}
+      - {name: "@hono/node-server", version: "2.1.3"}
+      - {name: "@ai-sdk/provider-utils@5.0.0", version: "5.0.1", note: "only affected 5.0.0 copy; preserve other supported major versions"}
+      - {name: "@opentelemetry/core", version: "2.9.0"}
       - {name: undici, version: "6.28.1", note: "security override for the pinned Cline CLI"}
   agentmemory:
     roots: [/opt/agentmemory, /opt/agentmemory-mcp]
     packages:
+      - {name: axios, version: "1.20.0"}
+      - {name: simple-git, version: "4.0.1"}
+      - {name: "@simple-git/argv-parser", version: "2.0.1"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.31.0"}
+      - {name: "@hono/node-server", version: "2.1.3"}
+      - {name: "@ai-sdk/provider-utils@5.0.0", version: "5.0.1", note: "only affected 5.0.0 copy; preserve other supported major versions"}
       - {name: iii-sdk, version: "0.11.2", note: "matches AgentMemory's pinned engine SDK"}
       - {name: "@opentelemetry/api-logs", version: "0.200.0"}
       - {name: "@opentelemetry/core", version: "2.9.0"}
@@ -120,13 +137,13 @@ npm_overrides:
       - {name: "@opentelemetry/sdk-trace-base", version: "2.9.0"}
       - {name: "@opentelemetry/sdk-trace-node", version: "2.9.0"}
 
-downloaded_binaries:
+source_binaries:
   - name: bifrost-cli
     version: "0.10.6"
-    source: https://downloads.getmaxim.ai/bifrost-cli/v0.10.6/linux/amd64/bifrost
-    installer: "@maximhq/bifrost-cli@1.0.1 (npm; Node >=18; no npm dependencies)"
-    sha256: 0f162f1e1de7148251e722bcfaddd981e4798d5391b24808cacc08d0b5a4c886
-    note: Static linux/amd64 binary in /usr/local/bin; Claude CLI already installed. Linux Secret Service is optional for virtual-key persistence and requires runtime session setup.
+    source: https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli
+    commit: a0d7aafab999509121154452e455d970ae2572b4
+    toolchain: "Go 1.26.6"
+    note: Same CLI release; rebuilt with fixed Go toolchain, upstream tests, recorded build info and checksum.
 
 source_builds:
   - name: archify
@@ -141,6 +158,7 @@ source_builds:
     note: Only the xdg-user-dir command is copied into the image.
 
 build_only:
+  - {name: golang, version: "1.26.6-alpine3.23", source: "https://hub.docker.com/_/golang", note: "Bifrost CLI source build; compiler excluded from final image"}
   - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
   - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
