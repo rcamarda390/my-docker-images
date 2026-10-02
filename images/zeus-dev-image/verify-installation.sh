@@ -66,6 +66,14 @@ assert serializer.loads(request, b"cc=4,\xc1") is None
 done
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
+check "vi/Vim packages and commands absent" 1 python3 -c '
+import shutil
+import subprocess
+packages = subprocess.check_output(["rpm", "-qa", "--qf", "%{NAME}\\n"], text=True).splitlines()
+assert not [name for name in packages if name == "vim" or name.startswith("vim-")]
+assert shutil.which("vi") is None
+assert shutil.which("vim") is None
+'
 check "git" 1 command -v git
 check "docker CLI" 1 docker --version
 check "docker exec command" 1 docker exec --help

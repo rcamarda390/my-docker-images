@@ -1,4 +1,4 @@
-# Edit this list to request a Zeus software change. Keep names and sources clear.
+# software.yaml: edit this list to request a Zeus software change. Keep names and sources clear.
 # "version: repo" means the Dockerfile currently accepts the repository version.
 # "version: unpinned" means the build can resolve a newer release on the next run.
 # The Dockerfile remains the executable build; an agent reviews compatibility,
@@ -20,8 +20,6 @@ os_packages:
       - {name: python3-pip, version: repo}
       - {name: nodejs, version: "22", note: "RHEL 10 AppStream"}
       - {name: npm, version: repo, note: "RHEL 10 AppStream"}
-      - {name: vim, version: repo}
-      - {name: vi, version: repo}
       - {name: shadow-utils, version: repo}
       - {name: findutils, version: repo}
       - {name: file, version: repo}

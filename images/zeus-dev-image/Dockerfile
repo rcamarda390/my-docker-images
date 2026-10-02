@@ -142,8 +142,6 @@ RUN dnf install -y \
     && dnf install -y \
         python3 \
         python3-pip \
-        vim \
-        vi \
         shadow-utils \
         findutils \
         file \
@@ -359,6 +357,11 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
     && archify_version="$(node -p "require('/opt/archify/package.json').version")" \
     && echo "Archify version: ${archify_version}" \
     && test "${archify_version}" = "2.17.0-dev.1"
+
+# Remove inherited vi/Vim packages after the last installation. Keep unrelated
+# dependencies installed; the normal verification below checks remaining tools.
+RUN dnf remove -y --setopt=clean_requirements_on_remove=False 'vim*' \
+    && dnf clean all
 
 # Refresh packages after every installation, including dependencies introduced
 # by optional packages. Record actual RPM versions for Xray follow-up.
