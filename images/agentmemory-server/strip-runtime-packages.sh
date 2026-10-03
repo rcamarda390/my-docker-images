@@ -71,8 +71,13 @@ for path in usr/bin/apt usr/bin/dpkg usr/bin/dpkg-query usr/bin/tar \
 done
 
 chroot "$runtime_root" /sbin/ldconfig
+chroot "$runtime_root" /usr/local/bin/verify-native-runtime
+for package in global-agent roarr sprintf-js; do
+    test ! -e "$runtime_root/opt/agentmemory/node_modules/$package"
+done
+test ! -e "$runtime_root/opt/agentmemory/node_modules/onnxruntime-node/script"
 chroot "$runtime_root" /usr/local/bin/pcre2grep -V \
-    | grep -F 'pcre2grep version 10.48'
+    | grep -F 'pcre2grep version 10.49'
 
 for binary in /bin/sh /usr/bin/openssl /usr/bin/tini /usr/sbin/gosu \
               /usr/local/bin/node /usr/local/bin/iii /usr/bin/chown \
