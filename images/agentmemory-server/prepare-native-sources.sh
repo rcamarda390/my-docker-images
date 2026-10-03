@@ -163,8 +163,8 @@ zlib df84af25dc1942490e1d1c899a07619152a46148 110ff14375733173d8aa54574473424fbd
 PATCHES
 
 # CVE-2026-76642 is already fixed in the pinned v2.41.6 source. Check the
-# security-relevant libmount hunk against upstream, allowing Debian's harmless
-# debug-macro difference, and verify cleanup when the post-mount hook is skipped.
+# security-relevant libmount hunks against upstream, including cleanup when the
+# post-mount hook is skipped. Stable source uses a different debug macro.
 patch=/tmp/util-linux-f57cea130839c0af8dc0525274267ae4cfd66bbf.patch
 curl --fail --location --silent --show-error --retry 3 \
     https://github.com/util-linux/util-linux/commit/f57cea130839c0af8dc0525274267ae4cfd66bbf.patch \
@@ -175,7 +175,7 @@ printf '%s  %s\n' \
 (
     cd util-linux
     git apply --reverse --check --include='libmount/src/context_mount.c' "$patch"
-    grep -Fq 'cleanup after skipped MOUNT_POST hook' libmount/src/hook_loopdev.c
-    grep -Fq 'if (hd->loopdev_fd > -1)' libmount/src/hook_loopdev.c
-    grep -Fq 'delete_loopdev(cxt, hd);' libmount/src/hook_loopdev.c
+    # Ignore unchanged context only for the loopdev hunk's debug-macro
+    # difference; every added line must still be present in the right block.
+    git apply --reverse --check -C0 --include='libmount/src/hook_loopdev.c' "$patch"
 )
