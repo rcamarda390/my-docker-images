@@ -154,8 +154,8 @@ RUN apt-get update \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libacl1)" ge "2.4.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libattr1)" ge "1:2.6.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libtinfo6)" ge "6.6+20260608-2+rcamarda1" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.41.6-0+rcamarda3" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' util-linux)" ge "2.41.6-0+rcamarda3" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.42.4-0+rcamarda1" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' util-linux)" ge "2.42.4-0+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc6)" ge "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc-bin)" ge "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libsqlite3-0)" ge "3.46.1-7+deb13u2" \
@@ -265,6 +265,9 @@ RUN --network=none node /opt/agentmemory/offline-embedding-smoke.mjs
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/agentmemory-entrypoint.sh
 COPY --chmod=0755 runtime-smoke.mjs /opt/agentmemory/runtime-smoke.mjs
 COPY --chmod=0755 strip-runtime-packages.sh /usr/local/lib/strip-runtime-packages.sh
+COPY --chmod=0644 verify-util-linux-removal.mjs /tmp/verify-util-linux-removal.mjs
+# Audit ELF imports with a build-only tool. /tmp is not copied into the final root.
+COPY --from=native_patched /usr/bin/readelf /tmp/readelf
 
 # Replace PCRE2 with the upstream fixed ABI. Runtime package removal happens
 # in a copied root below so the intact build root remains available to prove
