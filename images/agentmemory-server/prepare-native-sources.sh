@@ -45,7 +45,7 @@ for entry in attr:1:2.6.0-1 acl:2.4.0-1 ncurses:6.6+20260608-2 util-linux:2.41.6
     changelog="$package/debian/changelog"
     {
         revision=1
-        if [ "$package" = util-linux ]; then revision=2; fi
+        if [ "$package" = util-linux ]; then revision=3; fi
         printf '%s (%s+rcamarda%s) trixie; urgency=high\n\n' "$package" "$version" "$revision"
         printf '  * Rebuild fixed upstream sources for the AgentMemory Trixie runtime.\n\n'
         printf ' -- rcamarda390 image build <rcamarda390@users.noreply.github.com>  Tue, 15 Sep 2026 00:00:00 +0000\n\n'
@@ -135,6 +135,7 @@ UTIL_LINUX_OPENAT2_PATCH
 # prepare-native-sources.sh: extra upstream fixes absent from the pinned releases
 # and verify fixes already present in pinned source.
 # CVE-2026-3184: preserve the caller's FQDN for PAM_RHOST.
+# CVE-2026-78408: close both cgroup descriptors before credential changes.
 # CVE-2026-76642: v2.41.6 already includes the failed-helper hook guards.
 # CVE-2026-85091: fix stale gzwrite pointers after a non-blocking write stall.
 while read -r package commit checksum; do
@@ -146,6 +147,13 @@ while read -r package commit checksum; do
     curl --fail --location --silent --show-error --retry 3 \
         "https://github.com/$repo/commit/$commit.patch" -o "$patch"
     printf '%s  %s\n' "$checksum" "$patch" | sha256sum -c -
+    if [ "$commit" = 286dd3ff41526b582ef48830de239dffbaa61f90 ]; then
+        # v2.41.6 already includes the O_CLOEXEC line. Retain that exact
+        # line while applying upstream's missing explicit descriptor closes.
+        sed 's/O_WRONLY | O_APPEND))/O_WRONLY | O_APPEND | O_CLOEXEC))/' \
+            "$patch" > "$patch.backport"
+        patch="$patch.backport"
+    fi
     (
         cd "$package"
         if git apply --check "$patch"; then
@@ -159,6 +167,7 @@ while read -r package commit checksum; do
     )
 done <<'PATCHES'
 util-linux 8b29aeb081e297e48c4c1ac53d88ae07e1331984 6c2213341fe4dc23dc0182b8057605af54563ac434f4fa60430d7a483649112e
+util-linux 286dd3ff41526b582ef48830de239dffbaa61f90 bd5b45db9dbfb340622250e92a9f35dbfd9a3574045c4e89e3d034e2391f7697
 zlib df84af25dc1942490e1d1c899a07619152a46148 110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14
 PATCHES
 
