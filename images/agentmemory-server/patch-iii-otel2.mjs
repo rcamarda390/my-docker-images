@@ -11,10 +11,15 @@ const packageRoot = join(root, "node_modules");
 // transitive ranges. The deprecated OTel propagators may also be absent after
 // the coordinated 2.x migration.
 const fixedVersions = {
-  "adm-zip": "0.6.0",
+  "adm-zip": "0.6.1",
+  "proxy-addr": "2.0.8",
+  "@modelcontextprotocol/sdk": "1.31.0",
+  hono: "4.13.11",
+  "@hono/node-server": "2.1.3",
+  "fast-uri": "3.1.8",
   "brace-expansion": "5.0.9",
-  "ip-address": "10.5.1",
-  sharp: "0.35.4",
+  "ip-address": "10.7.1",
+  sharp: "0.35.5",
   tar: "7.5.21",
   undici: "6.28.0",
   "@opentelemetry/api-logs": "0.200.0",
@@ -46,9 +51,12 @@ for (const [name, expected] of Object.entries(fixedVersions)) {
   }
 
   for (const entry of installed) {
-    if (entry.version !== expected) {
+    const actual = JSON.parse(
+      readFileSync(join(root, entry.path, "package.json"), "utf8"),
+    ).version;
+    if (entry.version !== expected || actual !== expected) {
       throw new Error(
-        `${name} resolved to ${entry.version} at ${entry.path}; expected ${expected}`,
+        `${name} lock=${entry.version}, installed=${actual} at ${entry.path}; expected ${expected}`,
       );
     }
   }

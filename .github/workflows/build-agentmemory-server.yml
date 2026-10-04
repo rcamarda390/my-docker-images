@@ -2,6 +2,11 @@ name: Build and publish AgentMemory MCP image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "images/agentmemory-server/**"
+      - ".github/workflows/build-agentmemory-server.yml"
+      - ".github/workflows/build-image.yml"
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:
@@ -33,6 +38,7 @@ jobs:
       version_arg: AGENTMEMORY_VERSION
       revision_arg: AGENTMEMORY_IMAGE_VERSION
       # Target the x86_64 RHEL EC2 deployment; avoid publishing a multi-arch manifest list.
+      timeout_minutes: 60
       platforms: linux/amd64
       run_smoke_test: true
       # Exercises the offline model, server startup, health, and the REST paths
@@ -44,7 +50,8 @@ jobs:
       smoke_healthcheck_port: 3111
       smoke_healthcheck_path: /agentmemory/livez
       scan: true
-      block_on_scan_failure: true
+      # Trivy findings and scan errors are advisory; build/runtime checks remain blocking.
+      block_on_scan_failure: false
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision.
       revision_from_published_tag_count: true

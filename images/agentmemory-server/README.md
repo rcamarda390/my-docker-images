@@ -68,3 +68,11 @@ docker run --rm --network none agentmemory:0.9.29-v2 --offline-embedding-test
 ```
 
 The expected result is `dimensions=384` with `remote_models=false`.
+
+## Security follow-up: 2026-10-02
+
+See [SECURITY-20261002.md](SECURITY-20261002.md) for the Xray findings,
+patched components, required runtime libraries, and unresolved findings.
+Pull requests affecting this image now run the existing build, offline runtime
+smoke, health, and advisory Trivy checks without publishing or consuming a tag.
+Publication remains a main-branch manual dispatch using the next published revision.

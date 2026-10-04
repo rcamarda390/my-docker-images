@@ -25,6 +25,12 @@ for package in apt libapt-pkg7.0 debian-archive-keyring sqv dpkg tar gzip; do
     test "$(package_state "$package")" = installed
 done
 
+# Source/startup/SDK and iii audits found no mandatory util-linux invocation.
+# Check the *newly built* installed package graph and every retained ELF file
+# before removing the unused system administration tools and their libraries.
+util_manifest=/tmp/util-linux-removal.json
+node /tmp/verify-util-linux-removal.mjs audit "$runtime_root" "$util_manifest"
+
 # Perl was removed after all apt/npm work in the source root, but debconf's
 # Perl frontend remains. Preserve it while a minimal shell stub services any
 # package maintainer scripts in the copied root. The intact build root is not
@@ -46,9 +52,14 @@ dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
 dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
     --force-remove-protected libsystemd0 libudev1 libpcre2-8-0
 dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
+    --force-remove-protected bsdutils login mount util-linux libblkid1 \
+    liblastlog2-2 libmount1 libsmartcols1 libuuid1
+dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
     --force-remove-protected tar gzip
 dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
     --force-remove-protected dpkg
+
+node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$util_manifest"
 
 rm -f "$debconf_frontend"
 mv "$debconf_frontend_backup" "$debconf_frontend"
@@ -71,8 +82,13 @@ for path in usr/bin/apt usr/bin/dpkg usr/bin/dpkg-query usr/bin/tar \
 done
 
 chroot "$runtime_root" /sbin/ldconfig
+chroot "$runtime_root" /usr/local/bin/verify-native-runtime
+for package in global-agent roarr sprintf-js; do
+    test ! -e "$runtime_root/opt/agentmemory/node_modules/$package"
+done
+test ! -e "$runtime_root/opt/agentmemory/node_modules/onnxruntime-node/script"
 chroot "$runtime_root" /usr/local/bin/pcre2grep -V \
-    | grep -F 'pcre2grep version 10.48'
+    | grep -F 'pcre2grep version 10.49'
 
 for binary in /bin/sh /usr/bin/openssl /usr/bin/tini /usr/sbin/gosu \
               /usr/local/bin/node /usr/local/bin/iii /usr/bin/chown \

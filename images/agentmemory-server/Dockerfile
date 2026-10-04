@@ -2,20 +2,79 @@
 
 ARG III_VERSION=0.11.2
 ARG DEBIAN_SUITE=trixie
+ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
 
 FROM iiidev/iii:${III_VERSION} AS iii-image
+
+FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
+ARG DEBIAN_SUITE
+ARG GLIBC_DEBIAN_VERSION
+ARG GLIBC_BACKPORT_VERSION
+COPY patches/glibc/ /tmp/glibc-patches/
+COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
+RUN set -eux; \
+    sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
+    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    mkdir -p /build /out; cd /build; \
+    apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
+    for patch_spec in \
+      "965b580070b8184b0dd390800d9194291a600e67:e564c003db5103b22e5b5ed8d624690ca6722eb1cd1c5b867649a345694a7bdd" \
+      "dfc8ef388ef7856f318ade7dec501f92ce54f9e3:d8646d3888c1c6bff55e77bbf275f5549391f4536efcd176c2a1e654857f8f4b" \
+      "9318c2571576017d280a31b7b9ab576c9b696b1a:4dac7eb1610b938dbb3c9ddc390bdf0f4da01e1f757a47f61022ed45bffaa88e" \
+      "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
+      "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
+      "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
+      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
+      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
+      commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
+      patch="/tmp/glibc-${commit}.patch"; \
+      curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
+      echo "$checksum  $patch" | sha256sum -c -; \
+      if git apply --check "$patch"; then \
+        git apply "$patch"; \
+      elif git apply --reverse --check "$patch"; then \
+        echo "Upstream patch already present in Debian source: $commit"; \
+      else \
+        echo "Upstream patch is neither applicable nor already present: $commit" >&2; \
+        exit 1; \
+      fi; \
+    done; \
+    for patch in /tmp/glibc-patches/*.patch; do \
+      if git apply --check "$patch"; then \
+        git apply "$patch"; \
+      elif git apply --reverse --check "$patch"; then \
+        echo "Patch already present in Debian source: $patch"; \
+      else \
+        echo "Patch is neither applicable nor already present: $patch" >&2; \
+        exit 1; \
+      fi; \
+    done; \
+    gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
+    /tmp/verify-glibc-normalize; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
+      "Backport the repository-tested resolver, stdio and secure-loader fixes for AgentMemory."; \
+    DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
+    dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
+    dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
 
 # Rebuild the exact Trixie package families reported by Xray and Trivy from
 # fixed upstream sources. This keeps the Trixie ABI while moving ACL, attr,
 # ncurses, and util-linux beyond their vulnerable releases.
 FROM debian:${DEBIAN_SUITE}-slim AS native_patched
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl git dpkg-dev build-essential
+ && apt-get install -y --no-install-recommends ca-certificates curl git dpkg-dev build-essential zlib1g-dev
 WORKDIR /build
 COPY prepare-native-sources.sh /tmp/prepare-native-sources.sh
+COPY verify-native-runtime.c /tmp/verify-native-runtime.c
 RUN sh /tmp/prepare-native-sources.sh \
  && mkdir /out \
- && for package in attr acl ncurses util-linux; do \
+ && for package in attr acl ncurses util-linux zlib; do \
       apt-get build-dep -y --no-install-recommends "./$package" || exit 1; \
       if [ "$package" = acl ]; then \
         (cd "$package" && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b -uc -us -j"$(nproc)") || exit 1; \
@@ -23,14 +82,23 @@ RUN sh /tmp/prepare-native-sources.sh \
         (cd "$package" && dpkg-buildpackage -b -uc -us -j"$(nproc)") || exit 1; \
       fi; \
     done \
- && cp ./*.deb /out/
+ && cp ./*.deb /out/ \
+ && gcc -Wall -Wextra -Werror -O2 /tmp/verify-native-runtime.c -o /out/verify-native-runtime -lz -lresolv \
+ && mkdir /out/readelf-tool \
+ && cp /usr/bin/readelf /out/readelf-tool/ \
+ && ldd /usr/bin/readelf > /tmp/readelf.ldd \
+ && ! grep -F 'not found' /tmp/readelf.ldd \
+ && awk '$2 == "=>" && $3 ~ /^\// { print $3 }' /tmp/readelf.ldd \
+      | while read -r library; do cp -L "$library" /out/readelf-tool/ || exit 1; done \
+ && LD_LIBRARY_PATH=/out/readelf-tool /out/readelf-tool/readelf \
+      --dynamic /out/verify-native-runtime > /dev/null
 
-# Xray requires PCRE2 10.48 for the reported CVE-2026-86145/8915x/8916x
-# family. Build the checksum-pinned upstream release and retain only the
+# PCRE2 10.49 fixes CVE-2026-103111 and retains the prior 10.48 fixes.
+# Build the checksum-pinned upstream release and retain only the
 # ABI-compatible 8-bit shared library needed by libselinux/coreutils.
 FROM debian:${DEBIAN_SUITE}-slim AS pcre2_patched
-ARG PCRE2_VERSION=10.48
-ARG PCRE2_SHA256=ebcc25aadf2a51fa1fefa9b8bc9e7a79b3dae86870a0f1152a22e42befd46888
+ARG PCRE2_VERSION=10.49
+ARG PCRE2_SHA256=929f0b20e62879252a15886b06c89f1edef61a363cbd5826fb041080a5e557ae
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends build-essential ca-certificates curl; \
@@ -43,6 +111,7 @@ RUN set -eux; \
     ./configure --prefix=/opt/pcre2 --disable-static --enable-shared \
       --disable-pcre2-16 --disable-pcre2-32 --disable-jit; \
     make -j"$(nproc)"; \
+    make check; \
     make install; \
     /opt/pcre2/bin/pcre2grep -V | grep -F "version ${PCRE2_VERSION}"
 
@@ -52,6 +121,7 @@ ARG AGENTMEMORY_VERSION=0.9.29
 ARG AGENTMEMORY_IMAGE_VERSION=v1
 ARG III_VERSION=0.11.2
 ARG III_SDK_VERSION=0.11.2
+ARG GLIBC_BACKPORT_VERSION
 ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
@@ -72,6 +142,7 @@ LABEL org.opencontainers.image.title="agentmemory" \
 # the Xray-reported CVEs and no Trixie fix version. Remove the unused package
 # after all apt work, then fail the build if it remains installed.
 COPY --from=native_patched /out/ /tmp/native/
+COPY --from=glibc_patched /out/ /tmp/glibc/
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates tini gosu curl \
  && apt-get upgrade -y --no-install-recommends \
@@ -83,17 +154,25 @@ RUN apt-get update \
     done \
  && test "$#" -gt 0 \
  && apt-get install -y --no-install-recommends "$@" \
+ && apt-get install -y --no-install-recommends /tmp/glibc/*.deb \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' zlib1g)" ge "1:1.3.dfsg+really1.3.2-3+rcamarda1" \
+ && for package in openssl libssl3t64 openssl-provider-legacy; do \
+      dpkg --compare-versions "$(dpkg-query -W -f='${Version}' "$package")" ge "3.5.7-1~deb13u3" || exit 1; \
+    done \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libacl1)" ge "2.4.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libattr1)" ge "1:2.6.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libtinfo6)" ge "6.6+20260608-2+rcamarda1" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.41.6-0+rcamarda1" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc6)" ge "2.41-12+deb13u4" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc-bin)" ge "2.41-12+deb13u4" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.42.4-0+rcamarda1" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' util-linux)" ge "2.42.4-0+rcamarda1" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc6)" ge "${GLIBC_BACKPORT_VERSION}" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc-bin)" ge "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libsqlite3-0)" ge "3.46.1-7+deb13u2" \
  && apt-get purge -y --auto-remove --allow-remove-essential perl-base perl-modules-5.40 \
  && test "$(dpkg-query -W -f='${Status}' perl-base 2>/dev/null || true)" != "install ok installed" \
  && ! command -v perl \
- && rm -rf /tmp/native /var/lib/apt/lists/*
+ && install -m 0755 /tmp/native/verify-native-runtime /usr/local/bin/verify-native-runtime \
+ && /usr/local/bin/verify-native-runtime \
+ && rm -rf /tmp/native /tmp/glibc /var/lib/apt/lists/*
 
 COPY --from=iii-image /app/iii /usr/local/bin/iii
 
@@ -106,7 +185,7 @@ COPY --from=iii-image /app/iii /usr/local/bin/iii
 # call patched after the dependency graph is upgraded.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
-RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.0","brace-expansion":"5.0.9","ip-address":"10.5.1","sharp":"0.35.4","tar":"7.5.21","undici":"6.28.0","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
+RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.31.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
  && node /tmp/patch-iii-otel2.mjs \
@@ -181,6 +260,11 @@ RUN apt-get purge -y --auto-remove curl \
 
 COPY --chmod=0644 transformers-offline.mjs /opt/agentmemory/transformers-offline.mjs
 COPY --chmod=0755 offline-embedding-smoke.mjs /opt/agentmemory/offline-embedding-smoke.mjs
+COPY --chmod=0644 prune-onnx-installer.mjs /tmp/prune-onnx-installer.mjs
+
+# ONNX's installer proxy/logger is build-only. Remove it after npm and native
+# installation, with installed reverse-dependency guards and a native import.
+RUN node /tmp/prune-onnx-installer.mjs && rm /tmp/prune-onnx-installer.mjs
 
 # This is deliberately a network-disabled build step. It proves the staged
 # model is sufficient before the image can be published.
@@ -189,6 +273,11 @@ RUN --network=none node /opt/agentmemory/offline-embedding-smoke.mjs
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/agentmemory-entrypoint.sh
 COPY --chmod=0755 runtime-smoke.mjs /opt/agentmemory/runtime-smoke.mjs
 COPY --chmod=0755 strip-runtime-packages.sh /usr/local/lib/strip-runtime-packages.sh
+COPY --chmod=0644 verify-util-linux-removal.mjs /tmp/verify-util-linux-removal.mjs
+COPY --chmod=0644 verify-util-linux-removal.test.mjs /tmp/verify-util-linux-removal.test.mjs
+# Audit ELF imports with a build-only tool. /tmp is not copied into the final root.
+COPY --from=native_patched /out/readelf-tool/ /tmp/readelf-tool/
+RUN node --test /tmp/verify-util-linux-removal.test.mjs
 
 # Replace PCRE2 with the upstream fixed ABI. Runtime package removal happens
 # in a copied root below so the intact build root remains available to prove
@@ -200,7 +289,7 @@ COPY --from=pcre2_patched /opt/pcre2/lib/ /usr/local/lib/
 COPY --from=pcre2_patched /opt/pcre2/bin/pcre2grep /usr/local/bin/pcre2grep
 RUN set -eux; \
     ldconfig; \
-    /usr/local/bin/pcre2grep -V | grep -F "pcre2grep version 10.48"; \
+    /usr/local/bin/pcre2grep -V | grep -F "pcre2grep version 10.49"; \
     for binary in /bin/sh /usr/bin/openssl /usr/bin/tini /usr/sbin/gosu \
                   /usr/local/bin/node /usr/local/bin/iii /usr/bin/chown \
                   /usr/bin/chmod /usr/bin/mkdir; do \
