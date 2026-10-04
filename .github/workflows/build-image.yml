@@ -485,13 +485,6 @@ jobs:
           echo "::error::Blocking Trivy scan failed; refusing registry publication."
           exit 1
 
-      - name: Warn on advisory scan failure
-        if: ${{ inputs.scan && !inputs.block_on_scan_failure && steps.scan.outcome == 'failure' }}
-        run: |
-          echo "::warning::Trivy scan failed; results are advisory for this workflow. Review the scan log before deployment."
-          echo "### Trivy warning" >> "$GITHUB_STEP_SUMMARY"
-          echo "The Trivy scan failed. Findings and scanner errors are advisory; this does not establish security clearance. See the scan log." >> "$GITHUB_STEP_SUMMARY"
-
       - name: Log in to GHCR
         if: inputs.publish && inputs.publish_ghcr
         uses: docker/login-action@v4
