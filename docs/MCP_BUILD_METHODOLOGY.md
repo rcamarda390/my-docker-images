@@ -6,7 +6,7 @@ tag in both registries:
 - `ghcr.io/rcamarda390/<image>:<upstream-version>-v<revision>`
 - `docker.io/rcamarda390/<image>:<upstream-version>-v<revision>`
 
-The current images are `agentmemory`, `gnosis-mcp`, `sooperset-mcp-atlassian`,
+The current images are `agentmemory-mcp`, `gnosis-mcp`, `sooperset-mcp-atlassian`,
 `bifrost-mcp`, `headroom-mcp`, and `sqz-mcp`. Their metadata is human-edited
 in `images/<image-dir>/image.yaml`. Published MCP builds automatically
 increment and commit the image revision. When `upstream_version` changes, the
@@ -18,7 +18,7 @@ air-gapped RHEL EC2 deployment. The shared `build-image.yml` default and
 image-specific caller workflows enforce this. Do not add `arm64` or
 multi-architecture publication without explicit deployment-owner approval.
 
-`agentmemory` is built from `images/agentmemory-server/`: agentmemory and its
+`agentmemory-mcp` is built from `images/agentmemory-server/`: agentmemory and its
 compatible `iii` engine binary are bundled into one image, there is no
 separate `iii-engine` image or workflow. `images/agentmemory-server/image.yaml`'s
 `build_args.III_VERSION` tracks the exact iii version agentmemory's own

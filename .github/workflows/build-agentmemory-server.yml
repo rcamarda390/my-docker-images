@@ -31,7 +31,7 @@ jobs:
       packages: write
       pull-requests: write
     with:
-      image_name: agentmemory
+      image_name: agentmemory-mcp
       context: ./images/agentmemory-server
       dockerfile: ./images/agentmemory-server/Dockerfile
       config: images/agentmemory-server/image.yaml
