@@ -4,6 +4,7 @@
 import ctypes
 import gzip
 import importlib.util
+import math
 import ssl
 import os
 import subprocess
@@ -20,7 +21,7 @@ from tokenizers import Tokenizer, models
 # These extension modules pulled in every native package removed for the v17
 # findings. Gnosis does not import them; fail if a future base image restores
 # one and silently reintroduces the dependency.
-for module in ("_bz2", "_curses", "_curses_panel", "_uuid", "readline"):
+for module in ("_bz2", "_curses", "_curses_panel", "_uuid", "_tkinter", "readline"):
     assert importlib.util.find_spec(module) is None, f"Unexpected optional module: {module}"
 
 assert uuid.uuid4().version == 4
@@ -87,5 +88,14 @@ tokenizer_path = Path(
 assert tokenizer_path.is_file()
 tokenizer = Tokenizer.from_file(str(tokenizer_path))
 assert tokenizer.encode("air-gap runtime verification").ids
+# Exercise real offline ONNX inference, not just imports, after omitting
+# libgomp1 and replacing tokenizers. This must produce a finite 384D vector.
+from gnosis_mcp.local_embed import get_embedder
+
+vector = get_embedder().embed(["air-gap runtime verification"])[0]
+assert len(vector) == 384
+assert all(math.isfinite(value) for value in vector)
+assert abs(sum(value * value for value in vector) - 1) < 0.001
+assert "libgomp" not in Path("/proc/self/maps").read_text()
 
 print("Minimized native runtime verification passed")
