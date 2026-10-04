@@ -154,7 +154,7 @@ RUN apt-get update \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libacl1)" ge "2.4.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libattr1)" ge "1:2.6.0-1+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libtinfo6)" ge "6.6+20260608-2+rcamarda1" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.41.6-0+rcamarda2" \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libuuid1)" ge "2.41.6-0+rcamarda3" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc6)" ge "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libc-bin)" ge "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libsqlite3-0)" ge "3.46.1-7+deb13u2" \

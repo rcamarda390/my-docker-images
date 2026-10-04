@@ -45,7 +45,7 @@ for entry in attr:1:2.6.0-1 acl:2.4.0-1 ncurses:6.6+20260608-2 util-linux:2.41.6
     changelog="$package/debian/changelog"
     {
         revision=1
-        if [ "$package" = util-linux ]; then revision=2; fi
+        if [ "$package" = util-linux ]; then revision=3; fi
         printf '%s (%s+rcamarda%s) trixie; urgency=high\n\n' "$package" "$version" "$revision"
         printf '  * Rebuild fixed upstream sources for the AgentMemory Trixie runtime.\n\n'
         printf ' -- rcamarda390 image build <rcamarda390@users.noreply.github.com>  Tue, 15 Sep 2026 00:00:00 +0000\n\n'
@@ -75,6 +75,8 @@ fi
 # Backport upstream fixes for the 2.41.6 libmount build and resolve flags:
 # 7e2e010874b10b3aabdc3c4c844c9ffc46a4a374 (missing fileutils.h)
 # 20361d66df4d3f32d5e137fe61a55cdf156c91f0 (correct symlink flag)
+# Also backport stable/v2.41 commit 485dbb67f1b6bb18e08b1b77f4aa2373ff3a705b:
+# CVE-2026-78408 requires explicit cgroup fd closure, beyond O_CLOEXEC.
 # Apply after Debian's patches; fail if the pinned source context changes.
 cat > /tmp/util-linux-openat2.patch <<'UTIL_LINUX_OPENAT2_PATCH'
 diff --git a/libmount/src/hook_idmap.c b/libmount/src/hook_idmap.c
@@ -125,11 +127,47 @@ diff --git a/lib/fileutils.c b/lib/fileutils.c
  #include "c.h"
  #include "all-io.h"
  #include "fileutils.h"
+diff --git a/sys-utils/nsenter.c b/sys-utils/nsenter.c
+--- a/sys-utils/nsenter.c
++++ b/sys-utils/nsenter.c
+@@ -379,14 +379,16 @@ static int get_ns_ino(const char *path, ino_t *ino)
+ static void open_cgroup_procs(void)
+ {
+ 	char *buf = NULL, *path = NULL, *p;
+-	int cgroup_fd = 0;
++	int cgroup_fd = -1;
+ 	char fdpath[PATH_MAX];
+ 
+ 	open_target_fd(&cgroup_fd, "cgroup", optarg);
+ 
+ 	if (read_all_alloc(cgroup_fd, &buf) < 1)
+ 		err(EXIT_FAILURE, _("failed to get cgroup path"));
+ 
++	close(cgroup_fd);
++
+ 	p = strtok(buf, "\n");
+ 	if (p)
+ 		path = strrchr(p, ':');
+@@ -816,8 +818,11 @@ int main(int argc, char *argv[])
+ 	}
+ 
+ 	// Join into the target cgroup
+-	if (cgroup_procs_fd >= 0)
++	if (cgroup_procs_fd >= 0) {
+ 		join_into_cgroup();
++		close(cgroup_procs_fd);
++		cgroup_procs_fd = -1;
++	}
+ 
+ 	if (uid_gid_fd >= 0) {
+ 		struct stat st;
 UTIL_LINUX_OPENAT2_PATCH
 (
     cd util-linux
     git apply --check /tmp/util-linux-openat2.patch
     git apply /tmp/util-linux-openat2.patch
+    git apply --reverse --check /tmp/util-linux-openat2.patch
+    grep -Fq 'O_WRONLY | O_APPEND | O_CLOEXEC' sys-utils/nsenter.c
 )
 
 # prepare-native-sources.sh: extra upstream fixes absent from the pinned releases.
