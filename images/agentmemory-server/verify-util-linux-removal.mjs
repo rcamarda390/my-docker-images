@@ -1,10 +1,10 @@
-// Audit the installed runtime, then verify the purge against its original files.
+// verify-util-linux-removal.mjs: audit runtime dependencies and physical absence.
 import { execFileSync } from 'node:child_process';
 import { closeSync, existsSync, lstatSync, openSync, readFileSync, readSync,
   readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-const [mode, root, manifest, readelf = '/tmp/readelf'] = process.argv.slice(2);
+const [mode, root, manifest, readelf = '/tmp/readelf-tool/readelf'] = process.argv.slice(2);
 if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/')) {
   throw new Error('usage: audit|absent ROOT MANIFEST [READELF]');
 }
@@ -68,7 +68,8 @@ function walk(directory) {
     try { readSync(fd, magic, 0, 4, 0); } finally { closeSync(fd); }
     if (!magic.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]))) continue;
     const dynamic = execFileSync(readelf, ['--dynamic', root + file],
-      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
+      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
+        env: { ...process.env, LD_LIBRARY_PATH: path.dirname(readelf) } });
     for (const line of dynamic.split('\n')) {
       const needed = line.match(/\(NEEDED\).*Shared library: \[([^\]]+)\]/)?.[1];
       if (needed && forbidden.test(needed)) {

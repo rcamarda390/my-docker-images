@@ -162,6 +162,11 @@ source_binaries:
     note: Same CLI release; rebuilt with fixed Go toolchain, upstream tests, recorded build info and checksum.
 
 source_builds:
+  - name: pcre2
+    version: "10.49"
+    source: https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.49
+    sha256: 929f0b20e62879252a15886b06c89f1edef61a363cbd5826fb041080a5e557ae
+    note: "UBI10-native pcre2 and pcre2-syntax RPMs; upstream tests, exported ABI comparison and runtime Git/grep/DNF checks. Remove carry when UBI10 supplies equivalent fixes."
   - name: archify
     source: https://github.com/tt-a1i/archify
     version: "2.17.0-dev.1"

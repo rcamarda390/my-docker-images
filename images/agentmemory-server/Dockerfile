@@ -83,7 +83,15 @@ RUN sh /tmp/prepare-native-sources.sh \
       fi; \
     done \
  && cp ./*.deb /out/ \
- && gcc -Wall -Wextra -Werror -O2 /tmp/verify-native-runtime.c -o /out/verify-native-runtime -lz -lresolv
+ && gcc -Wall -Wextra -Werror -O2 /tmp/verify-native-runtime.c -o /out/verify-native-runtime -lz -lresolv \
+ && mkdir /out/readelf-tool \
+ && cp /usr/bin/readelf /out/readelf-tool/ \
+ && ldd /usr/bin/readelf > /tmp/readelf.ldd \
+ && ! grep -F 'not found' /tmp/readelf.ldd \
+ && awk '$2 == "=>" && $3 ~ /^\// { print $3 }' /tmp/readelf.ldd \
+      | while read -r library; do cp -L "$library" /out/readelf-tool/ || exit 1; done \
+ && LD_LIBRARY_PATH=/out/readelf-tool /out/readelf-tool/readelf \
+      --dynamic /out/verify-native-runtime > /dev/null
 
 # PCRE2 10.49 fixes CVE-2026-103111 and retains the prior 10.48 fixes.
 # Build the checksum-pinned upstream release and retain only the
@@ -266,8 +274,10 @@ COPY --chmod=0755 entrypoint.sh /usr/local/bin/agentmemory-entrypoint.sh
 COPY --chmod=0755 runtime-smoke.mjs /opt/agentmemory/runtime-smoke.mjs
 COPY --chmod=0755 strip-runtime-packages.sh /usr/local/lib/strip-runtime-packages.sh
 COPY --chmod=0644 verify-util-linux-removal.mjs /tmp/verify-util-linux-removal.mjs
+COPY --chmod=0644 verify-util-linux-removal.test.mjs /tmp/verify-util-linux-removal.test.mjs
 # Audit ELF imports with a build-only tool. /tmp is not copied into the final root.
-COPY --from=native_patched /usr/bin/readelf /tmp/readelf
+COPY --from=native_patched /out/readelf-tool/ /tmp/readelf-tool/
+RUN node --test /tmp/verify-util-linux-removal.test.mjs
 
 # Replace PCRE2 with the upstream fixed ABI. Runtime package removal happens
 # in a copied root below so the intact build root remains available to prove
