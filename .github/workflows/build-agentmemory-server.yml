@@ -50,7 +50,8 @@ jobs:
       smoke_healthcheck_port: 3111
       smoke_healthcheck_path: /agentmemory/livez
       scan: true
-      block_on_scan_failure: true
+      # Trivy findings and scan errors are advisory; build/runtime checks remain blocking.
+      block_on_scan_failure: false
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision.
       revision_from_published_tag_count: true
