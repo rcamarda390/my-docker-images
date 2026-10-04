@@ -126,7 +126,8 @@ ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
 
-LABEL org.opencontainers.image.title="agentmemory" \
+LABEL org.opencontainers.image.title="agentmemory-mcp" \
+      org.opencontainers.image.source="https://github.com/rcamarda390/my-docker-images" \
       org.opencontainers.image.version="${AGENTMEMORY_VERSION}-${AGENTMEMORY_IMAGE_VERSION}" \
       org.opencontainers.image.description="Combined AgentMemory and iii runtime with offline local embeddings" \
       agentmemory.version="${AGENTMEMORY_VERSION}" \
@@ -329,7 +330,8 @@ ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
 
-LABEL org.opencontainers.image.title="agentmemory" \
+LABEL org.opencontainers.image.title="agentmemory-mcp" \
+      org.opencontainers.image.source="https://github.com/rcamarda390/my-docker-images" \
       org.opencontainers.image.version="${AGENTMEMORY_VERSION}-${AGENTMEMORY_IMAGE_VERSION}" \
       org.opencontainers.image.description="Combined AgentMemory and iii runtime with offline local embeddings" \
       agentmemory.version="${AGENTMEMORY_VERSION}" \

@@ -20,6 +20,23 @@ The Dockerfile downloads the pinned model revision during the connected build, v
 
 `image.yaml` controls the upstream AgentMemory version, iii version, and local revision/tagging used by the reusable GitHub Actions workflow.
 
+The published image is named `agentmemory-mcp` in both registries:
+
+- Docker Hub: `docker.io/rcamarda390/agentmemory-mcp`
+- GHCR: `ghcr.io/rcamarda390/agentmemory-mcp`
+
+The source repository is `rcamarda390/my-docker-images`; the image's OCI source
+label links the GHCR package to this repository. Earlier images published as
+`agentmemory` remain under their original name. This name change does not rename
+the application, its HTTP paths, or the persistent `agentmemory-data` volume.
+
+Revision lookup uses published Docker Hub tags under `agentmemory-mcp`, so the
+old `agentmemory` tag history does not determine the next revision. After a
+successful main-branch publication, set `AGENTMEMORY_IMAGE_TAG` to the exact
+versioned tag reported in the Actions summary before using `docker-compose.yml`
+or the validation command below. The compose file requires this value instead
+of assuming a tag has already been published.
+
 The first build of a new upstream version is published as `UPSTREAM_VERSION-v1`; subsequent security or packaging revisions increment the `vN` suffix without changing the upstream version.
 
 ## Runtime data
@@ -64,7 +81,7 @@ Before changing embedding providers, back up `/data` and export the AgentMemory 
 The image build runs `/usr/local/lib/agentmemory/offline-embedding-smoke.mjs` in a `RUN --network=none` layer. The image-specific workflow repeats the test in a disposable container with `--network none` and then checks `/agentmemory/livez`. To run the embedding check locally:
 
 ```bash
-docker run --rm --network none agentmemory:0.9.29-v2 --offline-embedding-test
+docker run --rm --network none "docker.io/rcamarda390/agentmemory-mcp:${AGENTMEMORY_IMAGE_TAG:?Set AGENTMEMORY_IMAGE_TAG to the exact published tag}" --offline-embedding-test
 ```
 
 The expected result is `dimensions=384` with `remote_models=false`.

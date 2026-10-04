@@ -1,6 +1,6 @@
 services:
   agentmemory:
-    image: ${ARTIFACTORY_REGISTRY:-docker.io/rcamarda390}/agentmemory:0.9.29-v2
+    image: ${ARTIFACTORY_REGISTRY:-docker.io/rcamarda390}/agentmemory-mcp:${AGENTMEMORY_IMAGE_TAG:?Set AGENTMEMORY_IMAGE_TAG to the exact published tag}
     volumes:
       - agentmemory-data:/data
     ports:

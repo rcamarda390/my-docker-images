@@ -1,4 +1,4 @@
-name: agentmemory
+name: agentmemory-mcp
 upstream_version: 0.9.29
 revision: 1
 build_args:
