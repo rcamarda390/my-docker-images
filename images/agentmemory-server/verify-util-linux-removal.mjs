@@ -4,12 +4,14 @@ import { closeSync, existsSync, lstatSync, openSync, readFileSync, readSync,
   readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-const [mode, root, manifest, readelf = '/tmp/readelf-tool/readelf'] = process.argv.slice(2);
-if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/')) {
-  throw new Error('usage: audit|absent ROOT MANIFEST [READELF]');
+const [mode, root, manifest, readelf = '/tmp/readelf-tool/readelf', family = 'util-linux'] = process.argv.slice(2);
+if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/') ||
+    !['util-linux', 'sqlite'].includes(family)) {
+  throw new Error('usage: audit|absent ROOT MANIFEST [READELF] [util-linux|sqlite]');
 }
-const removed = new Set(['bsdutils', 'login', 'mount', 'util-linux', 'libblkid1',
-  'liblastlog2-2', 'libmount1', 'libsmartcols1', 'libuuid1']);
+const removed = new Set(family === 'sqlite' ? ['libsqlite3-0'] :
+  ['bsdutils', 'login', 'mount', 'util-linux', 'libblkid1',
+    'liblastlog2-2', 'libmount1', 'libsmartcols1', 'libuuid1']);
 const query = (...args) => execFileSync('dpkg-query',
   [`--admindir=${root}/var/lib/dpkg`, ...args], { encoding: 'utf8' });
 const rows = query('-W', '-f=${Package}\t${db:Status-Status}\t${Depends}\t${Pre-Depends}\n')
@@ -26,7 +28,7 @@ if (mode === 'absent') {
   for (const file of JSON.parse(readFileSync(manifest, 'utf8'))) {
     if (present(root + file)) throw new Error(`purged file remains: ${file}`);
   }
-  console.log('util-linux package and physical-file absence verified');
+  console.log(`${family} package and physical-file absence verified`);
   process.exit(0);
 }
 
@@ -54,9 +56,10 @@ for (const [pkg] of installed) {
     physical.add(file);
   }
 }
-if (!owned.size) throw new Error('no installed util-linux files to audit');
+if (!owned.size) throw new Error(`no installed ${family} files to audit`);
 
-const forbidden = /^lib(?:blkid|lastlog2|mount|smartcols|uuid)\.so(?:\.|$)/;
+const forbidden = family === 'sqlite' ? /^libsqlite3\.so(?:\.|$)/ :
+  /^lib(?:blkid|lastlog2|mount|smartcols|uuid)\.so(?:\.|$)/;
 let checked = 0;
 function walk(directory) {
   for (const entry of readdirSync(root + directory, { withFileTypes: true })) {
@@ -82,4 +85,4 @@ function walk(directory) {
 walk('/');
 if (!checked) throw new Error('no retained ELF files inspected');
 writeFileSync(manifest, JSON.stringify([...physical].sort()));
-console.log(`util-linux removal audit: installed reverse dependencies clear; ${checked} retained ELF files checked`);
+console.log(`${family} removal audit: installed reverse dependencies clear; ${checked} retained ELF files checked`);
