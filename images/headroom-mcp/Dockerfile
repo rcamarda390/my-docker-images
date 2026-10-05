@@ -2,15 +2,22 @@
 
 ARG HEADROOM_VERSION=0.39.1
 ARG HEADROOM_COMMIT=d13e1966f820220b482a33c30bde1e926743939a
-ARG LITELLM_VERSION=1.101.0
+ARG LITELLM_VERSION=1.101.3
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda1
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda2
 ARG PIP_VERSION=26.2.1
-ARG PYJWT_VERSION=2.14.0
+ARG PYJWT_VERSION=2.15.0
 ARG TOKENIZERS_VERSION=0.23.2
+ARG TOKENIZERS_BACKPORT_VERSION=0.23.2+rcamarda1
+ARG TOKENIZERS_SOURCE_SHA256=7f0f085686b9de0d0079e6f874ae053600db64c5d13049e0bbc0119926d25aac
+ARG MCP_VERSION=1.30.0
+ARG FSSPEC_VERSION=2026.6.0
+ARG MULTIDICT_VERSION=6.9.1
+ARG DASH_DEBIAN_VERSION=0.5.12-12
+ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 ARG TRANSFORMERS_VERSION=5.17.0
 ARG URLLIB3_VERSION=2.8.0
 ARG ANYIO_VERSION=4.14.2
@@ -21,33 +28,46 @@ ARG SQLITE_SHA3=454e45f61c6bd75b7420e7190732dea03ce6639c63ada47bbc592f67fc340338
 ARG ZLIB_VERSION=1.3.2
 ARG ZLIB_SHA256=b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1
 
-# The three patches below carry CVE-2026-5928 (BZ #33998), CVE-2026-5435
-# (BZ #34033), and CVE-2026-5450 (BZ #34008). Xray's follow-up scan of
-# 0.37.0-v12 still reports CVE-2026-5435 against libc-bin/libc6 -- it matches
-# the vulnerable package by name/CPE and cannot read the "+rcamarda1" local
-# Debian revision that carries the cherry-picked fix. The version assertion at
-# the end of the runtime stage (libc6/libc-bin == GLIBC_BACKPORT_VERSION) is
-# the proof this exact patched build is what ships; no further source change
-# addresses this finding.
+# Retain the existing glibc fixes and reuse the checked Gnosis backports
+# against the same Debian source. See SECURITY-20261005.md for CVE mapping.
 FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
 ARG GLIBC_DEBIAN_VERSION
 ARG GLIBC_BACKPORT_VERSION
-
-ENV DEBIAN_FRONTEND=noninteractive
-
+ARG DASH_DEBIAN_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
-
+COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
-    apt-get install -y --no-install-recommends \
-      ca-certificates devscripts dpkg-dev git quilt; \
-    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}"; \
-    mkdir -p /build /out; \
-    cd /build; \
+    apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
+    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}" "dash=${DASH_DEBIAN_VERSION}"; \
+    mkdir -p /build /out; cd /build; \
     apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
+    for patch_spec in \
+      "965b580070b8184b0dd390800d9194291a600e67:e564c003db5103b22e5b5ed8d624690ca6722eb1cd1c5b867649a345694a7bdd" \
+      "dfc8ef388ef7856f318ade7dec501f92ce54f9e3:d8646d3888c1c6bff55e77bbf275f5549391f4536efcd176c2a1e654857f8f4b" \
+      "9318c2571576017d280a31b7b9ab576c9b696b1a:4dac7eb1610b938dbb3c9ddc390bdf0f4da01e1f757a47f61022ed45bffaa88e" \
+      "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
+      "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
+      "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
+      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
+      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
+      commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
+      patch="/tmp/glibc-${commit}.patch"; \
+      curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
+      echo "$checksum  $patch" | sha256sum -c -; \
+      if git apply --check "$patch"; then \
+        git apply "$patch"; \
+      elif git apply --reverse --check "$patch"; then \
+        echo "Upstream patch already present in Debian source: $commit"; \
+      else \
+        echo "Upstream patch is neither applicable nor already present: $commit" >&2; \
+        exit 1; \
+      fi; \
+    done; \
     for patch in /tmp/glibc-patches/*.patch; do \
       if git apply --check "$patch"; then \
         git apply "$patch"; \
@@ -58,15 +78,35 @@ RUN set -eux; \
         exit 1; \
       fi; \
     done; \
-    DEBFULLNAME="rcamarda390 image build" \
-      DEBEMAIL="rcamarda390@users.noreply.github.com" \
-      dch --force-distribution --distribution "${DEBIAN_SUITE}" \
-        --newversion "${GLIBC_BACKPORT_VERSION}" \
-        "Rebuild from Debian deb13u4; retain local backports for CVE-2026-5435, CVE-2026-5450, and CVE-2026-5928."; \
-    DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
+    /tmp/verify-glibc-normalize; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
+      "Retain Headroom rcamarda1 fixes; add resolver, wordexp, tdelete, strfmon, iconv and secure-loader backports."; \
+    if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
+      tail -n 200 /tmp/glibc-build.log; exit 1; \
+    fi; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
+
+# CVE-2026-102473 affects Dash's recursive internal pattern matcher.
+# Use its existing libc fnmatch build option rather than removing /bin/sh,
+# which runs the service entrypoint.
+RUN set -eux; \
+    cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
+    cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
+    grep -q -- '--disable-fnmatch' debian/rules; \
+    sed -i 's/--disable-fnmatch/--enable-fnmatch/' debian/rules; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${DASH_BACKPORT_VERSION}" \
+      "Use libc fnmatch instead of recursive pmatch for CVE-2026-102473."; \
+    dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    grep -Fx '#define HAVE_FNMATCH 1' config.h; \
+    cp ../dash_*_*.deb /out/; \
+    dpkg-deb -f /out/dash_*_*.deb Version | grep -Fx "${DASH_BACKPORT_VERSION}"; \
+    dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
+    readelf -Ws /tmp/dash-check/usr/bin/dash | grep -E 'UND.* fnmatch@'
 
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS source
 ARG HEADROOM_VERSION
@@ -83,6 +123,11 @@ ARG PIP_VERSION
 ARG LITELLM_VERSION
 ARG PYJWT_VERSION
 ARG TOKENIZERS_VERSION
+ARG TOKENIZERS_BACKPORT_VERSION
+ARG TOKENIZERS_SOURCE_SHA256
+ARG MCP_VERSION
+ARG FSSPEC_VERSION
+ARG MULTIDICT_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
 ARG ANYIO_VERSION
@@ -182,8 +227,8 @@ COPY --from=source /src/headroom/ headroom/
 # LiteLLM backends. The bedrock extra adds boto3 and botocore for AWS SDK
 # support required to reach AWS Bedrock from an air-gapped GovCloud environment.
 RUN uv sync --frozen --extra proxy --extra bedrock --no-dev --no-editable
-# Headroom 0.39.1's lock resolves LiteLLM 1.88.1. Keep the Bedrock cache-point
-# conversion on the tested 1.101.0 runtime used by the preceding image release.
+# LiteLLM 1.101.3 fixes GHSA-7hp6-4w63-5g45 in the existing 1.101 line.
+# The Bedrock regression below must still verify native cache-point conversion.
 RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
       "litellm==${LITELLM_VERSION}" \
     && PATH="/opt/venv/bin:${PATH}" python -c \
@@ -195,16 +240,8 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
 RUN uv pip install --python /opt/venv/bin/python --upgrade-package anyio \
       "anyio==${ANYIO_VERSION}" \
     && test "$(PATH="/opt/venv/bin:${PATH}" python -c 'import importlib.metadata; print(importlib.metadata.version("anyio"))')" = "$ANYIO_VERSION"
-# Xray reports these high/critical PyJWT advisories against the upstream lock's
-# 2.13.0 release: XRAY-1076251 (CVSS 9.1, CWE-347), XRAY-1076205,
-# XRAY-1076201, XRAY-1076198, XRAY-1076197, XRAY-1076195, and XRAY-1076185
-# (each CVSS 7.4). Their fixed floor is 2.14.0. CVE-2026-85670 separately
-# fixes Tokenizers 0.22.2 in 0.23.1; Transformers 5.13.1 caps Tokenizers at
-# 0.23.0. Headroom 0.39.1's installed Transformers 5.17.0 allows
-# tokenizers>=0.23.1,<0.24.0, so 0.23.2 (the latest release in that range as
-# of the 2026-09-18 scan) is used instead of the 0.23.1 floor. This downstream
-# override is scoped to these package families; remove it when Headroom locks
-# these or newer releases itself.
+# Keep the Transformers/tokenizer API range, then source-patch their unfixed
+# load paths below. PyJWT 2.15.0 fixes CVE-2026-102275 and CVE-2026-101918.
 RUN uv pip install --python /opt/venv/bin/python \
       --upgrade-package PyJWT \
       --upgrade-package tokenizers \
@@ -233,6 +270,34 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package urllib3 \
       "import importlib.metadata, boto3, botocore; \
        assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'" \
     && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
+# Fixed releases for the 2026-10-05 Xray follow-up. MCP stays on the
+# supported 1.x API; fsspec and multidict are retained transitive dependencies.
+RUN uv pip install --python /opt/venv/bin/python \
+      --upgrade-package mcp --upgrade-package fsspec --upgrade-package multidict \
+      "mcp==${MCP_VERSION}" "fsspec==${FSSPEC_VERSION}" "multidict==${MULTIDICT_VERSION}" \
+    && uv pip check --python /opt/venv/bin/python
+
+# 0.23.2 still contains CVE-2026-85670. Reuse the Gnosis bounds-check patch
+# against this source release instead of downgrading to its patched 0.23.1.
+COPY patches/tokenizers/ /tmp/tokenizers-patches/
+RUN set -eux; \
+    curl -fsSL https://files.pythonhosted.org/packages/18/1e/bc6587c5ab643b2e17776cace9070a2ae73549c86bffac9934a600bf3c31/tokenizers-0.23.2.tar.gz -o /tmp/tokenizers.tar.gz; \
+    echo "${TOKENIZERS_SOURCE_SHA256}  /tmp/tokenizers.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/tokenizers.tar.gz -C /tmp; \
+    cd "/tmp/tokenizers-${TOKENIZERS_VERSION}"; \
+    patch -p1 < /tmp/tokenizers-patches/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch; \
+    python -c "from pathlib import Path; p=Path('bindings/python/Cargo.toml'); s=p.read_text(); old='version = \"${TOKENIZERS_VERSION}\"'; assert s.count(old) == 1; p.write_text(s.replace(old, 'version = \"${TOKENIZERS_BACKPORT_VERSION}\"')); p=Path('bindings/python/Cargo.lock'); s=p.read_text(); old='name = \"tokenizers-python\"\\nversion = \"${TOKENIZERS_VERSION}\"'; assert s.count(old) == 1; p.write_text(s.replace(old, old.replace('${TOKENIZERS_VERSION}', '${TOKENIZERS_BACKPORT_VERSION}')))"; \
+    uv pip install --python /usr/local/bin/python "maturin==1.15.0"; \
+    maturin build --release --locked --out /tmp/tokenizers-wheel --interpreter /opt/venv/bin/python; \
+    python -c "from pathlib import Path; from zipfile import ZipFile; from email.parser import Parser; wheels=list(Path('/tmp/tokenizers-wheel').glob('*.whl')); assert len(wheels) == 1, wheels; z=ZipFile(wheels[0]); names=[n for n in z.namelist() if n.endswith('.dist-info/METADATA')]; assert len(names) == 1; m=Parser().parsestr(z.read(names[0]).decode()); assert m['Name'] == 'tokenizers', m['Name']; assert m['Version'] == '${TOKENIZERS_BACKPORT_VERSION}', m['Version']; assert 'tokenizers/__init__.py' in z.namelist()"; \
+    uv pip install --python /opt/venv/bin/python --reinstall --no-deps /tmp/tokenizers-wheel/tokenizers-*.whl; \
+    uv pip check --python /opt/venv/bin/python
+
+# Transformers 5.17.0 still trusts local checkpoint weight_map paths.
+COPY patch-transformers-shards.py security-regression.py /tmp/
+RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py packages
+
 # The setuptools/msgpack upgrades that used to live here targeted packages
 # that Headroom does not install: neither appears in the proxy+bedrock
 # resolution. Re-check that on an upstream version bump with `uv export
@@ -338,10 +403,16 @@ ARG HEADROOM_COMMIT
 ARG LITELLM_VERSION
 ARG PYJWT_VERSION
 ARG TOKENIZERS_VERSION
+ARG TOKENIZERS_BACKPORT_VERSION
+ARG TOKENIZERS_SOURCE_SHA256
+ARG MCP_VERSION
+ARG FSSPEC_VERSION
+ARG MULTIDICT_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
 ARG ANYIO_VERSION
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_BACKPORT_VERSION
 ARG PYTHON_VERSION
 ARG PYTHON_ABI
 ARG SQLITE_VERSION
@@ -370,7 +441,7 @@ ENV HEADROOM_OUTPUT_SHAPER=1
 COPY --from=glibc_patched /out/ /tmp/glibc/
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb \
+    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
     && rm -rf /tmp/glibc \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --create-home --home-dir /home/headroom \
@@ -480,11 +551,10 @@ RUN dpkg --purge --force-depends --force-remove-essential perl-base \
 # package so scanners see only the remediated implementation. The final check
 # exercises both ordinary queries and FTS5 through Python's real extension.
 #
-# The scanner's remaining critical/high findings are in trixie's glibc 2.41
-# packages. Debian has no stable fix yet, so the glibc_patched stage rebuilds
-# the matching trixie source package with upstream release/2.41 fixes for
-# CVE-2026-5435, CVE-2026-5450, and CVE-2026-5928, and the runtime stage
-# installs the coherent libc6/libc-bin pair from that rebuild.
+# The glibc_patched stage retains required libc/loader functionality and
+# extends the local patch set against the same Debian 2.41 source.
+# The coherent libc6/libc-bin pair is installed together; the custom revision
+# is verified below. See SECURITY-20261005.md for individual dispositions.
 # dpkg is used instead of `apt-get purge --auto-remove` because gzip and
 # ncurses-bin are Essential and apt would cascade into debconf. No apt
 # operations run after this layer, so unsatisfied dependencies are inert.
@@ -522,35 +592,29 @@ RUN find /usr/local/lib/python${PYTHON_ABI} /opt/venv \
       -name '_curses*.so' -delete \
     && chmod +x /usr/local/bin/headroom-entrypoint \
     && chown -R headroom:headroom /opt/headroom-cache
+# Headroom uses fcntl.flock and Python UUIDs, not util-linux commands.
+# _uuid is optional: UUID generation falls back to Python/os.urandom.
+# Proxy/MCP does not invoke coreutils; host-installation/wrapper features are
+# outside this image's confirmed runtime scope. Audit reverse dependencies and
+# every retained native library before removing the unused command suites.
+COPY verify-runtime-unused.py security-regression.py /tmp/
+RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-runtime-unused.py \
+    && dpkg --purge --force-depends --force-remove-essential --force-remove-protected --force-bad-path \
+      util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
+    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink()"
 # Verify that purged packages didn't break critical runtime functionality.
 # `python -c "import sys"` proved nothing: it passed while libsqlite3-0 was
 # purged, so a green build shipped an image that died on startup. Import every
 # stdlib module whose backing shared library a purge could plausibly remove and
 # actually exercise sqlite3 and ssl, so a bad purge fails here -- in the stage
 # that caused it -- instead of surfacing later as an opaque MCP startup error.
-# bz2 is imported and exercised below because headroom's `mcp serve` path can
-# reach it (compressed cache/session data); CVE-2026-42250 (libbz2-1.0,
-# CWE-787) has no fixed version published anywhere upstream or in Debian as of
-# the 2026-09-18 scan, so there is nothing to upgrade to and the module cannot
-# be dropped without breaking the import check that already guards this stage.
-# Tracked as an open, currently unfixable finding -- re-scan on the next
-# rebuild to pick up a Debian security update once one ships.
+# CVE-2026-42250 is in the bzip2recover CLI, not libbz2's decompressor.
+# Keep Python bz2 for cache/session data; security-regression.py requires
+# bzip2recover to be absent. No library fix is claimed for the scanner row.
 #
-# Correction (2026-09-18, post-publish): the 0.37.0-v14 build's own Trivy scan
-# shows util-linux 1:2.41.5-0+deb13u1 -- meeting the floor below -- still
-# "affected" with no Fixed Version for CVE-2026-76642, CVE-2026-78408,
-# CVE-2026-78409, and CVE-2026-78410 (bsdutils, mount, libblkid1, libmount1,
-# and siblings from the same source package). Xray's "2.41.5" and "6.15"
-# fix-version hints do not hold up against Debian's real advisory status:
-# none of these four are fixed in trixie yet, not just CVE-2026-78409. The
-# assertion below is kept as a floor/regression guard (fail the build if a
-# future rebuild somehow lands on an older util-linux than this scan already
-# covered), not as proof of remediation. All four are open, upstream/Debian
-# findings with no fix to apply from this image build; re-scan each rebuild
-# to pick up a Debian security update once one ships.
-# Headroom 0.39.1's SBOM/lock resolves LiteLLM 1.88.1, below the image's
-# verified 1.101.0 Bedrock-cache runtime and XRAY-1062440's fixed floor. Keep
-# the tested version pinned above and assert it survives into the final image.
+# Runtime package versions and actual imports are checked after all carries.
 RUN PATH="/opt/venv/bin:${PATH}" python -c \
     "import importlib.util, ssl, sqlite3, hashlib, lzma, bz2, ctypes, zlib, socket; \
      assert sqlite3.sqlite_version == '${SQLITE_VERSION}', sqlite3.sqlite_version; \
@@ -567,7 +631,10 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
      assert Version(litellm_version) >= Version('1.96.2'), litellm_version; \
      assert importlib.metadata.version('anyio') == '${ANYIO_VERSION}'; \
      assert importlib.metadata.version('PyJWT') == '${PYJWT_VERSION}'; \
-     assert tokenizers.__version__ == '${TOKENIZERS_VERSION}'; \
+     assert importlib.metadata.version('mcp') == '${MCP_VERSION}'; \
+     assert importlib.metadata.version('fsspec') == '${FSSPEC_VERSION}'; \
+     assert importlib.metadata.version('multidict') == '${MULTIDICT_VERSION}'; \
+     assert importlib.metadata.version('tokenizers') == '${TOKENIZERS_BACKPORT_VERSION}'; \
      assert transformers.__version__ == '${TRANSFORMERS_VERSION}'; \
      assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'; \
      print(f'Verification: LiteLLM {litellm_version}, PyJWT {importlib.metadata.version(\"PyJWT\")}, Tokenizers {tokenizers.__version__}, Transformers {transformers.__version__}, urllib3 {urllib3.__version__}; AWS dependencies (boto3 {boto3.__version__}, botocore {botocore.__version__}) OK')" \
@@ -576,9 +643,11 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
  && /bin/dash -c "echo 'Verification: dash entrypoint shell OK'" \
  && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
  && test "$(dpkg-query -W -f='${Version}' libc-bin)" = "${GLIBC_BACKPORT_VERSION}" \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libssl3t64)" ge '3.5.7-1~deb13u2' \
- && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' util-linux)" ge '2.41.5' \
- && dpkg-query -W libc6 libc-bin libssl3t64 util-linux \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libssl3t64)" ge '3.5.7-1~deb13u3' \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' openssl-provider-legacy)" ge '3.5.7-1~deb13u3' \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" ge '10.46-1~deb13u3' \
+ && test "$(dpkg-query -W -f='${Version}' dash)" = "${DASH_BACKPORT_VERSION}" \
+ && dpkg-query -W libc6 libc-bin libssl3t64 libpcre2-8-0 dash \
  && for package in \
       libsqlite3-0 zlib1g libpam-modules-bin libncursesw6 openssl tar libudev1 \
       libsystemd0 liblastlog2-2 apt libapt-pkg7.0 diffutils login passwd login.defs; do \
