@@ -211,12 +211,14 @@ COPY --from=iii-image /app/iii /usr/local/bin/iii
 # call patched after the dependency graph is upgraded.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
+COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
 RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
  && node /tmp/patch-iii-otel2.mjs \
+ && node /tmp/patch-zod-output-limits.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk OpenTelemetry compatibility smoke OK')" \
- && rm /tmp/patch-iii-otel2.mjs \
+ && rm /tmp/patch-iii-otel2.mjs /tmp/patch-zod-output-limits.mjs \
  && ln -s /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory
 
 # npm, npx, and corepack are build-time tools only. They bring their own
