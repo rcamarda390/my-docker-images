@@ -12,6 +12,7 @@ import uuid
 from importlib.metadata import version
 from pathlib import Path
 
+import tokenizers
 from tokenizers import Tokenizer, models
 from transformers.utils.hub import get_checkpoint_shard_files
 
@@ -21,6 +22,8 @@ for name, expected in {
     "tokenizers": "0.23.2+rcamarda1", "transformers": "5.17.0",
 }.items():
     assert version(name) == expected, (name, version(name))
+
+assert tokenizers.__version__ == "0.23.2+rcamarda1", tokenizers.__version__
 
 # PanicException derives from BaseException: catching Exception deliberately
 # rejects the original Rust panic while accepting the ordinary OOV error.

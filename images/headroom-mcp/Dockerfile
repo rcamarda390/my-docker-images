@@ -288,9 +288,9 @@ RUN set -eux; \
     patch -p1 < /tmp/tokenizers-patches/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch; \
     python -c "from pathlib import Path; p=Path('bindings/python/Cargo.toml'); s=p.read_text(); old='version = \"${TOKENIZERS_VERSION}\"'; assert s.count(old) == 1; p.write_text(s.replace(old, 'version = \"${TOKENIZERS_BACKPORT_VERSION}\"')); p=Path('bindings/python/Cargo.lock'); s=p.read_text(); old='name = \"tokenizers-python\"\\nversion = \"${TOKENIZERS_VERSION}\"'; assert s.count(old) == 1; p.write_text(s.replace(old, old.replace('${TOKENIZERS_VERSION}', '${TOKENIZERS_BACKPORT_VERSION}')))"; \
     uv pip install --python /usr/local/bin/python "maturin==1.15.0"; \
-    cd bindings/python; \
     maturin build --release --locked --out /tmp/tokenizers-wheel --interpreter /opt/venv/bin/python; \
-    uv pip install --python /opt/venv/bin/python --no-deps /tmp/tokenizers-wheel/*.whl; \
+    python -c "from pathlib import Path; from zipfile import ZipFile; from email.parser import Parser; wheels=list(Path('/tmp/tokenizers-wheel').glob('*.whl')); assert len(wheels) == 1, wheels; z=ZipFile(wheels[0]); names=[n for n in z.namelist() if n.endswith('.dist-info/METADATA')]; assert len(names) == 1; m=Parser().parsestr(z.read(names[0]).decode()); assert m['Name'] == 'tokenizers', m['Name']; assert m['Version'] == '${TOKENIZERS_BACKPORT_VERSION}', m['Version']; assert 'tokenizers/__init__.py' in z.namelist()"; \
+    uv pip install --python /opt/venv/bin/python --reinstall --no-deps /tmp/tokenizers-wheel/tokenizers-*.whl; \
     uv pip check --python /opt/venv/bin/python
 
 # Transformers 5.17.0 still trusts local checkpoint weight_map paths.
