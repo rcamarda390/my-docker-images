@@ -1,0 +1,13 @@
+name: slim-archify
+upstream_version: 3.0.1
+revision: 1
+build_args:
+  # Commit that annotated tag v3.0.1 points at (git ls-remote ... refs/tags/v3.0.1^{}).
+  ARCHIFY_COMMIT: 2ab3cae7ac2c2a55d7386ca789d03c4fcd31816c
+  # Node major the payload must carry; the exact version is read from the
+  # digest-pinned node image and recorded in /slim/manifest.json.
+  NODE_MAJOR: "24"
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

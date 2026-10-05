@@ -1,0 +1,42 @@
+name: Build and publish slim archify payload image
+
+on:
+  workflow_dispatch:
+
+# Serialize publications so two dispatches cannot calculate the same next tag.
+concurrency:
+  group: slim-archify-publish
+  cancel-in-progress: false
+
+permissions:
+  # Required by the reusable workflow contract. Published-tag revision mode
+  # does not exercise the revision-PR step, but a caller cannot grant less than
+  # permissions declared by the called workflow.
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish slim archify payload image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: slim-archify
+      context: ./images/slim-archify
+      dockerfile: ./images/slim-archify/Dockerfile
+      config: images/slim-archify/image.yaml
+      version_arg: ARCHIFY_VERSION
+      # The Dockerfile clones the tag and verifies the exact upstream commit.
+      platforms: linux/amd64
+      # FROM scratch: nothing to run. Doctor/demo checks run inside the Dockerfile.
+      run_smoke_test: false
+      scan: true
+      # Count tags already published for this upstream version. Failed builds
+      # publish no tag, so they do not consume a revision.
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}
