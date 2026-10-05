@@ -33,7 +33,13 @@ for path in sorted(paths):
     with path.open("rb") as stream:
         if stream.read(4) != b"\x7fELF":
             continue
-    result = subprocess.run(["ldd", str(path)], capture_output=True, text=True, check=True)
+    # The existing purge removes libtinfo6, which the ldd Bash shebang needs.
+    # The pinned glibc ldd script uses POSIX shell syntax on its trace path;
+    # run it with the retained Dash shell instead of requiring Bash/libtinfo.
+    result = subprocess.run(
+        ["/bin/dash", "/usr/bin/ldd", str(path)],
+        capture_output=True, text=True, check=True,
+    )
     output = result.stdout + result.stderr
     assert not any(library in output for library in libraries), (path, output)
     checked += 1
