@@ -44,7 +44,13 @@ ARG IMAGE_VERSION=unknown
 # without an Xray-driven reason: every package is scanned.
 RUN apk upgrade --available --no-cache \
     && apk add --no-cache --upgrade glibc \
-    && apk add --no-cache git ca-certificates-bundle bash
+    && apk add --no-cache git ca-certificates-bundle bash \
+    && apk add --no-cache --upgrade 'zlib>=1.3.2.1_rc20260601-r0'
+# Xray: CVE-2026-85091 (7.4, CWE-787) in wolfi zlib 1.3.2-r5, fixed in
+# 1.3.2.1_rc20260601-r0. The constraint above fails the build if the repo cannot
+# supply it; the check below proves it landed. Drop once the pinned WOLFI_IMAGE
+# base already carries a fixed zlib.
+RUN apk info -v zlib | grep -qv '^zlib-1.3.2-r5$'
 
 COPY --from=builder /out/opt /opt
 RUN ln -s /opt/claude-code/claude /usr/bin/claude \
