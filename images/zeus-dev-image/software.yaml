@@ -26,7 +26,6 @@ os_packages:
       - {name: hostname, version: repo}
       - {name: procps-ng, version: repo}
       - {name: git, version: repo}
-      - {name: jq, version: repo}
       - {name: tar, version: repo}
       - {name: htop, version: repo, optional: true}
       - {name: btop, version: repo, optional: true}

@@ -179,7 +179,6 @@ RUN dnf install -y \
         nodejs \
         npm \
         git \
-        jq \
         tar \
         postgresql15 \
     && dnf clean all \
@@ -397,6 +396,20 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
 # dependencies installed; the normal verification below checks remaining tools.
 RUN dnf remove -y --setopt=clean_requirements_on_remove=False 'vim*' \
     && dnf clean all
+
+# Remove jq (no-fix jq/oniguruma findings). It is a standalone CLI that no Zeus
+# tool invokes; the downstream air-gapped image installs it from internal
+# Artifactory. Fail the build if any installed package requires it, then assert
+# the package and executable are gone.
+RUN set -eux; \
+    if rpm -q jq >/dev/null 2>&1; then \
+        test -z "$(rpm -q --whatrequires jq | grep -v '^no package requires')"; \
+        rpm -e --nodeps jq; \
+    fi; \
+    ! rpm -q jq; \
+    ! command -v jq; \
+    dnf check; \
+    dnf clean all
 
 # Remove gdbserver (no-fix gdb-gdbserver findings). It is a remote-debug stub no
 # Zeus tool invokes. Fail the build if any installed package requires it, then

@@ -78,6 +78,7 @@ assert shutil.which("vi") is None
 assert shutil.which("vim") is None
 '
 check "gdbserver package and command absent" 1 bash -c '! rpm -q gdb-gdbserver && ! command -v gdbserver'
+check "jq package and command absent" 1 bash -c '! rpm -q jq && ! command -v jq'
 check "git" 1 command -v git
 check "docker CLI" 1 docker --version
 check "docker exec command" 1 docker exec --help
