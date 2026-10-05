@@ -49,6 +49,9 @@ SQZ and the Cline VS Code extension are excluded.
 vi and Vim are excluded, including inherited Vim RPMs. Use VS Code for editing
 or install an approved editor in the downstream internal image.
 
+jq is excluded (no-fix findings). Install it in the downstream internal image
+from Artifactory (EL10: `jq-1.7.1-11.el10_2.2` or newer).
+
 This image has no internal user roster, site wrappers, custom shell prompt,
 host-specific directories, or entrypoint. Its installation check fails the
 build when required software is missing. The downstream build must add its
