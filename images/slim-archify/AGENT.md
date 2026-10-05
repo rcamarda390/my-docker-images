@@ -5,6 +5,8 @@ Baked at `/slim/AGENT.md`. Read first.
 ## What
 
 - `archify` skill 3.0.1 (Node ESM scripts, MIT) + `node` binary. Copy-only. NO install step.
+- Trimmed: no `test/`, no example HTML (~3.7 MB). Kept: everything `doctor` requires.
+- Node kept in payload on purpose: internal Artifactory Node may be old. Payload node = known version.
 - Method: `copy` (see `manifest.json` → `method`).
 
 ## Layout

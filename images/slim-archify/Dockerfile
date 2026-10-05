@@ -21,7 +21,11 @@ RUN apk upgrade --no-cache \
     && mkdir -p /slim/payload \
     && cp -a /src/archify /slim/payload/archify \
     && cp /src/LICENSE /slim/payload/archify/LICENSE.repo \
-    && rm -rf /slim/payload/archify/test
+    # Smallest supported payload (11 MB -> ~3.7 MB): drop the test suite and
+    # pre-rendered example HTML. `doctor` still requires examples/*.json, so
+    # those stay; the verify stage proves doctor/demo/render/validate pass.
+    && rm -rf /slim/payload/archify/test \
+    && find /slim/payload/archify/examples -name '*.html' -delete
 
 FROM ${NODE_IMAGE} AS verify
 ARG ARCHIFY_VERSION
@@ -34,7 +38,7 @@ RUN mkdir -p /slim/payload/node/bin \
     && cp /usr/local/LICENSE /slim/payload/node/LICENSE
 # Falsifiable checks, all against the PAYLOAD copy with no npm install:
 #  - node major matches image.yaml
-#  - archify's own doctor passes and the demo renders
+#  - archify's own doctor passes; demo, render and validate succeed
 #  - archify version matches image.yaml
 #  - no node_modules shipped (proves copy-only claim)
 RUN set -eu; \
@@ -46,6 +50,9 @@ RUN set -eu; \
     $N "$A/bin/archify.mjs" doctor; \
     $N "$A/bin/archify.mjs" demo /tmp/demo; \
     test -s /tmp/demo/archify-demo.html; \
+    $N "$A/bin/archify.mjs" render architecture "$A/examples/web-app.architecture.json" /tmp/arch.html; \
+    test -s /tmp/arch.html; \
+    $N "$A/bin/archify.mjs" validate architecture "$A/examples/web-app.architecture.json" --json | grep -q '"ok": true'; \
     NEEDS="$(ldd $N | awk '/=>/ {print $1}' | sort -u | sed 's/.*/"&"/' | paste -sd,)"; \
     printf '{\n  "software": "archify",\n  "version": "%s",\n  "method": "copy",\n  "install_step": "none",\n  "payload": "/slim/payload",\n  "node": {"version": "%s", "path": "payload/node/bin/node", "needs": [%s]}\n}\n' \
       "$ARCHIFY_VERSION" "$NODE_VERSION" "$NEEDS" > /slim/manifest.json; \
