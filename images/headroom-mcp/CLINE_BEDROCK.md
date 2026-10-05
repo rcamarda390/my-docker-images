@@ -3,8 +3,8 @@
 This image carries a downstream Headroom 0.39.1 compatibility patch for Cline's
 OpenAI-compatible transport to AWS Bedrock.
 
-Headroom 0.39.1's upstream dependency lock resolves LiteLLM 1.88.1. The image
-pins LiteLLM 1.101.0, the version verified for Bedrock Converse cache-point
+Headroom 0.39.1's upstream dependency lock resolves LiteLLM 1.101.0. The image
+pins LiteLLM 1.101.3, the version verified for Bedrock Converse cache-point
 conversion, and asserts that exact version in the final runtime.
 
 ## Request shaping
@@ -24,7 +24,7 @@ downstream hotfix enables prompt caching only when LiteLLM's
 `supports_prompt_caching()` reports that the exact Bedrock model supports it.
 `get_supported_openai_params()` is not used as the gate: it lists request
 parameters, not the model's prompt-caching capability. In the verified LiteLLM
-1.101.0 runtime it lists `cache_control` for the tested Bedrock model IDs, while
+1.101.3 runtime it lists `cache_control` for the tested Bedrock model IDs, while
 `supports_prompt_caching()` remains the dedicated per-model capability check.
 
 For supported models, the patch adds:
@@ -34,14 +34,14 @@ For supported models, the patch adds:
 ```
 
 to the stable system message (or the last block of list-form system content).
-LiteLLM 1.101.0 natively converts that message-level marker into a Bedrock
+LiteLLM 1.101.3 natively converts that message-level marker into a Bedrock
 Converse `cachePoint`.
 
 For models that do not report `cache_control` support, no marker is added and
 the request proceeds normally with prompt caching effectively off.
 
 The previous `cache_control_injection_points` approach remains intentionally
-unused. LiteLLM 1.101.0 recognizes that field only for `tool_config` and can
+unused. LiteLLM 1.101.3 recognizes that field only for `tool_config` and can
 append a tool cache point; this image uses the tested system-message path only.
 
 Dynamic user and assistant turns are not automatically marked. The system
@@ -49,7 +49,7 @@ prefix is the highest-value stable region for Cline and avoids moving cache
 breakpoints as the conversation grows.
 
 Tool-config caching is intentionally not injected by this patch. LiteLLM
-1.101.0 supports a `tool_config` marker through
+1.101.3 supports a `tool_config` marker through
 `cache_control_injection_points`, but this carry has validated only the native
 system-message conversion and intentionally avoids changing tool payload
 behavior.
@@ -120,7 +120,7 @@ CI. From `images/headroom-mcp/`, against the real package:
 ```bash
 uv venv --python 3.13 /tmp/hr && \
 export LITELLM_LOCAL_MODEL_COST_MAP=True && \
-uv pip install --python /tmp/hr/bin/python "headroom-ai==<new-version>" "litellm==1.101.0" && \
+uv pip install --python /tmp/hr/bin/python "headroom-ai==<new-version>" "litellm==1.101.3" && \
 target=$(/tmp/hr/bin/python -c 'import headroom.backends.litellm as m; print(m.__file__)') && \
 /tmp/hr/bin/python patch-headroom-bedrock-openai.py "$target" && \
 /tmp/hr/bin/python -m py_compile "$target" && \
