@@ -47,8 +47,8 @@ RUN apk upgrade --available --no-cache \
     && apk add --no-cache git ca-certificates-bundle bash
 
 COPY --from=builder /out/opt /opt
-RUN ln -s /opt/claude-code/claude /usr/local/bin/claude \
-    && ln -s /opt/cline/bin/cline /usr/local/bin/cline \
+RUN ln -s /opt/claude-code/claude /usr/bin/claude \
+    && ln -s /opt/cline/bin/cline /usr/bin/cline \
     && adduser -D -u 1000 -G root -s /bin/bash runner
 
 # Air-gap defaults: no self-update, telemetry, or other non-essential traffic.
