@@ -304,6 +304,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN mkdir -p /data /docs \
     && chown -R gnosis:gnosis /data /home/gnosis /gnosis-model-cache
 
+# gcc-14-base ships only /usr/share/doc/gcc-14-base (asserted below before it
+# is purged); it holds no library or executable. libgcc-s1 and libstdc++6 stay.
 # Remove optional Python extensions first, then purge the native packages that
 # only supported those extensions or image construction. The running service
 # uses Python for compression, file operations, and UUID generation, so the
@@ -323,6 +325,8 @@ RUN rm -f \
         /usr/local/lib/python*/lib-dynload/readline*.so \
     && python /tmp/verify-no-libgomp.py \
     && rm /tmp/verify-no-libgomp.py \
+    && test -n "$(dpkg -L gcc-14-base)" \
+    && test -z "$(dpkg -L gcc-14-base | grep -Ev '^(/\.|/usr|/usr/share|/usr/share/doc|/usr/share/doc/gcc-14-base(/.*)?)$')" \
     && mkdir -p /usr/share/debconf \
     && printf '#!/bin/sh\nexit 0\n' > /usr/share/debconf/frontend \
     && chmod 0755 /usr/share/debconf/frontend \
@@ -332,7 +336,7 @@ RUN rm -f \
         libudev1 libsystemd0 \
         ncurses-bin ncurses-base libncursesw6 readline-common libreadline8t64 \
         libpam-modules-bin libpam-modules libpam-runtime libpam0g libsqlite3-0 \
-        liblastlog2-2 perl-base login login.defs passwd \
+        liblastlog2-2 perl-base login login.defs passwd gcc-14-base \
     && rm -rf /usr/share/debconf /var/cache/apt /var/lib/apt/lists \
     && purge_status=0 \
     && { dpkg --purge --no-triggers --force-depends --force-remove-essential --force-remove-protected \
@@ -363,7 +367,7 @@ RUN ! command -v pip \
     && test -z "$(find /usr/local /usr/lib -type f -path '*/pip/_vendor/*' -print -quit)" \
     && test -z "$(find /usr/local /usr/lib -type f -path '*/ensurepip/_bundled/*' -print -quit)" \
     && for package in \
-        apt libapt-pkg7.0 bash bsdutils coreutils diffutils gzip sed tar \
+        apt libapt-pkg7.0 gcc-14-base bash bsdutils coreutils diffutils gzip sed tar \
         libacl1 libattr1 libbz2-1.0 libc-bin libgomp1 libmount1 libncursesw6 libsystemd0 \
         libudev1 libuuid1 liblastlog2-2 login.defs ncurses-base util-linux zlib1g \
         libpam0g libpam-modules libpam-modules-bin libpam-runtime libsqlite3-0 perl-base; do \
