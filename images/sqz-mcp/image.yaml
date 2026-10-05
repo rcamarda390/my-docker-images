@@ -1,8 +1,8 @@
 name: sqz-mcp
-upstream_version: 1.3.0
+upstream_version: 1.9.0
 revision: 4
 build_args:
-  SQZ_COMMIT: d024b6b6bec152dfa7a63e2316054b1bb33a8110
+  SQZ_COMMIT: 726e77bd7e9d6ae7529e2750da69d86e622ca699
 publish:
   ghcr: true
   dockerhub: true
