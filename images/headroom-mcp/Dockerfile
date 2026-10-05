@@ -644,6 +644,7 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
  && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
  && test "$(dpkg-query -W -f='${Version}' libc-bin)" = "${GLIBC_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libssl3t64)" ge '3.5.7-1~deb13u3' \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' openssl-provider-legacy)" ge '3.5.7-1~deb13u3' \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" ge '10.46-1~deb13u3' \
  && test "$(dpkg-query -W -f='${Version}' dash)" = "${DASH_BACKPORT_VERSION}" \
  && dpkg-query -W libc6 libc-bin libssl3t64 libpcre2-8-0 dash \
