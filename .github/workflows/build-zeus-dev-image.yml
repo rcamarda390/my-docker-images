@@ -41,7 +41,6 @@ jobs:
       # The base image verification checks only the software installed here.
       smoke_command: /usr/local/bin/verify-installation.sh
       scan: true
-      scan_vex_file: images/zeus-dev-image/pip-vendored.openvex.json
       # Choose the next revision from successfully published Docker Hub tags.
       # Failed builds consume no revision and no revision-bump PR is needed.
       revision_from_published_tag_count: true

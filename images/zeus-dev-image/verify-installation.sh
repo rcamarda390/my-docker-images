@@ -34,24 +34,26 @@ log "=== zeus-dev-image installation verification ==="
 check "python3 3.12" 1 python3 -c "import sys; assert sys.version_info[:2] == (3, 12)"
 check "pip3" 1 command -v pip3
 for python in python3 /opt/aws-cli/bin/python; do
-check "$python pip 26.2.1 vendored assessment" 1 "$python" -c '
+check "$python pip 26.2.1 vendored msgpack 1.2.3 / no setuptools" 1 "$python" -c '
 import json
 from pathlib import Path
 import pip
 assert pip.__version__ == "26.2.1"
 vendor = Path(pip.__file__).parent / "_vendor"
 components = {item["name"]: item.get("version") for item in json.loads((vendor / "bom.cdx.json").read_text())["components"]}
-assert components["msgpack"] == "1.1.2"
-assert components["setuptools"] == "70.3.0"
+assert components["msgpack"] == "1.2.3"
+assert "setuptools" not in components
+assert not (vendor / "pkg_resources").exists()
 assert components["urllib3"] == "2.8.0"
-# The setuptools SBOM entry describes pkg_resources only. Neither affected
-# code path is shipped: PackageIndex (CVE-2025-47273) or jaraco.context.tarball
-# (CVE-2026-23949). Check actual files, including nested vendored copies.
+# The bundled pkg_resources (setuptools 70.3.0) is removed, so neither
+# PackageIndex (CVE-2025-47273) nor jaraco.context.tarball (CVE-2026-23949)
+# is shipped. Check actual files, including nested vendored copies.
 assert not list(vendor.rglob("package_index.py"))
 assert not list(vendor.rglob("jaraco/context.py"))
 assert not list(vendor.rglob("jaraco/context/__init__.py"))
 assert not list((vendor / "msgpack").glob("*cmsgpack*"))
 from pip._vendor import msgpack
+assert msgpack.__version__ == "1.2.3"
 assert msgpack.Unpacker.__module__ == "pip._vendor.msgpack.fallback"
 # Exercise the real pip cache serializer using the pure-Python msgpack copy.
 from pip._vendor.cachecontrol.serialize import Serializer
@@ -63,6 +65,7 @@ encoded = serializer.dumps(request, HTTPResponse(status=200), body=b"zeus-cache"
 assert serializer.loads(request, encoded).read() == b"zeus-cache"
 assert serializer.loads(request, b"cc=4,\xc1") is None
 '
+check "$python pip legacy-backend env var ignored" 1 env _PIP_USE_IMPORTLIB_METADATA=0 "$python" -m pip --version
 done
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm
@@ -74,6 +77,7 @@ assert not [name for name in packages if name == "vim" or name.startswith("vim-"
 assert shutil.which("vi") is None
 assert shutil.which("vim") is None
 '
+check "gdbserver package and command absent" 1 bash -c '! rpm -q gdb-gdbserver && ! command -v gdbserver'
 check "git" 1 command -v git
 check "docker CLI" 1 docker --version
 check "docker exec command" 1 docker exec --help

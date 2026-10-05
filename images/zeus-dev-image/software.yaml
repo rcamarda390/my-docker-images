@@ -62,7 +62,7 @@ python_packages:
     - {name: Mako, version: "1.4.2"}
     - {name: Werkzeug, version: "3.1.9"}
     - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
-    - {name: pip, version: "26.2.1", note: "pinned for msgpack/setuptools VEX assessment; vendored urllib3 upgraded to 2.8.0 with pip patches, SBOM and installation record preserved"}
+    - {name: pip, version: "26.2.1", note: "vendored urllib3 upgraded to 2.8.0 and msgpack to 1.2.3, bundled pkg_resources (setuptools 70.3.0) removed; SBOM and installation record kept consistent"}
     - {name: numpy, version: "1.26.4"}
     - {name: pandas, version: "2.2.3"}
     - {name: psycopg2-binary, version: "2.9.11"}
@@ -73,7 +73,10 @@ python_packages:
     - {name: PyYAML, version: "6.0.3"}
     - {name: duckdb, version: "1.5.3"}
     - {name: sqlglot, version: "30.4.2"}
-    - {name: s3fs, version: "2026.3.0"}
+    - {name: s3fs, version: "2026.7.0"}
+    - {name: fsspec, version: "2026.7.0", note: "security fix; matches s3fs and Airflow constraints"}
+    - {name: asyncssh, version: "2.24.1", note: "security fix; explicitly upgraded after providers"}
+    - {name: multidict, version: "6.9.1", note: "security fix; explicitly upgraded after providers"}
     - {name: aiobotocore, version: "3.9.1", note: "Airflow constraint; resolved together with S3FS and boto3/botocore 1.43.75"}
     - {name: jira, version: "3.10.5"}
     - {name: beautifulsoup4, version: "4.15.0"}
@@ -94,7 +97,7 @@ npm_packages:
     - {name: "@agentmemory/mcp", version: "0.9.29"}
     - {name: cline, version: "3.0.61", note: "CLI in /opt/cline, not VS Code extension"}
     - {name: "@anthropic-ai/claude-code", version: "2.1.260"}
-    - {name: "@modelcontextprotocol/sdk", version: "1.31.0", note: "GitLab MCP dependencies only"}
+    - {name: "@modelcontextprotocol/sdk", version: "1.32.0", note: "GitLab MCP dependencies only"}
     - {name: axios, version: "1.20.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
     - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
@@ -114,7 +117,7 @@ npm_overrides:
       - {name: axios, version: "1.20.0"}
       - {name: simple-git, version: "4.0.1"}
       - {name: "@simple-git/argv-parser", version: "2.0.1"}
-      - {name: "@modelcontextprotocol/sdk", version: "1.31.0"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.32.0"}
       - {name: "@hono/node-server", version: "2.1.3"}
       - {name: "@ai-sdk/provider-utils@3", version: "3.0.41"}
       - {name: "@ai-sdk/provider-utils@4", version: "4.0.57"}
@@ -127,7 +130,7 @@ npm_overrides:
       - {name: axios, version: "1.20.0"}
       - {name: simple-git, version: "4.0.1"}
       - {name: "@simple-git/argv-parser", version: "2.0.1"}
-      - {name: "@modelcontextprotocol/sdk", version: "1.31.0"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.32.0"}
       - {name: "@hono/node-server", version: "2.1.3"}
       - {name: "@ai-sdk/provider-utils@3", version: "3.0.41"}
       - {name: "@ai-sdk/provider-utils@4", version: "4.0.57"}
