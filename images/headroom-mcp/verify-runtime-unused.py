@@ -1,12 +1,12 @@
-# verify-util-linux-unused.py
-"""Audit the installed Headroom runtime before removing util-linux packages."""
+# verify-runtime-unused.py
+"""Audit the installed Headroom runtime before removing unused runtime packages."""
 
 import re
 import subprocess
 from pathlib import Path
 
 removed = {"util-linux", "mount", "bsdutils", "libmount1", "libblkid1",
-           "libsmartcols1", "libuuid1"}
+           "libsmartcols1", "libuuid1", "coreutils"}
 libraries = ("libmount.so", "libblkid.so", "libsmartcols.so", "libuuid.so")
 packages = subprocess.check_output(
     ["dpkg-query", "-W", "-f=${binary:Package}\t${db:Status-Status}\t${Depends}\t${Pre-Depends}\n"],
@@ -38,4 +38,4 @@ for path in sorted(paths):
     assert not any(library in output for library in libraries), (path, output)
     checked += 1
 assert checked > 0, "Native dependency audit checked no ELF files"
-print(f"No retained Debian dependency or {checked} native ELF closures require util-linux")
+print(f"No retained Debian dependency or {checked} native ELF closures require the removed runtime packages")

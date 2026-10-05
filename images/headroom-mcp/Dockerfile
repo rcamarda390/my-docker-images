@@ -92,7 +92,7 @@ RUN set -eux; \
 
 # CVE-2026-102473 affects Dash's recursive internal pattern matcher.
 # Use its existing libc fnmatch build option rather than removing /bin/sh,
-# which is required by Docker's CMD-SHELL health checks.
+# which runs the service entrypoint.
 RUN set -eux; \
     cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
     cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
@@ -594,14 +594,16 @@ RUN find /usr/local/lib/python${PYTHON_ABI} /opt/venv \
     && chown -R headroom:headroom /opt/headroom-cache
 # Headroom uses fcntl.flock and Python UUIDs, not util-linux commands.
 # _uuid is optional: UUID generation falls back to Python/os.urandom.
-# Audit installed reverse dependencies and every retained native library first.
-COPY verify-util-linux-unused.py security-regression.py /tmp/
+# Proxy/MCP does not invoke coreutils; host-installation/wrapper features are
+# outside this image's confirmed runtime scope. Audit reverse dependencies and
+# every retained native library before removing the unused command suites.
+COPY verify-runtime-unused.py security-regression.py /tmp/
 RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
-    && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-util-linux-unused.py \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-runtime-unused.py \
     && dpkg --purge --force-depends --force-remove-essential --force-remove-protected \
-      util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 \
+      util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
-    && rm /tmp/verify-util-linux-unused.py /tmp/security-regression.py
+    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink()"
 # Verify that purged packages didn't break critical runtime functionality.
 # `python -c "import sys"` proved nothing: it passed while libsqlite3-0 was
 # purged, so a green build shipped an image that died on startup. Import every

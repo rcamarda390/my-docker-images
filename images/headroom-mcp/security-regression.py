@@ -66,9 +66,9 @@ if sys.argv[1] == "runtime":
     assert importlib.util.find_spec("_uuid") is None
     assert uuid.uuid4().version == 4
     assert uuid.uuid1().version == 1
-    for command in ("mount", "umount", "nsenter", "flock", "unshare", "logger", "bzip2recover", "nscd"):
+    for command in ("mount", "umount", "nsenter", "flock", "unshare", "logger", "bzip2recover", "nscd", "sort", "uniq", "unexpand", "chown", "env"):
         assert shutil.which(command) is None, command
-    for package in ("util-linux", "mount", "bsdutils", "libmount1", "libblkid1", "libsmartcols1", "libuuid1", "nscd"):
+    for package in ("util-linux", "mount", "bsdutils", "libmount1", "libblkid1", "libsmartcols1", "libuuid1", "nscd", "coreutils"):
         result = subprocess.run(
             ["dpkg-query", "-W", "-f=${db:Status-Status}", package],
             capture_output=True, text=True,
