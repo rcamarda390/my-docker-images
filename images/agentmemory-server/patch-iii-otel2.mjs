@@ -13,7 +13,7 @@ const packageRoot = join(root, "node_modules");
 const fixedVersions = {
   "adm-zip": "0.6.1",
   "proxy-addr": "2.0.8",
-  "@modelcontextprotocol/sdk": "1.31.0",
+  "@modelcontextprotocol/sdk": "1.32.0",
   hono: "4.13.11",
   "@hono/node-server": "2.1.3",
   "fast-uri": "3.1.8",
