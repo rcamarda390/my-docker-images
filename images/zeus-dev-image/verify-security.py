@@ -48,7 +48,8 @@ with PipSession() as session:
 print("Main pip vendored urllib3 2.8.0 transport OK")
 
 python_fixes = {"msgpack": "1.2.3", "setuptools": "80.10.0", "urllib3": "2.8.0",
-                "PyJWT": "2.15.0", "Mako": "1.4.2", "Werkzeug": "3.1.9"}
+                "PyJWT": "2.15.0", "Mako": "1.4.2", "Werkzeug": "3.1.9",
+                "fsspec": "2026.6.0", "asyncssh": "2.24.1", "multidict": "6.9.1"}
 for name, minimum in python_fixes.items():
     installed = importlib.metadata.version(name)
     assert Version(installed) >= Version(minimum), (name, installed, minimum)
@@ -66,7 +67,7 @@ subprocess.run(["/opt/aws-cli/bin/python", "-c", "import importlib.metadata as m
 subprocess.run(["/opt/aws-cli/bin/pip", "check"], check=True)
 
 npm_fixes = {"axios": "1.20.0", "simple-git": "4.0.1",
-             "@simple-git/argv-parser": "2.0.1", "@modelcontextprotocol/sdk": "1.31.0",
+             "@simple-git/argv-parser": "2.0.1", "@modelcontextprotocol/sdk": "1.32.0",
              "@hono/node-server": "2.1.3", "@opentelemetry/core": "2.8.0"}
 provider_fixes = {3: "3.0.28", 4: "4.0.33", 5: "5.0.1"}
 seen = set()

@@ -282,6 +282,7 @@ RUN set -eux; \
 # Resolve S3FS and the AWS SDK together; aiobotocore matches Airflow constraints.
 # ============================================================
 COPY upgrade-pip-urllib3.py /tmp/upgrade-pip-urllib3.py
+COPY patch-pip-vendor.py /tmp/patch-pip-vendor.py
 RUN set -eux; \
     pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
     pip3 install --no-input --no-cache-dir \
@@ -295,7 +296,8 @@ RUN set -eux; \
         PyYAML==6.0.3 \
         duckdb==1.5.3 \
         sqlglot==30.4.2 \
-        s3fs==2026.3.0 \
+        s3fs==2026.7.0 \
+        fsspec==2026.7.0 \
         aiobotocore==3.9.1 \
         botocore==1.43.75 \
         boto3==1.43.75 \
@@ -315,10 +317,14 @@ RUN set -eux; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
-        urllib3==2.8.0 PyJWT==2.15.0 Mako==1.4.2 Werkzeug==3.1.9; \
+        urllib3==2.8.0 PyJWT==2.15.0 Mako==1.4.2 Werkzeug==3.1.9 \
+        asyncssh==2.24.1 multidict==6.9.1; \
     python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
     python3 /tmp/upgrade-pip-urllib3.py; \
     /opt/aws-cli/bin/python /tmp/upgrade-pip-urllib3.py; \
+    MSGPACK_DIR="$(python3 -c 'import msgpack,pathlib;print(pathlib.Path(msgpack.__file__).parent)')"; \
+    python3 /tmp/patch-pip-vendor.py "$MSGPACK_DIR"; \
+    /opt/aws-cli/bin/python /tmp/patch-pip-vendor.py "$MSGPACK_DIR"; \
     python3 -m pip check; \
     /opt/aws-cli/bin/python -m pip check; \
     rm -rf /root/.cache /tmp/* /var/tmp/*
@@ -334,7 +340,7 @@ COPY patch-cline-simple-git.mjs /tmp/patch-cline-simple-git.mjs
 COPY patch-node-forge.cjs /usr/local/bin/patch-node-forge.cjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
-    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
     cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
     npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.29; \
     npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.29; \
@@ -345,7 +351,7 @@ RUN set -eux; \
     ln -sf /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
     mkdir -p /opt/cline; \
-    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.31.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
+    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
     npm install --prefix /opt/cline cline@3.0.61; \
     node /tmp/patch-cline-simple-git.mjs; \
     node /usr/local/bin/patch-node-forge.cjs; \
@@ -368,7 +374,7 @@ RUN cd /usr/local/bin && sha256sum -c /usr/local/share/zeus/bifrost.sha256 && bi
 # @modelcontextprotocol/sdk, axios, TypeScript, and Node.js types.
 RUN set -eux; \
     npm install --prefix /opt/gitlab-mcp-server --legacy-peer-deps \
-        @modelcontextprotocol/sdk@1.31.0 \
+        @modelcontextprotocol/sdk@1.32.0 \
         axios@1.20.0 \
         @types/node \
         typescript@6.0.3; \
@@ -391,6 +397,20 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
 # dependencies installed; the normal verification below checks remaining tools.
 RUN dnf remove -y --setopt=clean_requirements_on_remove=False 'vim*' \
     && dnf clean all
+
+# Remove gdbserver (no-fix gdb-gdbserver findings). It is a remote-debug stub no
+# Zeus tool invokes. Fail the build if any installed package requires it, then
+# assert the package and executable are gone. This is not a scanner workaround:
+# the executable is deleted from the image.
+RUN set -eux; \
+    if rpm -q gdb-gdbserver >/dev/null 2>&1; then \
+        test -z "$(rpm -q --whatrequires gdb-gdbserver | grep -v '^no package requires')"; \
+        rpm -e --nodeps gdb-gdbserver; \
+    fi; \
+    ! rpm -q gdb-gdbserver; \
+    ! command -v gdbserver; \
+    dnf check; \
+    dnf clean all
 
 # Refresh packages after every installation, including dependencies introduced
 # by optional packages. Record actual RPM versions for Xray follow-up.

@@ -28,28 +28,21 @@ Docker and does not prove a build has passed.
 - Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.260
 - SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.3 and setuptools 84.0.0
 - Security pins: urllib3 2.8.0 (main Python and AWS CLI), PyJWT 2.15.0, Mako 1.4.2, Werkzeug 3.1.9
-- GitLab MCP SDK 1.31.0 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
+- GitLab MCP SDK 1.32.0 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
 - pip 26.2.1 for developer package management and the AWS CLI virtual environment, with vendored urllib3 upgraded to 2.8.0 and pip compatibility patches retained
 - TypeScript 6.0.3 for the GitLab MCP dependencies
 - Archify 2.17.0-dev.1 from pinned commit `06dd052602dd9a369e4d034e24faef0917b5a60c`
 - GitLab MCP Node dependencies under `/opt/gitlab-mcp-server/node_modules`
 - OS utilities and optional convenience tools in the Dockerfile
 
-pip also bundles separate, older copies of msgpack and part of setuptools.
-[The scoped OpenVEX assessment](pip-vendored.openvex.json) classifies three
-findings against that bundle as not affected: pip does not use msgpack's
-vulnerable Unpacker path, and its setuptools subset has no vulnerable
-PackageIndex or jaraco.context tarball extraction code. This covers
-CVE-2025-47273, CVE-2026-23949, and the msgpack advisory
-GHSA-6v7p-g79w-8964 (reported by Xray as CVE-2026-57585).
-Trivy displays matching assessments in its suppressed section.
-Only pip's urllib3 subtree is upgraded to 2.8.0, retaining pip's vendoring patches;
-its SBOM and installation record reflect the actual replacement code. The
-verification script checks the assessed components in both the main
-interpreter and AWS CLI venv, verifies the vulnerable setuptools files are
-absent, and exercises pip cache serialization through pure-Python msgpack. The
-standalone Python packages remain at their fixed versions. This assessment
-applies to the Trivy PR scan; internal Xray review remains separate.
+pip bundles its own msgpack and a pkg_resources subset of setuptools 70.3.0.
+The build replaces the bundled msgpack with 1.2.3 and removes the bundled
+pkg_resources (used only by pip's opt-in legacy metadata backend), in both the
+main interpreter and the AWS CLI venv, so Xray no longer sees the vulnerable
+copies (CVE-2025-47273, CVE-2026-23949, CVE-2026-57585). pip's urllib3 subtree
+is upgraded to 2.8.0. pip's SBOM and installation record reflect the actual
+replacement code, and the verification script asserts the result and exercises
+pip cache serialization.
 
 SQZ and the Cline VS Code extension are excluded.
 
