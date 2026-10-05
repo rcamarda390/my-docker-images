@@ -4,6 +4,8 @@ ARG III_VERSION=0.11.2
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
 ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+ARG DASH_DEBIAN_VERSION=0.5.12-12
+ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 
 FROM iiidev/iii:${III_VERSION} AS iii-image
 
@@ -11,13 +13,15 @@ FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
 ARG GLIBC_DEBIAN_VERSION
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_DEBIAN_VERSION
+ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
-    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}" "dash=${DASH_DEBIAN_VERSION}"; \
     mkdir -p /build /out; cd /build; \
     apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
@@ -62,6 +66,25 @@ RUN set -eux; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
+
+# CVE-2026-102473 affects Dash's recursive internal pattern matcher.
+# Use its existing libc fnmatch build option rather than removing /bin/sh,
+# which is required by the AgentMemory entrypoint and iii shell execution.
+RUN set -eux; \
+    cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
+    cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
+    grep -q -- '--disable-fnmatch' debian/rules; \
+    sed -i 's/--disable-fnmatch/--enable-fnmatch/' debian/rules; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${DASH_BACKPORT_VERSION}" \
+      "Use libc fnmatch instead of recursive pmatch for CVE-2026-102473."; \
+    dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    grep -Fx '#define HAVE_FNMATCH 1' config.h; \
+    cp ../dash_*_*.deb /out/; \
+    dpkg-deb -f /out/dash_*_*.deb Version | grep -Fx "${DASH_BACKPORT_VERSION}"; \
+    dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
+    readelf -Ws /tmp/dash-check/usr/bin/dash | grep -E 'UND.* fnmatch@'; \
+    /tmp/dash-check/usr/bin/dash -c 'case abc in a*c) ;; *) exit 1 ;; esac; case abc in a*d) exit 1 ;; esac; value=abc; test "${value#a*}" = bc'
 
 # Rebuild the exact Trixie package families reported by Xray and Trivy from
 # fixed upstream sources. This keeps the Trixie ABI while moving ACL, attr,
@@ -122,6 +145,7 @@ ARG AGENTMEMORY_IMAGE_VERSION=v1
 ARG III_VERSION=0.11.2
 ARG III_SDK_VERSION=0.11.2
 ARG GLIBC_BACKPORT_VERSION
+ARG DASH_BACKPORT_VERSION
 ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
@@ -156,6 +180,7 @@ RUN apt-get update \
  && test "$#" -gt 0 \
  && apt-get install -y --no-install-recommends "$@" \
  && apt-get install -y --no-install-recommends /tmp/glibc/*.deb \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' dash)" ge "${DASH_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' zlib1g)" ge "1:1.3.dfsg+really1.3.2-3+rcamarda1" \
  && for package in openssl libssl3t64 openssl-provider-legacy; do \
       dpkg --compare-versions "$(dpkg-query -W -f='${Version}' "$package")" ge "3.5.7-1~deb13u3" || exit 1; \
@@ -186,7 +211,7 @@ COPY --from=iii-image /app/iii /usr/local/bin/iii
 # call patched after the dependency graph is upgraded.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
-RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.31.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
+RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
  && node /tmp/patch-iii-otel2.mjs \
