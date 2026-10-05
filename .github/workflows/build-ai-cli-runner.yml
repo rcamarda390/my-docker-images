@@ -1,0 +1,41 @@
+name: Build and publish AI CLI runner image
+
+on:
+  workflow_dispatch:
+
+# Serialize publications so two dispatches cannot calculate the same next tag.
+concurrency:
+  group: ai-cli-runner-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish AI CLI runner image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: ai-cli-runner
+      context: ./images/ai-cli-runner
+      dockerfile: ./images/ai-cli-runner/Dockerfile
+      config: images/ai-cli-runner/image.yaml
+      # upstream_version is a composite string (claude+cline); the Dockerfile
+      # takes the individual versions from build_args and only labels this one.
+      version_arg: IMAGE_VERSION
+      platforms: linux/amd64
+      smoke_entrypoint: sh
+      smoke_command: -c,claude --version && cline --version && git --version
+      smoke_network_disabled: true
+      smoke_timeout: 60
+      scan: true
+      block_on_scan_failure: true
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}
