@@ -1,0 +1,12 @@
+name: ai-cli-runner
+# Two independent upstreams, so the version string carries both. The published
+# tag is <upstream_version>-v<revision>, e.g. claude2.1.289-cline3.0.68-v1.
+upstream_version: claude2.1.289-cline3.0.68
+revision: 1
+build_args:
+  CLAUDE_CODE_VERSION: 2.1.289
+  CLINE_VERSION: 3.0.68
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

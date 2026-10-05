@@ -1,0 +1,91 @@
+name: Check AI CLI runner versions
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-versions:
+    name: Open a bump PR when Claude Code or Cline has a new release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check npm and open a bump PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          dir=images/ai-cli-runner
+          config="$dir/image.yaml"
+
+          current_claude=$(sed -nE 's/^[[:space:]]+CLAUDE_CODE_VERSION:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$config")
+          current_cline=$(sed -nE 's/^[[:space:]]+CLINE_VERSION:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$config")
+          test -n "$current_claude" && test -n "$current_cline"
+
+          # `latest` dist-tag only: never a nightly or prerelease.
+          latest_claude=$(npm view @anthropic-ai/claude-code dist-tags.latest)
+          latest_cline=$(npm view cline dist-tags.latest)
+          echo "claude: ${current_claude} -> ${latest_claude}"
+          echo "cline:  ${current_cline} -> ${latest_cline}"
+
+          if [ "$latest_claude" = "$current_claude" ] && [ "$latest_cline" = "$current_cline" ]; then
+            echo "Already up to date"
+            exit 0
+          fi
+
+          branch="chore/update-ai-cli-runner-claude${latest_claude}-cline${latest_cline}"
+          if git ls-remote --exit-code origin "refs/heads/${branch}" &>/dev/null; then
+            echo "Branch ${branch} already exists - skipping"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+
+          new_version="claude${latest_claude}-cline${latest_cline}"
+          sed -E -i "s|^upstream_version:.*|upstream_version: ${new_version}|" "$config"
+          sed -E -i "s|^([[:space:]]+CLAUDE_CODE_VERSION:).*|\1 ${latest_claude}|" "$config"
+          sed -E -i "s|^([[:space:]]+CLINE_VERSION:).*|\1 ${latest_cline}|" "$config"
+
+          # Rewrite the pins and regenerate the lockfile so integrity hashes
+          # track the new versions. Scripts stay off: nothing is installed.
+          (
+            cd "$dir"
+            npm pkg set \
+              "dependencies.@anthropic-ai/claude-code-linux-x64=${latest_claude}" \
+              "dependencies.@cline/cli-linux-x64=${latest_cline}"
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          )
+
+          git add "$config" "$dir/package.json" "$dir/package-lock.json"
+          git commit \
+            -m "chore: bump ai-cli-runner to ${new_version}" \
+            -m "Automated bump: claude ${current_claude} -> ${latest_claude}, cline ${current_cline} -> ${latest_cline}."
+          git push origin "$branch"
+
+          {
+            printf '## Automated CLI version bump\n\n'
+            printf -- '- `@anthropic-ai/claude-code`: `%s` -> `%s`\n' "$current_claude" "$latest_claude"
+            printf -- '- `cline`: `%s` -> `%s`\n' "$current_cline" "$latest_cline"
+            printf -- '- Files: `%s`, `package.json`, `package-lock.json`\n' "$config"
+            printf '\n> Revision is derived from published tags, so the first build of a new version is `v1`.\n'
+            printf '> After review, dispatch **Build and publish AI CLI runner image**. The build does not run automatically.\n'
+          } > /tmp/pr_body.md
+
+          gh pr create \
+            --repo "$REPO" \
+            --base "$BASE_BRANCH" \
+            --head "$branch" \
+            --title "chore: bump ai-cli-runner to ${new_version}" \
+            --body-file /tmp/pr_body.md \
+            || echo "PR already exists or could not be created - continuing"

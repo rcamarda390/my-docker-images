@@ -10,6 +10,7 @@ Each image directory contains an `image.yaml` manifest. Refer to it for the curr
 | --- | --- | --- |
 | AgentMemory server | [Runtime and architecture](images/agentmemory-server/README.md) | [Image files](images/agentmemory-server/) |
 | Bifrost gateway | [Build notes](docs/images/bifrost-mcp.md) | [Image files](images/bifrost-mcp/) |
+| AI CLI runner (Claude Code + Cline) | [Build notes](docs/images/ai-cli-runner.md) | [Image files](images/ai-cli-runner/) |
 | Docker socket proxy | [Image files](images/docker-socket-proxy/) | [Manifest](images/docker-socket-proxy/image.yaml) |
 | eBay MCP | [Runtime guide](images/ebay-mcp/README.md) | [Image files](images/ebay-mcp/) |
 | Gnosis MCP | [Offline runtime and transport](docs/images/gnosis-mcp.md) | [Image files](images/gnosis-mcp/) |

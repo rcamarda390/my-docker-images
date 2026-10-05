@@ -10,6 +10,7 @@ Use these links to identify projects. Check an image's `image.yaml`, Dockerfile,
 | AgentMemory | https://github.com/rohitg00/agentmemory | https://github.com/rohitg00/agentmemory/blob/main/CHANGELOG.md | `images/agentmemory-server` |
 | OmniRoute | https://github.com/diegosouzapw/OmniRoute | https://github.com/diegosouzapw/OmniRoute/wiki/User-Guide ; https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/docs/guides/DOCKER_GUIDE.md | Related project; no image listed here |
 | Bifrost | https://github.com/maximhq/bifrost | https://docs.getbifrost.ai/overview | `images/bifrost-mcp` |
+| AI CLI runner | https://www.npmjs.com/package/@anthropic-ai/claude-code, https://www.npmjs.com/package/cline | https://github.com/anthropics/claude-code/releases, https://github.com/cline/cline/releases | `images/ai-cli-runner`; npm `latest` dist-tags, lockfile pinned |
 | LiteLLM | https://github.com/BerriAI/litellm | https://github.com/BerriAI/litellm/releases | `images/litellm` |
 | SQZ MCP | https://github.com/ojuschugh1/sqz | https://github.com/ojuschugh1/sqz/releases | `images/sqz-mcp`; check the vendored Cargo.lock |
 | Zeus Dev Image | Composite image; see `images/zeus-dev-image/Dockerfile` | Check installed products individually, including https://github.com/tt-a1i/archify and https://gitlab.freedesktop.org/xdg/xdg-user-dirs | `images/zeus-dev-image` |
