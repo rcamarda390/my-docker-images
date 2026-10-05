@@ -600,7 +600,7 @@ RUN find /usr/local/lib/python${PYTHON_ABI} /opt/venv \
 COPY verify-runtime-unused.py security-regression.py /tmp/
 RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-runtime-unused.py \
-    && dpkg --purge --force-depends --force-remove-essential --force-remove-protected \
+    && dpkg --purge --force-depends --force-remove-essential --force-remove-protected --force-bad-path \
       util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
     && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink()"
