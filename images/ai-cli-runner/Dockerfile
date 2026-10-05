@@ -4,9 +4,12 @@
 # network. Both CLIs ship as self-contained glibc executables, so the final
 # image needs no Node.js, npm, or package registry access at runtime.
 #
-# Both binaries link against glibc (libc.so.6 / ld-linux-x86-64.so.2), which is
-# why the runtime is Debian slim rather than Alpine/musl.
-ARG DEBIAN_SUITE=trixie
+# Both binaries link against glibc (libc.so.6 / ld-linux-x86-64.so.2), so Alpine
+# (musl) is out. The runtime is Chainguard Wolfi (glibc) rather than Debian
+# slim: Debian's unfixed util-linux/perl/ncurses/systemd findings failed the
+# blocking Trivy gate and cannot be removed from the base. Same digest as
+# images/litellm.
+ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
 ARG CLAUDE_CODE_VERSION=2.1.289
 ARG CLINE_VERSION=3.0.68
 
@@ -30,24 +33,23 @@ RUN set -eu; \
     cp -a "$cline_pkg" /out/opt/cline; \
     chmod 0755 /out/opt/claude-code/claude /out/opt/cline/bin/cline
 
-FROM debian:${DEBIAN_SUITE}-slim
+FROM ${WOLFI_IMAGE}
 ARG CLAUDE_CODE_VERSION
 ARG CLINE_VERSION
 # Composite claude+cline string supplied by the shared workflow; label only.
 ARG IMAGE_VERSION=unknown
 
-# git and ca-certificates are what GitLab's docker executor and the CLIs need
-# beyond the binaries (bash and coreutils come with the slim base). Add nothing
-# else without an Xray-driven reason: every package is scanned.
-RUN apt-get update \
-    && apt-get -y --no-install-recommends upgrade \
-    && apt-get -y --no-install-recommends install git ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# git and CA certificates are what GitLab's docker executor and the CLIs need
+# beyond the binaries; bash is for Claude Code's shell tool. Add nothing else
+# without an Xray-driven reason: every package is scanned.
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache --upgrade glibc \
+    && apk add --no-cache git ca-certificates-bundle bash
 
 COPY --from=builder /out/opt /opt
-RUN ln -s /opt/claude-code/claude /usr/local/bin/claude \
-    && ln -s /opt/cline/bin/cline /usr/local/bin/cline \
-    && useradd --uid 1000 --gid 0 --create-home --shell /bin/bash runner
+RUN ln -s /opt/claude-code/claude /usr/bin/claude \
+    && ln -s /opt/cline/bin/cline /usr/bin/cline \
+    && adduser -D -u 1000 -G root -s /bin/bash runner
 
 # Air-gap defaults: no self-update, telemetry, or other non-essential traffic.
 # Claude Code talks to AWS Bedrock; region, credentials and role/ARN come from

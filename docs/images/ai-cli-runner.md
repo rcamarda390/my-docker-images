@@ -7,10 +7,10 @@ RHEL EC2 runners. Not an MCP server; there is no service or health endpoint.
 
 ## Contents
 
-- Debian slim (digest-pinned builder, `trixie-slim` runtime), `linux/amd64`.
+- Chainguard Wolfi runtime (glibc, same digest as litellm; Debian slim failed the Trivy gate on unfixed base-package CVEs), digest-pinned Node builder stage, `linux/amd64`.
 - `claude` and `cline`: self-contained glibc executables from the pinned npm
   platform packages. No Node.js or npm in the final image (asserted at build).
-- `git`, `ca-certificates`, and the slim base's `bash`/coreutils.
+- `git`, `ca-certificates`, `bash`, and the base's busybox.
 - Alpine is not used: both CLI binaries require glibc.
 
 ## Tag
