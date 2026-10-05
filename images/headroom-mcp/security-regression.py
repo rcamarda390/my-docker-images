@@ -1,6 +1,7 @@
 # security-regression.py
 """Exercise the actual patched dependencies; run in builder and runtime."""
 
+import asyncio
 import importlib.util
 import json
 import os
@@ -65,7 +66,27 @@ with tempfile.TemporaryDirectory() as directory:
     assert files == [str(root / "nested" / "weights.safetensors")], files
     assert metadata["all_checkpoint_keys"] == ["weight"]
 
+async def verify_mcp():
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    parameters = StdioServerParameters(
+        command=str(Path(sys.prefix) / "bin" / "headroom"),
+        args=["mcp", "serve"], env=dict(os.environ),
+    )
+    async with asyncio.timeout(20):
+        async with stdio_client(parameters) as (read, write):
+            async with ClientSession(read, write) as session:
+                initialized = await session.initialize()
+                result = await session.list_tools()
+                assert initialized.serverInfo.name == "headroom"
+                assert {tool.name for tool in result.tools} >= {
+                    "headroom_compress", "headroom_retrieve", "headroom_stats",
+                }
+
+
 if sys.argv[1] == "runtime":
+    asyncio.run(verify_mcp())
     assert importlib.util.find_spec("_uuid") is None
     assert uuid.uuid4().version == 4
     assert uuid.uuid1().version == 1
