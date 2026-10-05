@@ -1,5 +1,5 @@
 name: litellm
-upstream_version: 1.94.3
+upstream_version: 1.104.0
 revision: 1
 publish:
   ghcr: true
