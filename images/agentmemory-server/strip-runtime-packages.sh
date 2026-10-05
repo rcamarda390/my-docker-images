@@ -61,11 +61,22 @@ dpkg --root="$runtime_root" --purge --force-depends --force-remove-essential \
 
 node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$util_manifest"
 
+# liblastlog2-2 introduced SQLite for login bookkeeping. It is now gone; iii uses
+# file_based state and no supported installed application path loads SQLite.
+# Recheck the candidate's dependency closure and every retained ELF before
+# purging the library, and assert its original files are physically absent.
+sqlite_manifest=/tmp/sqlite-removal.json
+node /tmp/verify-util-linux-removal.mjs audit "$runtime_root" "$sqlite_manifest" \
+    /tmp/readelf-tool/readelf sqlite
+dpkg --root="$runtime_root" --purge libsqlite3-0
+node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$sqlite_manifest" \
+    /tmp/readelf-tool/readelf sqlite
+
 rm -f "$debconf_frontend"
 mv "$debconf_frontend_backup" "$debconf_frontend"
 
 for package in apt libapt-pkg7.0 debian-archive-keyring sqv dpkg tar gzip \
-               libsystemd0 libudev1 libpcre2-8-0 perl-base curl; do
+               libsystemd0 libudev1 libpcre2-8-0 perl-base curl libsqlite3-0; do
     state=$(package_state "$package")
     test "$state" != installed || {
         echo "$package is still installed in the runtime root" >&2
