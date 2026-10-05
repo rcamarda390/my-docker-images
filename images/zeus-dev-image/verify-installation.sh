@@ -65,6 +65,7 @@ encoded = serializer.dumps(request, HTTPResponse(status=200), body=b"zeus-cache"
 assert serializer.loads(request, encoded).read() == b"zeus-cache"
 assert serializer.loads(request, b"cc=4,\xc1") is None
 '
+check "$python pip legacy-backend env var ignored" 1 env _PIP_USE_IMPORTLIB_METADATA=0 "$python" -m pip --version
 done
 check "node 22" 1 bash -c '[[ "$(node --version)" == v22.* ]]'
 check "npm" 1 command -v npm

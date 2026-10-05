@@ -27,12 +27,21 @@ for name in ("__init__.py", "exceptions.py", "ext.py", "fallback.py"):
     shutil.copyfile(src / name, target / name)
 shutil.rmtree(target / "__pycache__", ignore_errors=True)
 
-# pkg_resources (setuptools 70.3.0) is only used by pip's opt-in legacy
-# metadata backend, which Python 3.12 never selects by default.
+# pkg_resources (setuptools 70.3.0) is only used by pip's legacy metadata
+# backend. Pin backend selection to importlib.metadata so _PIP_USE_IMPORTLIB_METADATA=0
+# (or a distributor constant) cannot select the removed backend, then delete it.
+internal = Path(pip.__file__).parent / "_internal" / "metadata"
+init = internal / "__init__.py"
+marker = '    if sys.version_info >= (3, 14):\n        # On Python >=3.14 we only support importlib.metadata.\n        return True\n'
+text = init.read_text()
+assert text.count(marker) == 1, "pip metadata backend selection changed"
+init.write_text(text.replace(marker, "    return True  # zeus: legacy pkg_resources backend removed\n" + marker))
+legacy = internal / "pkg_resources.py"
 removed = vendor / "pkg_resources"
-removed_files = [p for p in removed.rglob("*") if p.is_file()]
-assert removed_files
+removed_files = [p for p in removed.rglob("*") if p.is_file()] + [legacy]
+assert len(removed_files) > 1
 shutil.rmtree(removed)
+legacy.unlink()
 
 bom_file = vendor / "bom.cdx.json"
 bom = json.loads(bom_file.read_text().replace("pkg:pypi/msgpack@1.1.2", "pkg:pypi/msgpack@1.2.3"))
@@ -52,7 +61,7 @@ record = Path(dist.locate_file(next(p for p in dist.files if str(p).endswith(".d
 site = Path(dist.locate_file(""))
 with record.open(newline="") as stream:
     rows = list(csv.reader(stream))
-changed = [p for p in target.rglob("*") if p.is_file()] + [bom_file, vendor_txt]
+changed = [p for p in target.rglob("*") if p.is_file()] + [bom_file, vendor_txt, init]
 names = {p.relative_to(site).as_posix() for p in changed}
 dropped = {p.relative_to(site).as_posix() for p in removed_files}
 rows = [r for r in rows if r[0] not in names and r[0] not in dropped
