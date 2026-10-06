@@ -1,0 +1,10 @@
+name: slim-agentmemory-mcp
+upstream_version: 0.9.29
+revision: 1
+build_args:
+  # Node major the build/verify stage must run on (glibc, Debian). Same base as slim-archify.
+  NODE_MAJOR: "24"
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
