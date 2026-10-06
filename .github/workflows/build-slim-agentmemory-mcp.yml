@@ -1,0 +1,41 @@
+name: Build and publish slim agentmemory-mcp payload image
+
+on:
+  workflow_dispatch:
+
+# Serialize publications so two dispatches cannot calculate the same next tag.
+concurrency:
+  group: slim-agentmemory-mcp-publish
+  cancel-in-progress: false
+
+permissions:
+  # Required by the reusable workflow contract. Published-tag revision mode
+  # does not exercise the revision-PR step, but a caller cannot grant less than
+  # permissions declared by the called workflow.
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish slim agentmemory-mcp payload image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: slim-agentmemory-mcp
+      context: ./images/slim-agentmemory-mcp
+      dockerfile: ./images/slim-agentmemory-mcp/Dockerfile
+      config: images/slim-agentmemory-mcp/image.yaml
+      version_arg: AGENTMEMORY_MCP_VERSION
+      platforms: linux/amd64
+      # FROM scratch: nothing to run. Start/initialize checks run inside the Dockerfile.
+      run_smoke_test: false
+      scan: true
+      # Count tags already published for this upstream version. Failed builds
+      # publish no tag, so they do not consume a revision.
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}
