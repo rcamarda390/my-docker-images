@@ -3,6 +3,10 @@ name: Build and publish slim VSIX payload image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - images/slim-docker-vsix/**
+      - .github/workflows/build-slim-docker-vsix.yml
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:
@@ -38,5 +42,5 @@ jobs:
       scan: true
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision.
-      revision_from_published_tag_count: true
+      revision_from_published_tag_count: ${{ github.event_name == 'workflow_dispatch' }}
       publish: ${{ github.event_name != 'pull_request' }}
