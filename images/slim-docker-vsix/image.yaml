@@ -1,0 +1,10 @@
+# File: images/slim-docker-vsix/image.yaml
+name: slim-docker-vsix
+upstream_version: 0.4.16
+revision: 1
+build_args:
+  VSIX_SHA256: d4ceeb507bf673c8d10697d494d25499f69862f06d7987f056741503dbcc65a2
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
