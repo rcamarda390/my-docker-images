@@ -13,9 +13,9 @@ on:
       - "images/agentmemory-server/**"
       - ".github/workflows/build-agentmemory-server.yml"
 
-# Serialize publications so two dispatches cannot calculate the same next tag.
+# Serialize publications; PR validation must not wait behind an obsolete build.
 concurrency:
-  group: agentmemory-mcp-publish
+  group: agentmemory-mcp-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
   cancel-in-progress: false
 
 permissions:
