@@ -270,6 +270,7 @@ RUN apt-get update \
 COPY --from=builder /install             /usr/local
 COPY --from=builder /gnosis-model-cache  /gnosis-model-cache
 COPY verify-native-runtime.py /usr/local/share/gnosis/verify-native-runtime.py
+COPY verify-security-runtime.py /usr/local/share/gnosis/verify-security-runtime.py
 COPY runtime-smoke.py /usr/local/share/gnosis/runtime-smoke.py
 COPY verify-no-libgomp.py /tmp/verify-no-libgomp.py
 
@@ -374,6 +375,7 @@ RUN ! command -v pip \
         package_state="$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null || true)"; \
         test "$package_state" != "installed" || { echo "$package is still installed" >&2; exit 1; }; \
        done \
+    && python /usr/local/share/gnosis/verify-security-runtime.py \
     && python /usr/local/share/gnosis/verify-native-runtime.py \
     && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
     && python -c "import sqlite3, sqlite_vec; assert sqlite3.sqlite_version == '${SQLITE_VERSION}'; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute(\"insert into docs values ('security fixed')\"); assert db.execute(\"select count(*) from docs where docs match 'fixed'\").fetchone()[0] == 1; db.enable_load_extension(True); db.load_extension(sqlite_vec.loadable_path()); db.execute('create virtual table vectors using vec0(embedding float[2])')" \
