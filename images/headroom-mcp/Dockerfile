@@ -617,7 +617,7 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
      litellm_version = importlib.metadata.version('litellm'); \
      assert litellm_version == '${LITELLM_VERSION}', litellm_version; \
      assert Version(litellm_version) >= Version('1.96.2'), litellm_version; \
-     assert importlib.metadata.version('anyio') == '${ANYIO_VERSION}'; \
+     assert importlib.metadata.version('anyio') == '4.14.2'; \
      assert importlib.metadata.version('PyJWT') == '${PYJWT_VERSION}'; \
      assert importlib.metadata.version('mcp') == '${MCP_VERSION}'; \
      assert importlib.metadata.version('fsspec') == '${FSSPEC_VERSION}'; \
