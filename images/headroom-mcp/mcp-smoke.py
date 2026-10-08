@@ -1,5 +1,8 @@
 import json
 import os
+import secrets
+import socket
+import ipaddress
 import subprocess
 import sys
 import time
@@ -29,6 +32,13 @@ print("\nStarting Headroom proxy with offline mode...")
 env = os.environ.copy()
 env["HF_HUB_OFFLINE"] = "1"
 env["TRANSFORMERS_OFFLINE"] = "1"
+# Disposable CI credential; never an image default or a deployment secret.
+proxy_token = secrets.token_hex(32)
+env["HEADROOM_PROXY_TOKEN"] = proxy_token
+env["HEADROOM_COMPRESS_ALLOW_REMOTE"] = "1"
+container_ip = socket.gethostbyname(socket.gethostname())
+assert not ipaddress.ip_address(container_ip).is_loopback, "auth probe must use a non-loopback peer"
+remote_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 process = subprocess.Popen(
     ["headroom", "proxy", "--host", "0.0.0.0", "--port", "8787"],
@@ -103,7 +113,21 @@ try:
     # The response carries the compressed messages plus metrics:
     #   messages, tokens_before, tokens_after, tokens_saved, compression_ratio,
     #   transforms_applied, ccr_hashes
-    compress_url = "http://localhost:8787/v1/compress"
+    compress_url = f"http://{container_ip}:8787/v1/compress"
+    unauthorized = urllib.request.Request(
+        compress_url,
+        data=json.dumps({"messages": [], "model": "gpt-4o-mini"}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        remote_opener.open(unauthorized, timeout=5)
+    except urllib.error.HTTPError as error:
+        if error.code != 401:
+            raise SystemExit(f"Unauthenticated remote request returned {error.code}, expected 401")
+    else:
+        raise SystemExit("Unauthenticated remote request was accepted")
+    print("✓ Remote requests require authentication")
 
     # The first request builds tokenizers and loads the Kompress ONNX model out
     # of the baked-in cache. Measured at ~5s on run 32311533470, so 90s is ample.
@@ -115,10 +139,10 @@ try:
         request = urllib.request.Request(
             compress_url,
             data=json.dumps(body).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {proxy_token}"},
             method="POST",
         )
-        response = urllib.request.urlopen(request, timeout=timeout)
+        response = remote_opener.open(request, timeout=timeout)
         if response.status != 200:
             raise SystemExit(f"Compression endpoint returned error status {response.status}")
         return json.loads(response.read().decode("utf-8"))

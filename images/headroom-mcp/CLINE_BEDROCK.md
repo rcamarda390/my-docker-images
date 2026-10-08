@@ -12,6 +12,18 @@ review these runtime settings during deployment. The removed CrewAI extra is
 not used by this image. Upstream now locks AnyIO 4.14.2, so the old AnyIO
 override is removed. PyJWT follows the newer upstream 2.15.1 lock.
 
+## Container authentication in 0.40.0
+
+The container binds `0.0.0.0`. Set `HEADROOM_PROXY_TOKEN` as a runtime secret
+and configure callers to send that token using `Authorization: Bearer ...`
+or `X-Headroom-Token`. Upstream refuses this bind without a token. Do not bake
+the token into the image. Loopback callers and GET health probes are exempt;
+network callers must authenticate. For a trusted remote compression sidecar,
+also set `HEADROOM_COMPRESS_ALLOW_REMOTE=1`; that setting retains token checks.
+The smoke test uses a disposable generated token and verifies an unauthenticated
+non-loopback compression request is rejected before testing authenticated,
+offline compression.
+
 ## Request shaping
 
 Cline 4.0.12 sends `parallel_tool_calls=true`. Headroom 0.40.0 treats unknown
