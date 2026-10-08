@@ -13,18 +13,29 @@ if (offline.status !== 0) {
   throw new Error(`offline embedding smoke failed with status ${offline.status}`);
 }
 
-const server = spawn(entrypoint, [], {
-  detached: true,
-  stdio: "inherit",
-  env: process.env,
-});
+function startServer() {
+  return spawn(entrypoint, [], {
+    detached: true,
+    stdio: "inherit",
+    env: process.env,
+  });
+}
+let server = startServer();
 
-function stopServer() {
+async function stopServer() {
   if (server.pid === undefined) return;
   try {
     process.kill(-server.pid, "SIGTERM");
   } catch {
     // The process group may already have exited after a startup failure.
+  }
+  const deadline = Date.now() + 10_000;
+  while (server.exitCode === null && server.signalCode === null && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  if (server.exitCode === null && server.signalCode === null) {
+    try { process.kill(-server.pid, "SIGKILL"); } catch {}
+    throw new Error("agentmemory did not stop cleanly for persistence test");
   }
 }
 
@@ -89,7 +100,19 @@ try {
     format: "compact",
   });
   assert.ok(results.includes(marker), "saved memory must be returned by search");
-  console.log("AgentMemory runtime, health, memory_save, and memory_recall smoke OK");
+  // File stores flush every 2000ms; allow a full interval plus scheduling margin.
+  await new Promise((resolve) => setTimeout(resolve, 4_000));
+  await stopServer();
+  server = startServer();
+  await waitForHealth();
+  assert.equal((await readFile("/data/.hmac", "utf8")).trim(), secret, "restart must preserve authentication secret");
+  const persisted = await call("/agentmemory/search", secret, {
+    query: marker,
+    limit: 1,
+    format: "compact",
+  });
+  assert.ok(persisted.includes(marker), "saved memory must survive a server restart");
+  console.log("AgentMemory runtime, health, auth, offline embeddings, and restart persistence smoke OK");
 } finally {
-  stopServer();
+  await stopServer();
 }
