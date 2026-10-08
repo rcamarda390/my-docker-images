@@ -63,6 +63,9 @@ async function call(path, secret, body) {
 
 try {
   await waitForHealth();
+  const runtimeConfig = await readFile("/data/iii-config.runtime.yaml", "utf8");
+  assert.ok(runtimeConfig.includes("/data/state_store.db"), "state must stay on the persistent volume");
+  assert.ok(runtimeConfig.includes("/data/stream_store"), "streams must stay on the persistent volume");
   const secret = (await readFile("/data/.hmac", "utf8")).trim();
   if (secret.length < 32) throw new Error("generated HMAC secret is unexpectedly short");
 
