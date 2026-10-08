@@ -74,9 +74,12 @@ async function call(path, secret, body) {
 
 try {
   await waitForHealth();
-  const runtimeConfig = await readFile("/data/iii-config.runtime.yaml", "utf8");
-  assert.ok(runtimeConfig.includes("/data/state_store.db"), "state must stay on the persistent volume");
-  assert.ok(runtimeConfig.includes("/data/stream_store"), "streams must stay on the persistent volume");
+  // iii 0.22.1 migrates inline settings into its configuration worker on boot.
+  // The active values live under the bundled config engine working directory.
+  const stateConfig = await readFile("/home/node/.agentmemory/config/iii-state.yaml", "utf8");
+  const streamConfig = await readFile("/home/node/.agentmemory/config/iii-stream.yaml", "utf8");
+  assert.ok(stateConfig.includes("/data/state_store.db"), "state must stay on the persistent volume");
+  assert.ok(streamConfig.includes("/data/stream_store"), "streams must stay on the persistent volume");
   const secret = (await readFile("/data/.hmac", "utf8")).trim();
   if (secret.length < 32) throw new Error("generated HMAC secret is unexpectedly short");
 
