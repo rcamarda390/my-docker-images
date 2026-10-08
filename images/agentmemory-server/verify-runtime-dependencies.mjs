@@ -20,6 +20,7 @@ const fixedVersions = {
   sharp: "0.35.5",
   tar: "7.5.21",
   undici: "6.28.0",
+  "@opentelemetry/propagator-jaeger": "2.9.0",
 };
 
 const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));

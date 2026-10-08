@@ -208,10 +208,11 @@ COPY --from=iii-image /app/iii /usr/local/bin/iii
 # brace-expansion 5.0.7, sharp 0.34.5, tar 7.5.19, ip-address 10.2.0,
 # adm-zip 0.5.18 and undici 6.27.0. iii-sdk 0.22.1 no longer depends on
 # the old OpenTelemetry runtime SDKs, so their overrides/Resource patch are removed.
+# Jaeger still arrives through another dependency and retains its security pin.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 verify-runtime-dependencies.mjs /tmp/verify-runtime-dependencies.mjs
 COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
-RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0"}}\n' "${III_SDK_VERSION}" > package.json \
+RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/iii-sdk/package.json').version")" = "${III_SDK_VERSION}" \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
