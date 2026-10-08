@@ -99,7 +99,7 @@ RUN set -eux; \
     dpkg-deb -x /out/dash_*_*.deb /tmp/dash-check; \
     readelf -Ws /tmp/dash-check/usr/bin/dash | grep -E 'UND.* fnmatch@'
 
-FROM rust:1.94.0-slim-trixie AS rust_toolchain
+FROM rust:1.98.1-slim-trixie AS rust_toolchain
 
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS builder
 COPY --from=rust_toolchain /usr/local/cargo /usr/local/cargo
