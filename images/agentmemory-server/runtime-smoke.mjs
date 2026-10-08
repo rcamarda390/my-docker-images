@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 
@@ -65,6 +66,13 @@ try {
   const secret = (await readFile("/data/.hmac", "utf8")).trim();
   if (secret.length < 32) throw new Error("generated HMAC secret is unexpectedly short");
 
+  const unauthorized = await fetch(`${baseUrl}/agentmemory/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: "authentication-smoke", limit: 1 }),
+  });
+  assert.equal(unauthorized.status, 401, "REST requests must require authentication");
+
   const marker = `runtime-security-smoke-${Date.now()}`;
   await call("/agentmemory/remember", secret, {
     content: marker,
@@ -72,11 +80,12 @@ try {
     concepts: ["runtime-security-smoke"],
     project: "/tmp/runtime-security-smoke",
   });
-  await call("/agentmemory/search", secret, {
+  const results = await call("/agentmemory/search", secret, {
     query: marker,
     limit: 1,
     format: "compact",
   });
+  assert.ok(results.includes(marker), "saved memory must be returned by search");
   console.log("AgentMemory runtime, health, memory_save, and memory_recall smoke OK");
 } finally {
   stopServer();

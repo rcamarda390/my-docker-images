@@ -8,7 +8,7 @@ import { runInNewContext } from 'node:vm';
 const root = process.env.AGENTMEMORY_ROOT || '/opt/agentmemory';
 const dist = join(root, 'node_modules/@agentmemory/agentmemory/dist');
 const version = JSON.parse(readFileSync(join(dist, '../package.json'), 'utf8')).version;
-assert.equal(version, '0.9.29', 'revalidate generated-output patch on upstream upgrades');
+assert.equal(version, '0.9.30', 'revalidate generated-output patch on upstream upgrades');
 const { z } = await import(pathToFileURL(join(root, 'node_modules/zod/index.js')));
 const fields = ['facts', 'concepts', 'files', 'keyDecisions', 'filesModified'];
 const before = 'function validateInput(schema, data, functionId) {\n\tconst parsed = schema.safeParse(data);';
@@ -31,7 +31,7 @@ const after = `function validateInput(schema, data, functionId) {
 
 // Both entry bundles contain the same shared validator. Patch exact source;
 // changing a different schema or a package-wide Zod API would broaden behavior.
-for (const file of ['index.mjs', 'src-G7yt8gGm.mjs']) {
+for (const file of ['index.mjs', 'src-Jsq9LCeH.mjs']) {
   const path = join(dist, file);
   const source = readFileSync(path, 'utf8');
   assert.equal(source.split(before).length - 1, 1, `validator changed: ${file}`);

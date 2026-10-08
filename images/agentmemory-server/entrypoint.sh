@@ -53,6 +53,7 @@ workers:
         name: kv
         config:
           store_method: file_based
+          save_interval_ms: 2000
           file_path: /data/state_store.db
   - name: iii-queue
     config:
@@ -74,6 +75,7 @@ workers:
         name: kv
         config:
           store_method: file_based
+          save_interval_ms: 2000
           file_path: /data/stream_store
   - name: iii-observability
     config:

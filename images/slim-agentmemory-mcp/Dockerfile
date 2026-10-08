@@ -15,7 +15,7 @@ RUN set -eu; \
     npm install "@agentmemory/mcp@${AGENTMEMORY_MCP_VERSION}" --prefix /opt/agentmemory-mcp --omit=dev; \
     test "$(node -p "require('/opt/agentmemory-mcp/node_modules/@agentmemory/mcp/package.json').version")" = "${AGENTMEMORY_MCP_VERSION}"; \
     npm cache clean --force
-# Proxy mode (standalone.mjs) never loads these. Verified against the real 0.9.29
+# Proxy mode (standalone.mjs) never loads these. Verified against the real 0.9.30
 # tree: Claude Agent SDK (+ platform binaries), sharp/libvips and jieba natives
 # (optional deps of the full server), OpenTelemetry (iii-sdk only), sourcemaps,
 # type stubs. package.json / package-lock.json / node_modules/.package-lock.json

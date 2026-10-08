@@ -7,6 +7,11 @@ on:
       - "images/agentmemory-server/**"
       - ".github/workflows/build-agentmemory-server.yml"
       - ".github/workflows/build-image.yml"
+  push:
+    branches: [main]
+    paths:
+      - "images/agentmemory-server/**"
+      - ".github/workflows/build-agentmemory-server.yml"
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:

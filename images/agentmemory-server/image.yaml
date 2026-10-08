@@ -1,8 +1,8 @@
 name: agentmemory-mcp
-upstream_version: 0.9.29
+upstream_version: 0.9.30
 revision: 1
 build_args:
-  III_VERSION: "0.11.2"
+  III_VERSION: "0.22.1"
   TRANSFORMERS_VERSION: "4.2.0"
   TRANSFORMERS_MODEL_REVISION: "751bff37182d3f1213fa05d7196b954e230abad9"
   TRANSFORMERS_MODEL_ID: "Xenova/all-MiniLM-L6-v2"
