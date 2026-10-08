@@ -18,7 +18,7 @@ from tokenizers import Tokenizer, models
 from transformers.utils.hub import get_checkpoint_shard_files
 
 for name, expected in {
-    "litellm": "1.101.3", "PyJWT": "2.15.0", "mcp": "1.30.0",
+    "litellm": "1.101.3", "PyJWT": "2.15.1", "mcp": "1.30.0",
     "fsspec": "2026.6.0", "multidict": "6.9.1",
     "tokenizers": "0.23.2+rcamarda1", "transformers": "5.17.0",
 }.items():

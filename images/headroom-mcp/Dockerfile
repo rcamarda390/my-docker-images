@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-ARG HEADROOM_VERSION=0.39.1
-ARG HEADROOM_COMMIT=d13e1966f820220b482a33c30bde1e926743939a
+ARG HEADROOM_VERSION=0.40.0
+ARG HEADROOM_COMMIT=855390d6110e0bbb199d9b97025baac16c2f5cf3
 ARG LITELLM_VERSION=1.101.3
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
@@ -9,7 +9,7 @@ ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
 ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda2
 ARG PIP_VERSION=26.2.1
-ARG PYJWT_VERSION=2.15.0
+ARG PYJWT_VERSION=2.15.1
 ARG TOKENIZERS_VERSION=0.23.2
 ARG TOKENIZERS_BACKPORT_VERSION=0.23.2+rcamarda1
 ARG TOKENIZERS_SOURCE_SHA256=7f0f085686b9de0d0079e6f874ae053600db64c5d13049e0bbc0119926d25aac
@@ -20,7 +20,6 @@ ARG DASH_DEBIAN_VERSION=0.5.12-12
 ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 ARG TRANSFORMERS_VERSION=5.17.0
 ARG URLLIB3_VERSION=2.8.0
-ARG ANYIO_VERSION=4.14.2
 ARG RUSTUP_VERSION=1.28.2
 ARG SQLITE_VERSION=3.53.4
 ARG SQLITE_AUTOCONF=3530400
@@ -130,7 +129,6 @@ ARG FSSPEC_VERSION
 ARG MULTIDICT_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
-ARG ANYIO_VERSION
 ARG RUSTUP_VERSION
 ARG SQLITE_VERSION
 ARG SQLITE_AUTOCONF
@@ -233,13 +231,6 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
       "litellm==${LITELLM_VERSION}" \
     && PATH="/opt/venv/bin:${PATH}" python -c \
       "import importlib.metadata; assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'"
-# Debian's tracker records CVE-2026-64847, CVE-2026-63374, and
-# CVE-2026-63349 against the locked AnyIO 4.12.1; all three are fixed upstream
-# in 4.14.2. Keep the upstream lock immutable, then apply this narrow runtime
-# override until a future Headroom release locks AnyIO at the fixed floor.
-RUN uv pip install --python /opt/venv/bin/python --upgrade-package anyio \
-      "anyio==${ANYIO_VERSION}" \
-    && test "$(PATH="/opt/venv/bin:${PATH}" python -c 'import importlib.metadata; print(importlib.metadata.version("anyio"))')" = "$ANYIO_VERSION"
 # Keep the Transformers/tokenizer API range, then source-patch their unfixed
 # load paths below. PyJWT 2.15.0 fixes CVE-2026-102275 and CVE-2026-101918.
 RUN uv pip install --python /opt/venv/bin/python \
@@ -264,17 +255,15 @@ RUN uv pip install --python /opt/venv/bin/python \
 # botocore accepts urllib3<3 for Python >=3.10, so this stays within its
 # declared range; the assertion below proves boto3/botocore still import
 # cleanly against the bumped version.
-RUN uv pip install --python /opt/venv/bin/python --upgrade-package urllib3 \
-      "urllib3==${URLLIB3_VERSION}" \
-    && PATH="/opt/venv/bin:${PATH}" python -c \
+# Upstream 0.40.0 already locks urllib3 2.8.0; verify without overriding it.
+RUN PATH="/opt/venv/bin:${PATH}" python -c \
       "import importlib.metadata, boto3, botocore; \
        assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'" \
     && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
-# Fixed releases for the 2026-10-05 Xray follow-up. MCP stays on the
-# supported 1.x API; fsspec and multidict are retained transitive dependencies.
+# MCP stays on the supported 1.x API. Upstream 0.40.0 already locks
+# the fixed fsspec and multidict releases, verified by security-regression.py.
 RUN uv pip install --python /opt/venv/bin/python \
-      --upgrade-package mcp --upgrade-package fsspec --upgrade-package multidict \
-      "mcp==${MCP_VERSION}" "fsspec==${FSSPEC_VERSION}" "multidict==${MULTIDICT_VERSION}" \
+      --upgrade-package mcp "mcp==${MCP_VERSION}" \
     && uv pip check --python /opt/venv/bin/python
 
 # 0.23.2 still contains CVE-2026-85670. Reuse the Gnosis bounds-check patch
@@ -410,7 +399,6 @@ ARG FSSPEC_VERSION
 ARG MULTIDICT_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
-ARG ANYIO_VERSION
 ARG GLIBC_BACKPORT_VERSION
 ARG DASH_BACKPORT_VERSION
 ARG PYTHON_VERSION
