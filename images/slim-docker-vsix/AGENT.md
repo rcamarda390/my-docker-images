@@ -22,14 +22,14 @@ Original artifact checksum and change provenance recorded in SECURITY-REBUILD.js
 
 ## Anthropic Claude Code
 
-Official Marketplace VSIX, pinned linux-x64 version 2.1.291. No rebuild or modification.
+Official Marketplace VSIX, pinned linux-x64 version 2.1.291. No rebuild or modification. Decode Marketplace gzip transport before comparing the\nVSIX to CLAUDE_CODE_SHA256 in image.yaml; reject mismatches before writing payload.
 
 VSIX: `/slim/payload/vsix/anthropic.claude-code-2.1.291-linux-x64/anthropic.claude-code-2.1.291-linux-x64.vsix`
 Unpacked: `/slim/payload/unpacked/anthropic.claude-code-2.1.291-linux-x64/`
 Evidence: `/slim/metadata/anthropic.claude-code-2.1.291-linux-x64/`
 
 Xray-oriented evidence:
-- `claude-code.cdx.json`: CycloneDX 1.5 inventory from package manifests physically present in the VSIX.
+- `claude-code.cdx.json`: CycloneDX 1.5 inventory from package manifests physically present in the VSIX. The extension manifest is application metadata, not an npm dependency.
 - `files.json`: every unpacked file with size and SHA-256.
 - `package-manifests.json`: package.json locations, versions and dependency declarations.
 - `native-binaries.json`: ELF binaries with hashes for native-component triage.
@@ -51,3 +51,4 @@ Verify Xray findings against both the unpacked payload and generated SBOM after 
 Upstream Live Preview fixes:
 https://github.com/websockets/ws/security/advisories/GHSA-96hv-2xvq-fx4p
 https://github.com/websockets/ws/security/advisories/GHSA-58qx-3vcg-4xpx
+
