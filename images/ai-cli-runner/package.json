@@ -4,7 +4,7 @@
   "private": true,
   "description": "Pins the linux-x64 glibc CLI binaries baked into the image. Versions must match image.yaml; the Dockerfile asserts it.",
   "dependencies": {
-    "@anthropic-ai/claude-code-linux-x64": "2.1.289",
-    "@cline/cli-linux-x64": "3.0.68"
+    "@anthropic-ai/claude-code-linux-x64": "2.1.295",
+    "@cline/cli-linux-x64": "3.0.70"
   }
 }

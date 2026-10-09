@@ -15,7 +15,7 @@ RHEL EC2 runners. Not an MCP server; there is no service or health endpoint.
 
 ## Tag
 
-`<upstream_version>-v<revision>`, e.g. `claude2.1.289-cline3.0.68-v1`.
+`<upstream_version>-v<revision>`, e.g. `claude2.1.295-cline3.0.70-v1`.
 `revision` resets to `v1` per version pair and is derived from published
 Docker Hub tags. Published to GHCR and Docker Hub only; mirror to Artifactory
 manually. No `latest`.
@@ -44,6 +44,26 @@ user (uid 1000) exists for jobs that set `user:`.
   The build fails if the lockfile and `image.yaml` disagree.
 
 ## Validation
+
+## Air-gap files and Xray
+
+The existing build workflow also exports `ai-cli-runner-airgap-xray`: flat
+Claude Code and Cline Linux x64 tarballs, original npm platform archives,
+the original Cline launcher archive, SHA-256 sidecars, and the build npm
+manifest/lockfile. Run `bash images/ai-cli-runner/build-airgap.sh` to produce
+the same files locally. Each platform archive is checked against the lockfile's
+npm integrity hash before packaging. Each flat archive preserves the complete
+installed package, including its real `package.json` and bundled files.
+
+The same files remain in the final image at `/opt/security/ai-cli-runner`.
+Upload the npm archives to an Xray-indexed Artifactory repository and scan the
+published Docker image as well; retain the flat archives for air-gap transfer.
+Checksums verify transfer integrity; they are not vulnerability scan results.
+The package manifests identify the upstream binary packages but do not provide
+a complete dependency inventory of their compiled executables. Xray may not
+identify every embedded dependency; no complete scan coverage or clean result
+is claimed without the actual Xray report. No synthetic dependency manifests
+are added to imply otherwise.
 
 Build asserts versions, runs both CLIs, and checks Node/npm are absent. CI
 smoke-tests with networking disabled and Trivy blocks publication on

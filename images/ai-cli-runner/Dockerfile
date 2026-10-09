@@ -10,8 +10,8 @@
 # blocking Trivy gate and cannot be removed from the base. Same digest as
 # images/litellm.
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG CLAUDE_CODE_VERSION=2.1.289
-ARG CLINE_VERSION=3.0.68
+ARG CLAUDE_CODE_VERSION=2.1.295
+ARG CLINE_VERSION=3.0.70
 
 # Builder only: npm resolves the pinned platform packages from package-lock.json
 # (integrity-checked) and is discarded with this stage.
@@ -20,7 +20,8 @@ ARG CLAUDE_CODE_VERSION
 ARG CLINE_VERSION
 WORKDIR /build
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY build-airgap.sh ./
+RUN bash build-airgap.sh
 # image.yaml is the version source of truth; fail if the lockfile has drifted
 # from it rather than silently shipping a different version.
 RUN set -eu; \
@@ -53,6 +54,8 @@ RUN apk upgrade --available --no-cache \
 RUN apk info -v zlib | grep -qv '^zlib-1.3.2-r5$'
 
 COPY --from=builder /out/opt /opt
+# Retain registry archives, integrity pins and flat payloads for Xray inspection.
+COPY --from=builder /build/dist /opt/security/ai-cli-runner
 RUN ln -s /opt/claude-code/claude /usr/bin/claude \
     && ln -s /opt/cline/bin/cline /usr/bin/cline \
     && adduser -D -u 1000 -G root -s /bin/bash runner

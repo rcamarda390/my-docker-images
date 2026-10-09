@@ -14,6 +14,21 @@ permissions:
   pull-requests: write
 
 jobs:
+  airgap-files:
+    name: Export air-gap and Xray scan files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Package pinned CLI payloads and verify checksums
+        run: bash images/ai-cli-runner/build-airgap.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-cli-runner-airgap-xray
+          path: images/ai-cli-runner/dist/
+          if-no-files-found: error
   build:
     name: Build and publish AI CLI runner image
     uses: ./.github/workflows/build-image.yml
