@@ -16,6 +16,7 @@
 set -eu
 
 DATA_DIR="${AGENTMEMORY_DATA_DIR:-/data}"
+export AGENTMEMORY_DATA_DIR="$DATA_DIR"
 HMAC_FILE="${AGENTMEMORY_HMAC_FILE:-/data/.hmac}"
 RUN_AS="node:node"
 III_CONFIG="/opt/agentmemory/node_modules/@agentmemory/agentmemory/dist/iii-config.yaml"
@@ -41,11 +42,7 @@ workers:
       host: 0.0.0.0
       default_timeout: 180000
       cors:
-        allowed_origins:
-          - "http://localhost:3111"
-          - "http://localhost:3113"
-          - "http://127.0.0.1:3111"
-          - "http://127.0.0.1:3113"
+        allowed_origins: ["http://localhost:3111", "http://localhost:3113", "http://127.0.0.1:3111", "http://127.0.0.1:3113"]
         allowed_methods: [GET, POST, PUT, DELETE, OPTIONS]
   - name: iii-state
     config:
@@ -53,6 +50,7 @@ workers:
         name: kv
         config:
           store_method: file_based
+          save_interval_ms: 2000
           file_path: /data/state_store.db
   - name: iii-queue
     config:
@@ -74,6 +72,7 @@ workers:
         name: kv
         config:
           store_method: file_based
+          save_interval_ms: 2000
           file_path: /data/stream_store
   - name: iii-observability
     config:
