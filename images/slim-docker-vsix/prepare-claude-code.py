@@ -1,5 +1,6 @@
 # File: images/slim-docker-vsix/prepare-claude-code.py
 """Download and unpack the pinned Anthropic Claude Code VSIX for Xray inspection."""
+import gzip
 import hashlib
 import json
 import sys
@@ -25,6 +26,9 @@ for directory in (original, extracted, metadata):
 request = urllib.request.Request(url, headers={"Accept-Encoding": "identity"})
 with urllib.request.urlopen(request, timeout=120) as response:
     data = response.read()
+# Marketplace may return a gzip Content-Encoding even without negotiation.
+if data[:2] == b"\x1f\x8b":
+    data = gzip.decompress(data)
 
 digest = hashlib.sha256(data).hexdigest()
 archive = original / f"{identity}.vsix"
