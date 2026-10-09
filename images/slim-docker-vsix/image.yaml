@@ -6,7 +6,9 @@ build_args:
   LIVE_PREVIEW_COMMIT: 79e9df2ffed927625988dfeb6876f84b087f12dd
   VSIX_SHA256: d4ceeb507bf673c8d10697d494d25499f69862f06d7987f056741503dbcc65a2
   CLAUDE_CODE_VERSION: 2.1.291
+  CLAUDE_CODE_SHA256: da8d7ca16d71ac5c30a7a19bd5a518ff85c50e259461e1d210d8a78a2cea381e
 publish:
   ghcr: true
   dockerhub: true
   latest: false
+

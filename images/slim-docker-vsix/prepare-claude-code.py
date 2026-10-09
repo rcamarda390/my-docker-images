@@ -1,5 +1,6 @@
 # File: images/slim-docker-vsix/prepare-claude-code.py
 """Download and unpack the pinned Anthropic Claude Code VSIX for Xray inspection."""
+import gzip
 import hashlib
 import json
 import sys
@@ -8,7 +9,7 @@ import zipfile
 from pathlib import Path
 from urllib.parse import quote
 
-version, destination = sys.argv[1:]
+version, expected_sha256, destination = sys.argv[1:]
 root = Path(destination)
 identity = f"anthropic.claude-code-{version}-linux-x64"
 url = (
@@ -26,7 +27,13 @@ request = urllib.request.Request(url, headers={"Accept-Encoding": "identity"})
 with urllib.request.urlopen(request, timeout=120) as response:
     data = response.read()
 
+# Marketplace can return gzip-wrapped VSIX bytes despite Accept-Encoding.
+if data.startswith(b"\x1f\x8b"):
+    data = gzip.decompress(data)
+
 digest = hashlib.sha256(data).hexdigest()
+if digest != expected_sha256:
+    raise ValueError(f"Claude Code VSIX SHA-256 mismatch: expected {expected_sha256}, got {digest}")
 archive = original / f"{identity}.vsix"
 archive.write_bytes(data)
 
@@ -42,7 +49,7 @@ with zipfile.ZipFile(archive) as package:
 manifest_path = extracted / "extension/package.json"
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 if (manifest.get("publisher"), manifest.get("name"), manifest.get("version")) != (
-    "anthropic",
+    "Anthropic",
     "claude-code",
     version,
 ):
@@ -88,7 +95,7 @@ for path in sorted(extracted.rglob("*")):
             "optionalDependencies": package_data.get("optionalDependencies", {}),
         }
     )
-    if not package_name or not package_version:
+    if path == manifest_path or not package_name or not package_version:
         continue
     key = (package_name, package_version)
     if key in seen_components:
@@ -188,3 +195,4 @@ print(
         }
     )
 )
+
