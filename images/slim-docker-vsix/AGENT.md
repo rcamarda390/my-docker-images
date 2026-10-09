@@ -1,7 +1,9 @@
 <!-- File: images/slim-docker-vsix/AGENT.md -->
-# Live Preview security rebuild
+# VSIX security payload image
 
 Image holds files. No runtime. No shell. Use image by digest.
+
+## Microsoft Live Preview
 
 VSIX: `/slim/payload/vsix/ms-vscode.live-server-0.4.16/ms-vscode.live-server-0.4.16.vsix`
 Unpacked: `/slim/payload/unpacked/ms-vscode.live-server-0.4.16/`
@@ -14,25 +16,38 @@ Fix CVE-2026-48779 and CVE-2026-45736. Both regressions run during build.
 Original vulnerable VSIX exists only in builder. Final image excludes it.
 Original artifact checksum and change provenance recorded in SECURITY-REBUILD.json.
 
-Copy VSIX. Verify SHA256SUMS from evidence folder. VS Code: Install from VSIX.
-Do not rezip unpacked tree. Do not mistake image publication for organizational approval.
-
 `live-preview.cdx.json`: CycloneDX 1.5, actual webpack module package inventory plus preserved codicons media.
 `coverage.json`: unresolved declarations and limitations. No guessed exact versions.
 `files.json`: extracted file hashes. Audit evidence, not Xray input.
-`manifest.json`: payload facts, not Xray dependency input.
 
-Dependency bundle rebuilt. Original other files, licenses, notices and translations preserved.
-ws notice corrected because shipped implementation changed. Build lockfile pins dependency closure.
-Runtime component versions come from resolved package metadata used by webpack.
-Prebundled code inside dependencies may hide further transitive packages.
-No claim all security defects fixed. No full VS Code GUI test in builder.
+## Anthropic Claude Code
+
+Official Marketplace VSIX, pinned linux-x64 version 2.1.291. No rebuild or modification.
+
+VSIX: `/slim/payload/vsix/anthropic.claude-code-2.1.291-linux-x64/anthropic.claude-code-2.1.291-linux-x64.vsix`
+Unpacked: `/slim/payload/unpacked/anthropic.claude-code-2.1.291-linux-x64/`
+Evidence: `/slim/metadata/anthropic.claude-code-2.1.291-linux-x64/`
+
+Xray-oriented evidence:
+- `claude-code.cdx.json`: CycloneDX 1.5 inventory from package manifests physically present in the VSIX.
+- `files.json`: every unpacked file with size and SHA-256.
+- `package-manifests.json`: package.json locations, versions and dependency declarations.
+- `native-binaries.json`: ELF binaries with hashes for native-component triage.
+- `SHA256SUMS`: checksum of the original VSIX.
+- `coverage.json`: scan coverage and limitations.
+- `manifest.json`: source, version, platform and payload paths.
+
+The original VSIX and unpacked tree are both retained so Xray can inspect archive and file-level content. Bundled/minified dependencies may not expose package manifests; Xray binary/content analysis remains authoritative for those.
+
+## Usage
+
+Copy the required VSIX from the image. Verify `SHA256SUMS` from its evidence folder. VS Code: Install from VSIX.
+Do not rezip unpacked trees. Do not mistake image publication for organizational approval.
 
 Current JFrog docs support embedded .cdx.json aggregation:
 https://docs.jfrog.com/security/docs/sbom-import
-Verify Xray detects ws 8.21.0 after importing new image. Compare full inventory.
-If embedded aggregation unavailable, upload SBOM to indexed Generic repository.
+Verify Xray findings against both the unpacked payload and generated SBOM after importing the new image.
 
-Upstream fixes:
+Upstream Live Preview fixes:
 https://github.com/websockets/ws/security/advisories/GHSA-96hv-2xvq-fx4p
 https://github.com/websockets/ws/security/advisories/GHSA-58qx-3vcg-4xpx
