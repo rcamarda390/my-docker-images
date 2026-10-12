@@ -99,16 +99,17 @@ RUN set -eux; \
       patch="/tmp/coreutils-${commit}.patch"; \
       curl -fsSL "https://github.com/coreutils/coreutils/commit/${commit}.patch" -o "$patch"; \
       echo "$checksum  $patch" | sha256sum -c -; \
-      if git apply --check --include='src/*' "$patch"; then \
-        git apply --include='src/*' "$patch"; \
+      if git apply --check --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; then \
+        git apply --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; \
       else \
-        git apply --reverse --check --include='src/*' "$patch"; \
+        git apply --reverse --check --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; \
       fi; \
     done; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution trixie --newversion 9.7-3+rcamarda1 \
       "Backport uniq and sort bounds fixes for CVE-2026-56391 and CVE-2025-5278."; \
     FORCE_UNSAFE_CONFIGURE=1 dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    make check TESTS='tests/uniq/uniq.pl tests/sort/sort-field-limit.sh'; \
     cp ../coreutils_*.deb /out/; \
     dpkg-deb -f /out/coreutils_*.deb Version | grep -Fx '9.7-3+rcamarda1'; \
     printf '%s\n' aa bb > /tmp/sort-in; \
