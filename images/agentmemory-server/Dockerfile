@@ -86,6 +86,39 @@ RUN set -eux; \
     readelf -Ws /tmp/dash-check/usr/bin/dash | grep -E 'UND.* fnmatch@'; \
     /tmp/dash-check/usr/bin/dash -c 'case abc in a*c) ;; *) exit 1 ;; esac; case abc in a*d) exit 1 ;; esac; value=abc; test "${value#a*}" = bc'
 
+# Keep the entrypoint's coreutils and backport the uniq/sort bounds fixes.
+# CVE-2026-56392 was introduced in 9.11; 9.7 allocates without multiplication.
+RUN set -eux; \
+    apt-get build-dep -y --no-install-recommends coreutils=9.7-3; \
+    cd /build; apt-get source coreutils=9.7-3; cd coreutils-9.7; \
+    grep -Fx '  pending_blank = ximalloc (max_column_width);' src/unexpand.c; \
+    for patch_spec in \
+      '8c9602e3a145e9596dc1a63c6ed67865814b6633:382956d973e753726fd02f2f2e1e124a893bb8f6004cf68b976b27ee37fd0ae6' \
+      'd64e35a8a4c0e4608321433e0d84d917e4e36371:2feb489280612c952f935852d3dd42c0ebd0783a510d145243be77ce23a8fb39'; do \
+      commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
+      patch="/tmp/coreutils-${commit}.patch"; \
+      curl -fsSL "https://github.com/coreutils/coreutils/commit/${commit}.patch" -o "$patch"; \
+      echo "$checksum  $patch" | sha256sum -c -; \
+      if git apply --check --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; then \
+        git apply --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; \
+      else \
+        git apply --reverse --check --include='src/*' --include='tests/uniq/uniq.pl' --include='tests/sort/sort-field-limit.sh' "$patch"; \
+      fi; \
+    done; \
+    DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
+      dch --force-distribution --distribution trixie --newversion 9.7-3+rcamarda1 \
+      "Backport uniq and sort bounds fixes for CVE-2026-56391 and CVE-2025-5278."; \
+    FORCE_UNSAFE_CONFIGURE=1 dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
+    make check TESTS='tests/uniq/uniq.pl tests/sort/sort-field-limit.sh'; \
+    cp ../coreutils_*.deb /out/; \
+    dpkg-deb -f /out/coreutils_*.deb Version | grep -Fx '9.7-3+rcamarda1'; \
+    printf '%s\n' aa bb > /tmp/sort-in; \
+    _POSIX2_VERSION=200809 src/sort +0.18446744073709551615R /tmp/sort-in > /tmp/sort-out; \
+    cmp /tmp/sort-in /tmp/sort-out; \
+    printf '\360\237\230\200%0255d\n' 0 > /tmp/uniq-line; \
+    cat /tmp/uniq-line /tmp/uniq-line | LC_ALL=C.UTF-8 src/uniq -w256 > /tmp/uniq-out; \
+    cmp /tmp/uniq-line /tmp/uniq-out
+
 # Rebuild the exact Trixie package families reported by Xray and Trivy from
 # fixed upstream sources. This keeps the Trixie ABI while moving ACL, attr,
 # ncurses, and util-linux beyond their vulnerable releases.
@@ -106,7 +139,7 @@ RUN sh /tmp/prepare-native-sources.sh \
       fi; \
     done \
  && cp ./*.deb /out/ \
- && gcc -Wall -Wextra -Werror -O2 /tmp/verify-native-runtime.c -o /out/verify-native-runtime -lz -lresolv \
+ && gcc -Wall -Wextra -Werror -O2 /tmp/verify-native-runtime.c -o /out/verify-native-runtime -lz -lresolv -ldl \
  && mkdir /out/readelf-tool \
  && cp /usr/bin/readelf /out/readelf-tool/ \
  && ldd /usr/bin/readelf > /tmp/readelf.ldd \
@@ -180,6 +213,7 @@ RUN apt-get update \
  && test "$#" -gt 0 \
  && apt-get install -y --no-install-recommends "$@" \
  && apt-get install -y --no-install-recommends /tmp/glibc/*.deb \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' coreutils)" ge "9.7-3+rcamarda1" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' dash)" ge "${DASH_BACKPORT_VERSION}" \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' zlib1g)" ge "1:1.3.dfsg+really1.3.2-3+rcamarda1" \
  && for package in openssl libssl3t64 openssl-provider-legacy; do \
@@ -206,20 +240,25 @@ COPY --from=iii-image /app/iii /usr/local/bin/iii
 # npm overrides can pin iii-sdk to the same version as the bundled iii engine.
 # The Xray v3 scan found these transitive npm versions:
 # brace-expansion 5.0.7, sharp 0.34.5, tar 7.5.19, ip-address 10.2.0,
-# adm-zip 0.5.18 and undici 6.27.0. iii-sdk 0.22.1 no longer depends on
-# the old OpenTelemetry runtime SDKs, so their overrides/Resource patch are removed.
-# Jaeger still arrives through another dependency and retains its security pin.
+# adm-zip 0.5.18 and undici 6.27.0. iii-sdk 0.22.1 still brings in
+# OpenTelemetry through @iii-dev/helpers. Coordinate the 2.9.0 / 0.220.0
+# family for CVE-2026-54285 and adapt the helper's Resource/log provider APIs.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 verify-runtime-dependencies.mjs /tmp/verify-runtime-dependencies.mjs
+COPY --chmod=0644 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
+COPY --chmod=0644 verify-otel-runtime.mjs /opt/agentmemory/verify-otel-runtime.mjs
 COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
-RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.1","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0"}}\n' "${III_SDK_VERSION}" > package.json \
+RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.4","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","@opentelemetry/api-logs":"0.220.0","@opentelemetry/instrumentation":"0.220.0","@opentelemetry/otlp-transformer":"0.220.0","@opentelemetry/sdk-logs":"0.220.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/iii-sdk/package.json').version")" = "${III_SDK_VERSION}" \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
  && node /tmp/verify-runtime-dependencies.mjs \
+ && node /tmp/patch-iii-otel2.mjs \
+ && node /opt/agentmemory/verify-otel-runtime.mjs \
+ && node /opt/agentmemory/verify-otel-runtime.mjs cjs \
  && node /tmp/patch-zod-output-limits.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime import OK')" \
- && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs \
+ && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs /tmp/patch-iii-otel2.mjs \
  && ln -s /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory
 
 # npm, npx, and corepack are build-time tools only. They bring their own

@@ -5,13 +5,23 @@ import { closeSync, existsSync, lstatSync, openSync, readFileSync, readSync,
 import path from 'node:path';
 
 const [mode, root, manifest, readelf = '/tmp/readelf-tool/readelf', family = 'util-linux'] = process.argv.slice(2);
-if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/') ||
-    !['util-linux', 'sqlite'].includes(family)) {
-  throw new Error('usage: audit|absent ROOT MANIFEST [READELF] [util-linux|sqlite]');
+const families = {
+  'util-linux': {
+    packages: ['bsdutils', 'login', 'mount', 'util-linux', 'libblkid1',
+      'liblastlog2-2', 'libmount1', 'libsmartcols1', 'libuuid1'],
+    libraries: /^lib(?:blkid|lastlog2|mount|smartcols|uuid)\.so(?:\.|$)/,
+  },
+  sqlite: { packages: ['libsqlite3-0'], libraries: /^libsqlite3\.so(?:\.|$)/ },
+  'unused-tools': {
+    packages: ['passwd', 'login.defs', 'libpam0g', 'libpam-runtime',
+      'libpam-modules', 'libpam-modules-bin', 'diffutils', 'libbz2-1.0'],
+    libraries: /^lib(?:pam(?:_misc|c)?|bz2)\.so(?:\.|$)/,
+  },
+};
+if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/') || !families[family]) {
+  throw new Error('usage: audit|absent ROOT MANIFEST [READELF] [util-linux|sqlite|unused-tools]');
 }
-const removed = new Set(family === 'sqlite' ? ['libsqlite3-0'] :
-  ['bsdutils', 'login', 'mount', 'util-linux', 'libblkid1',
-    'liblastlog2-2', 'libmount1', 'libsmartcols1', 'libuuid1']);
+const removed = new Set(families[family].packages);
 const query = (...args) => execFileSync('dpkg-query',
   [`--admindir=${root}/var/lib/dpkg`, ...args], { encoding: 'utf8' });
 const rows = query('-W', '-f=${Package}\t${db:Status-Status}\t${Depends}\t${Pre-Depends}\n')
@@ -58,8 +68,7 @@ for (const [pkg] of installed) {
 }
 if (!owned.size) throw new Error(`no installed ${family} files to audit`);
 
-const forbidden = family === 'sqlite' ? /^libsqlite3\.so(?:\.|$)/ :
-  /^lib(?:blkid|lastlog2|mount|smartcols|uuid)\.so(?:\.|$)/;
+const forbidden = families[family].libraries;
 let checked = 0;
 function walk(directory) {
   for (const entry of readdirSync(root + directory, { withFileTypes: true })) {

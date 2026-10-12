@@ -14,6 +14,8 @@ const packageRecord = (name, extra = '') =>
 for (const [family, pkg, soname] of [
   ['util-linux', 'libuuid1', 'libuuid.so.1'],
   ['sqlite', 'libsqlite3-0', 'libsqlite3.so.0'],
+  ['unused-tools', 'libpam0g', 'libpam.so.0'],
+  ['unused-tools', 'libbz2-1.0', 'libbz2.so.1.0'],
 ]) test(`${family} removal rejects reverse dependencies, ELF imports and leftover files`, () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'util-removal-'));
   try {
