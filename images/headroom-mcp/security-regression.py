@@ -2,6 +2,7 @@
 """Exercise the actual patched dependencies; run in builder and runtime."""
 
 import asyncio
+import ctypes
 import importlib.util
 import json
 import os
@@ -19,7 +20,7 @@ from transformers.utils.hub import get_checkpoint_shard_files
 
 for name, expected in {
     "litellm": "1.101.3", "PyJWT": "2.15.1", "mcp": "1.30.0",
-    "fsspec": "2026.6.0", "multidict": "6.9.1",
+    "fsspec": "2026.6.0", "multidict": "6.9.1", "aiohttp": "3.14.5",
     "tokenizers": "0.23.2+rcamarda1", "transformers": "5.17.0",
 }.items():
     assert version(name) == expected, (name, version(name))
@@ -66,6 +67,28 @@ with tempfile.TemporaryDirectory() as directory:
     assert files == [str(root / "nested" / "weights.safetensors")], files
     assert metadata["all_checkpoint_keys"] == ["weight"]
 
+async def verify_aiohttp():
+    from aiohttp import ClientSession, ClientTimeout, web
+
+    async def reply(request):
+        return web.json_response({"headroom": "ok"})
+
+    application = web.Application()
+    application.router.add_get("/", reply)
+    runner = web.AppRunner(application)
+    await runner.setup()
+    try:
+        site = web.TCPSite(runner, "127.0.0.1", 0)
+        await site.start()
+        port = runner.addresses[0][1]
+        async with ClientSession(timeout=ClientTimeout(total=5)) as client:
+            async with client.get(f"http://127.0.0.1:{port}/") as response:
+                assert response.status == 200
+                assert await response.json() == {"headroom": "ok"}
+    finally:
+        await runner.cleanup()
+
+
 async def verify_mcp():
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
@@ -85,7 +108,33 @@ async def verify_mcp():
                 }
 
 
+# CVE-2026-95619: exercise the actual libstdc++ aligned-new implementation,
+# rather than assuming that a Debian package version implies applicability.
+# The nonthrowing ABI catches bad_alloc inside C++; no exception crosses ctypes.
+cpp = ctypes.CDLL("libstdc++.so.6")
+allocate = cpp._ZnwmSt11align_val_tRKSt9nothrow_t
+allocate.argtypes = (ctypes.c_size_t, ctypes.c_size_t, ctypes.c_void_p)
+allocate.restype = ctypes.c_void_p
+release = cpp._ZdlPvSt11align_val_t
+release.argtypes = (ctypes.c_void_p, ctypes.c_size_t)
+release.restype = None
+nothrow = ctypes.addressof(ctypes.c_char.in_dll(cpp, "_ZSt7nothrow"))
+maximum = ctypes.c_size_t(-1).value
+for size, alignment in ((maximum - 8, 32), (maximum, 8), (maximum, 32),
+                        (maximum, 1024), (maximum, 65536),
+                        (maximum - 1, 16), (maximum - 1025, 1024),
+                        (maximum - 1024, 1024), (maximum - 65536, 65536)):
+    pointer = allocate(size, alignment, nothrow)
+    if pointer:
+        release(pointer, alignment)
+        raise AssertionError(("Oversized aligned allocation succeeded", size, alignment))
+pointer = allocate(64, 32, nothrow)
+assert pointer and pointer % 32 == 0
+release(pointer, 32)
+print("CVE-2026-95619: oversized allocations rejected; ordinary allocation passed")
+
 if sys.argv[1] == "runtime":
+    asyncio.run(verify_aiohttp())
     asyncio.run(verify_mcp())
     assert importlib.util.find_spec("_uuid") is None
     assert uuid.uuid4().version == 4
