@@ -109,7 +109,7 @@ RUN set -eux; \
       dch --force-distribution --distribution trixie --newversion 9.7-3+rcamarda1 \
       "Backport uniq and sort bounds fixes for CVE-2026-56391 and CVE-2025-5278."; \
     FORCE_UNSAFE_CONFIGURE=1 dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
-    make check TESTS='tests/uniq/uniq.pl tests/sort/sort-field-limit.sh'; \
+    make check-TESTS TESTS='tests/uniq/uniq.pl tests/sort/sort-field-limit.sh'; \
     cp ../coreutils_*.deb /out/; \
     dpkg-deb -f /out/coreutils_*.deb Version | grep -Fx '9.7-3+rcamarda1'; \
     printf '%s\n' aa bb > /tmp/sort-in; \
