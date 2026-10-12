@@ -53,8 +53,8 @@ by default. Configure remote MCP shims with `AGENTMEMORY_SECRET` from the
 protected persistent secret; do not copy it into an image or source control.
 Upgrade `slim-agentmemory-mcp` to 0.9.30 alongside this server.
 
-The compatible iii engine and SDK are both 0.22.1. The old Resource API patch
-and runtime OpenTelemetry SDK overrides are obsolete in that SDK and removed.
+The compatible iii engine and SDK are both 0.22.1. OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
+processor APIs are adapted for the coordinated 2.9.0 / 0.220.0 security pins.
 The generated-output array bound remains necessary and is regression-tested
 against both 0.9.30 entry bundles.
 
@@ -108,3 +108,8 @@ patched components, required runtime libraries, and unresolved findings.
 Pull requests affecting this image now run the existing build, offline runtime
 smoke, health, and advisory Trivy checks without publishing or consuming a tag.
 Merging a validated image change publishes on main using the next published revision.
+
+## Security follow-up: 2026-10-12
+
+See [SECURITY-20261012.md](SECURITY-20261012.md) for the complete disposition
+of the supplied findings, additional fixes, removal guards, and residual risks.

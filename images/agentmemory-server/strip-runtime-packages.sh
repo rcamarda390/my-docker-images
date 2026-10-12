@@ -72,6 +72,20 @@ dpkg --root="$runtime_root" --purge libsqlite3-0
 node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$sqlite_manifest" \
     /tmp/readelf-tool/readelf sqlite
 
+# AgentMemory/iii do not invoke account-management, PAM, diff3 or bzip2.
+# gosu resolves existing identities through libc; preserve those identity files.
+# Reuse the installed reverse-dependency and retained-ELF audit before removal.
+identity_checksum=$(sha256sum "$runtime_root/etc/passwd" "$runtime_root/etc/group")
+tools_manifest=/tmp/unused-tools-removal.json
+node /tmp/verify-util-linux-removal.mjs audit "$runtime_root" "$tools_manifest" \
+    /tmp/readelf-tool/readelf unused-tools
+dpkg --root="$runtime_root" --purge --force-remove-essential \
+    passwd login.defs libpam0g libpam-runtime libpam-modules libpam-modules-bin \
+    diffutils libbz2-1.0
+node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$tools_manifest" \
+    /tmp/readelf-tool/readelf unused-tools
+test "$identity_checksum" = "$(sha256sum "$runtime_root/etc/passwd" "$runtime_root/etc/group")"
+
 rm -f "$debconf_frontend"
 mv "$debconf_frontend_backup" "$debconf_frontend"
 
