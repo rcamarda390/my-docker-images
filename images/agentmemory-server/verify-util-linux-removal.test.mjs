@@ -16,6 +16,7 @@ for (const [family, pkg, soname] of [
   ['sqlite', 'libsqlite3-0', 'libsqlite3.so.0'],
   ['unused-tools', 'libpam0g', 'libpam.so.0'],
   ['unused-tools', 'libbz2-1.0', 'libbz2.so.1.0'],
+  ['unused-tools', 'libsemanage2', 'libsemanage.so.2'],
 ]) test(`${family} removal rejects reverse dependencies, ELF imports and leftover files`, () => {
   const temporary = mkdtempSync(path.join(tmpdir(), 'util-removal-'));
   try {

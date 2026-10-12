@@ -14,8 +14,8 @@ const families = {
   sqlite: { packages: ['libsqlite3-0'], libraries: /^libsqlite3\.so(?:\.|$)/ },
   'unused-tools': {
     packages: ['adduser', 'passwd', 'login.defs', 'libpam0g', 'libpam-runtime',
-      'libpam-modules', 'libpam-modules-bin', 'diffutils', 'libbz2-1.0'],
-    libraries: /^lib(?:pam(?:_misc|c)?|bz2)\.so(?:\.|$)/,
+      'libpam-modules', 'libpam-modules-bin', 'libsemanage2', 'diffutils', 'libbz2-1.0'],
+    libraries: /^lib(?:pam(?:_misc|c)?|bz2|semanage)\.so(?:\.|$)/,
   },
 };
 if (!['audit', 'absent'].includes(mode) || !root?.startsWith('/') || !families[family]) {
