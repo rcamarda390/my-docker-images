@@ -144,7 +144,7 @@ write_json(
         "native_binaries": len(native_binaries),
         "custom_rebuild": True,
         "limitations": [
-            "Downstream VSIX repack replaces four external CLI dependencies; application bundles are unchanged.",
+            "Downstream VSIX repack replaces five external CLI dependencies; plugin default uses prefault for Zod 4 compatibility.",
             "CycloneDX components come from package.json manifests physically present in the extracted VSIX.",
             "Bundled/minified dependencies without package manifests may require Xray binary/content analysis.",
             "Xray detection and embedded SBOM aggregation must be verified in the deployed JFrog instance.",

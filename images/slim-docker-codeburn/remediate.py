@@ -1,4 +1,4 @@
-"""Replace four external CLI dependencies, then repack the installable VSIX."""
+"""Replace five external CLI dependencies, then repack the installable VSIX."""
 import base64
 import hashlib
 import io
@@ -38,8 +38,18 @@ with tempfile.TemporaryDirectory() as tmp:
         package.rmdir()
         manifest = json.loads((target / 'package.json').read_text())
         assert (manifest['name'], manifest['version']) == (fix['name'], fix['version'])
-    # Dependency versions are external imports in the unchanged CLI bundle.
-    # Keep all other VSIX files byte-identical, including license/notices.
+    # Zod 4 defaults bypass inner parsing; prefault preserves Zod 3's behavior.
+    bundle = root / 'extension/cli/dist/main.js'
+    code = bundle.read_text()
+    old = '      }).strict().default({})'
+    assert code.count(old) == 1, 'Plugin default patch no longer matches'
+    bundle.write_text(code.replace(old, '      }).strict().prefault({})'))
+    manifest_path = root / 'extension/cli/package.json'
+    manifest = json.loads(manifest_path.read_text())
+    manifest['dependencies']['zod'] = '4.6.6'
+    manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
+    # Dependency versions are external imports in the CLI bundle.
+    # Keep other VSIX files byte-identical, including license/notices.
     with zipfile.ZipFile(base / 'fixed.vsix', 'w', zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(root.rglob('*')):
             if path.is_file():
