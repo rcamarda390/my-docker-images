@@ -1,6 +1,6 @@
 name: slim-docker-codeburn
 upstream_version: 1.0.2
-revision: 1
+revision: 2
 build_args:
   VSIX_SHA256: 2ba28c0750433108639fe5af698f3e00ec23d494ac4cb39d67d56382e4f364ee
 publish:
