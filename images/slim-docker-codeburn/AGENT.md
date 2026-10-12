@@ -1,32 +1,45 @@
 # CodeBurn security payload image
 
-Official Microsoft Marketplace CodeBurn VSIX 1.0.2, preserved byte-for-byte.
+Downstream security repack of Marketplace CodeBurn VSIX 1.0.2.
 Source: https://marketplace.visualstudio.com/items?itemName=CodeBurn.codeburn
-Upstream source declared by the extension: https://github.com/getagentseal/codeburn
-VSIX SHA-256: 2ba28c0750433108639fe5af698f3e00ec23d494ac4cb39d67d56382e4f364ee
+Upstream: https://github.com/getagentseal/codeburn
+Original VSIX SHA-256: 2ba28c0750433108639fe5af698f3e00ec23d494ac4cb39d67d56382e4f364ee
+
+## Remediation
+
+| Component | Original | Fixed | Findings |
+|---|---|---|---|
+| @modelcontextprotocol/sdk | 1.31.0 | 1.32.0 | XRAY-1099702, XRAY-1100629, XRAY-1099704 |
+| @hono/node-server | 1.19.17 | 2.1.3 | XRAY-1095349 |
+| hono | 4.13.7 | 4.13.11 | XRAY-1095348 |
+| ip-address | 10.7.3 | 10.7.4 | XRAY-1107110 |
+
+The checked-in official VSIX is input only. The final image contains the patched
+installable VSIX and its matching extracted tree. Four external CLI package
+folders are replaced with authentic npm release contents verified against pinned
+SHA-512 integrity values. Application bundles and other dependencies are unchanged.
+This is a custom unsigned VSIX, not the original Marketplace artifact. Extension
+identity and version remain 1.0.2; Docker image revision distinguishes the repack.
 
 ## Payload
 
-- Original: `/slim/payload/vsix/codeburn.codeburn-1.0.2/codeburn.codeburn-1.0.2.vsix`
-- Unpacked: `/slim/payload/unpacked/codeburn.codeburn-1.0.2/`
-- Evidence: `/slim/metadata/codeburn.codeburn-1.0.2/`
+- VSIX: /slim/payload/vsix/codeburn.codeburn-1.0.2/codeburn.codeburn-1.0.2.vsix
+- Unpacked: /slim/payload/unpacked/codeburn.codeburn-1.0.2/
+- Evidence: /slim/metadata/codeburn.codeburn-1.0.2/
+- Fixed npm versions, release URLs and integrity hashes: /slim/metadata/security-fixes.json
 
-Scratch image, linux/amd64, files only. No shell or extension execution.
-The VSIX is checked into this image's build context; the build does not download it.
-Builder verifies its checksum, extension identity and safe ZIP paths before copying the final payload.
+Scratch image, linux/amd64, files only. No shell or extension execution at runtime.
+Build requires npm registry access; installed payload requires no dependency download.
+Metadata is regenerated from patched contents: CycloneDX SBOM, package manifests,
+file hashes, ELF inventory, coverage, origin and patched VSIX checksum.
+Original source digest is recorded separately from the patched artifact digest.
 
-## Xray evidence
+Builder checks safe extraction, original integrity, replacement package identity
+and final fixed versions. Node 22 checks CLI help, extension stdio readiness,
+MCP initialization and tools/list with an empty temporary home.
+The Node/Python builders do not enter the final image.
 
-- `codeburn.cdx.json`: CycloneDX 1.5 with 165 distinct named/versioned packages physically present in the VSIX. Extension root is application metadata, not an npm dependency.
-- `package-manifests.json`: 186 package manifests, paths, exact versions and declared dependency ranges.
-- `files.json`: all 3,999 unpacked files, sizes and SHA-256 hashes.
-- `native-binaries.json`: ELF inventory; none found in this release.
-- `SHA256SUMS`: original VSIX checksum; verify from its VSIX folder.
-- `manifest.json`: origin, version, platform, payload paths and digest.
-- `coverage.json`: inventory counts and scan coverage limits.
-
-Payload includes the extension host bundle, webview bundles/assets, staged CLI and its node_modules, README, license and changelog. Original manifests and notices remain in the unpacked tree. No dependencies installed, replaced or removed.
-
-Exact dependency versions come only from shipped manifests. Bundled/minified code without manifests is not fully represented in the SBOM. Source-repository development dependencies are not assumed to be runtime payload. Archive, unpacked files and embedded SBOM should all be inspected by the deployed Xray instance; scan results are required to establish findings. This image does not claim a clean scan.
-
-VS Code engine declaration is ^1.82.0. VS Code runtime functionality is not tested by this payload build.
+VS Code engine remains ^1.82.0. GUI functionality is not tested by this build.
+Xray must rescan the new image; six rows were visible in the supplied screenshot,
+while its sidebar indicated seven findings. Any additional finding needs its details.
+Bundled code without manifests may require content analysis beyond this SBOM.
