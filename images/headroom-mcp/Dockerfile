@@ -16,6 +16,7 @@ ARG TOKENIZERS_SOURCE_SHA256=7f0f085686b9de0d0079e6f874ae053600db64c5d13049e0bbc
 ARG MCP_VERSION=1.30.0
 ARG FSSPEC_VERSION=2026.6.0
 ARG MULTIDICT_VERSION=6.9.1
+ARG AIOHTTP_VERSION=3.14.5
 ARG DASH_DEBIAN_VERSION=0.5.12-12
 ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 ARG TRANSFORMERS_VERSION=5.17.0
@@ -127,6 +128,7 @@ ARG TOKENIZERS_SOURCE_SHA256
 ARG MCP_VERSION
 ARG FSSPEC_VERSION
 ARG MULTIDICT_VERSION
+ARG AIOHTTP_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
 ARG RUSTUP_VERSION
@@ -231,6 +233,11 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
       "litellm==${LITELLM_VERSION}" \
     && PATH="/opt/venv/bin:${PATH}" python -c \
       "import importlib.metadata; assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'"
+# Xray requires aiohttp >=3.14.4; the upstream lock still has 3.14.3.
+# Keep the fixed HTTP client/parser in both builder and final runtime.
+RUN uv pip install --python /opt/venv/bin/python --upgrade-package aiohttp \
+      "aiohttp==${AIOHTTP_VERSION}" \
+    && uv pip check --python /opt/venv/bin/python
 # Keep the Transformers/tokenizer API range, then source-patch their unfixed
 # load paths below. PyJWT 2.15.0 fixes CVE-2026-102275 and CVE-2026-101918.
 RUN uv pip install --python /opt/venv/bin/python \
@@ -397,6 +404,7 @@ ARG TOKENIZERS_SOURCE_SHA256
 ARG MCP_VERSION
 ARG FSSPEC_VERSION
 ARG MULTIDICT_VERSION
+ARG AIOHTTP_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
 ARG GLIBC_BACKPORT_VERSION
@@ -622,6 +630,7 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
      assert importlib.metadata.version('mcp') == '${MCP_VERSION}'; \
      assert importlib.metadata.version('fsspec') == '${FSSPEC_VERSION}'; \
      assert importlib.metadata.version('multidict') == '${MULTIDICT_VERSION}'; \
+     assert importlib.metadata.version('aiohttp') == '${AIOHTTP_VERSION}'; \
      assert importlib.metadata.version('tokenizers') == '${TOKENIZERS_BACKPORT_VERSION}'; \
      assert transformers.__version__ == '${TRANSFORMERS_VERSION}'; \
      assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'; \
