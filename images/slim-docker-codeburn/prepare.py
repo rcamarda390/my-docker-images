@@ -1,0 +1,183 @@
+# File: images/slim-docker-vsix/prepare.py
+"""Unpack the checked-in CodeBurn VSIX for Xray inspection."""
+import hashlib
+import json
+import sys
+import zipfile
+from pathlib import Path
+from urllib.parse import quote
+
+version, expected_sha256, source_archive, destination = sys.argv[1:]
+root = Path(destination)
+identity = f"codeburn.codeburn-{version}"
+url = ("https://marketplace.visualstudio.com/_apis/public/gallery/"
+       f"publishers/CodeBurn/vsextensions/codeburn/{version}/vspackage")
+original = root / "payload/vsix" / identity
+extracted = root / "payload/unpacked" / identity
+metadata = root / "metadata" / identity
+for directory in (original, extracted, metadata):
+    directory.mkdir(parents=True, exist_ok=True)
+
+data = Path(source_archive).read_bytes()
+
+digest = hashlib.sha256(data).hexdigest()
+if digest != expected_sha256:
+    raise ValueError(f"CodeBurn VSIX SHA-256 mismatch: expected {expected_sha256}, got {digest}")
+archive = original / f"{identity}.vsix"
+archive.write_bytes(data)
+
+with zipfile.ZipFile(archive) as package:
+    extracted_root = extracted.resolve()
+    for entry in package.infolist():
+        target = (extracted / entry.filename).resolve()
+        mode = entry.external_attr >> 16
+        if not target.is_relative_to(extracted_root) or mode & 0o170000 == 0o120000:
+            raise ValueError(f"Unsafe ZIP member: {entry.filename}")
+    package.extractall(extracted)
+
+manifest_path = extracted / "extension/package.json"
+manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+if (manifest.get("publisher"), manifest.get("name"), manifest.get("version")) != (
+    "codeburn",
+    "codeburn",
+    version,
+):
+    raise ValueError("Unexpected extension identity")
+
+vscode_engine = manifest.get("engines", {}).get("vscode")
+if not vscode_engine:
+    raise ValueError("VSIX package.json does not declare engines.vscode")
+
+file_inventory = []
+native_binaries = []
+package_manifests = []
+components = []
+seen_components = set()
+
+for path in sorted(extracted.rglob("*")):
+    if not path.is_file():
+        continue
+    raw = path.read_bytes()
+    relative = str(path.relative_to(extracted))
+    sha256 = hashlib.sha256(raw).hexdigest()
+    file_inventory.append({"path": relative, "size": len(raw), "sha256": sha256})
+
+    if raw.startswith(b"\x7fELF"):
+        native_binaries.append(
+            {"path": relative, "size": len(raw), "sha256": sha256, "format": "ELF"}
+        )
+
+    if path.name != "package.json":
+        continue
+    try:
+        package_data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        continue
+    package_name = package_data.get("name")
+    package_version = package_data.get("version")
+    package_manifests.append(
+        {
+            "path": relative,
+            "name": package_name,
+            "version": package_version,
+            "dependencies": package_data.get("dependencies", {}),
+            "optionalDependencies": package_data.get("optionalDependencies", {}),
+        }
+    )
+    if path == manifest_path or not package_name or not package_version:
+        continue
+    key = (package_name, package_version)
+    if key in seen_components:
+        continue
+    seen_components.add(key)
+    purl = f"pkg:npm/{quote(package_name, safe='/')}@{quote(str(package_version), safe='')}"
+    components.append(
+        {
+            "type": "library",
+            "name": package_name,
+            "version": str(package_version),
+            "purl": purl,
+            "bom-ref": purl,
+            "properties": [{"name": "vsix:path", "value": relative}],
+        }
+    )
+
+sbom = {
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.5",
+    "version": 1,
+    "metadata": {
+        "component": {
+            "type": "application",
+            "name": "codeburn.codeburn",
+            "version": version,
+            "hashes": [{"alg": "SHA-256", "content": digest}],
+        },
+        "properties": [
+            {"name": "vsix:source", "value": "Microsoft Visual Studio Marketplace"},
+            {"name": "vsix:targetPlatform", "value": "universal"},
+            {"name": "vsix:vscodeEngine", "value": vscode_engine},
+            {"name": "vsix:artifact", "value": f"/slim/payload/vsix/{identity}/{identity}.vsix"},
+            {"name": "vsix:unpacked", "value": f"/slim/payload/unpacked/{identity}"},
+        ],
+    },
+    "components": components,
+}
+
+def write_json(name, value):
+    (metadata / name).write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+
+write_json("codeburn.cdx.json", sbom)
+write_json("files.json", file_inventory)
+write_json("package-manifests.json", package_manifests)
+write_json("native-binaries.json", native_binaries)
+write_json(
+    "coverage.json",
+    {
+        "source_url": url,
+        "vsix_sha256": digest,
+        "vscode_engine": vscode_engine,
+        "target_platform": "universal",
+        "files": len(file_inventory),
+        "package_manifests": len(package_manifests),
+        "sbom_components": len(components),
+        "native_binaries": len(native_binaries),
+        "custom_rebuild": False,
+        "limitations": [
+            "Official Marketplace VSIX is preserved byte-for-byte; no source rebuild is performed.",
+            "CycloneDX components come from package.json manifests physically present in the extracted VSIX.",
+            "Bundled/minified dependencies without package manifests may require Xray binary/content analysis.",
+            "Xray detection and embedded SBOM aggregation must be verified in the deployed JFrog instance.",
+        ],
+    },
+)
+write_json(
+    "manifest.json",
+    {
+        "software": "codeburn.codeburn",
+        "version": version,
+        "target_platform": "universal",
+        "method": "official-marketplace-vsix",
+        "source_url": url,
+        "install_step": "VS Code: Install from VSIX",
+        "vsix": f"/slim/payload/vsix/{identity}/{identity}.vsix",
+        "unpacked": f"/slim/payload/unpacked/{identity}",
+        "metadata": f"/slim/metadata/{identity}",
+        "sha256": digest,
+    },
+)
+(metadata / "SHA256SUMS").write_text(f"{digest}  {identity}.vsix\n", encoding="utf-8")
+
+print(
+    json.dumps(
+        {
+            "software": "codeburn.codeburn",
+            "version": version,
+            "sha256": digest,
+            "vscode_engine": vscode_engine,
+            "files": len(file_inventory),
+            "package_manifests": len(package_manifests),
+            "native_binaries": len(native_binaries),
+        }
+    )
+)
