@@ -3,27 +3,31 @@
 ARG BIFROST_VERSION=2.2.6
 ARG BIFROST_COMMIT=8b4fce4f1709d66f9208d02f50552da522535f9e
 
-# Go toolchain the gateway binary is compiled with. Bifrost v2.2.6 declares
-# go 1.27.0 in transports/go.mod and upstream builds with this exact toolchain.
+# Bifrost v2.2.6 declares Go 1.27.0; Xray's supplied Go findings require
+# Go 1.27.2 (or 1.26.9). Stay on the upstream Go 1.27 release line.
 # Xray also reads the compiler version from the binary's build info, so keep
 # the toolchain pinned and verified as part of the image supply chain.
-ARG GO_VERSION=1.27.0
+ARG GO_VERSION=1.27.2
 
 # Keep downstream Go pins only where upstream v2.2.6 still resolves below the
 # verified Xray fix:
 #   mcp-go v0.43.2          CVE-2026-81092; fixed in v0.56.0
-#   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0
+#   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0;
+#                           x/net v0.60.0 requires v0.57.0
+#   x/net v0.58.0           CVE-2026-78663/78669/78660/78659/97032;
+#                           fixed in v0.60.0
 #   go-openapi/spec v0.22.3 XRAY-1032958/1032961/1032962, fixed in v0.22.7,
 #                           and XRAY-1032963 (9.3), fixed in v0.22.9
 #   swag/{json,yaml}utils   XRAY-1032959/1032960 against v0.25.4, fixed in
 #                           v0.27.1; v0.27.3 is required by go-openapi/spec v0.22.9
 #   go-openapi/validate     XRAY-1032963 (9.3, CWE-918) and XRAY-1032962
 #     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
-# Upstream v2.2.6 already requires x/text v0.41.0, x/net v0.58.0,
+# Upstream v2.2.6 already requires x/text v0.41.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
 # Drop a pin once upstream's own go.mod requires that version or newer.
-ARG GO_CRYPTO_VERSION=v0.56.0
+ARG GO_CRYPTO_VERSION=v0.57.0
+ARG GO_NET_VERSION=v0.60.0
 ARG GO_OPENAPI_SPEC_VERSION=v0.22.9
 ARG GO_OPENAPI_SWAG_VERSION=v0.27.3
 ARG GO_OPENAPI_VALIDATE_VERSION=v0.26.1
@@ -48,7 +52,7 @@ RUN npm ci
 COPY --from=source /src/ui/ ./
 RUN npm run build-enterprise
 
-FROM golang:1.27.0-alpine3.24@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc AS builder
+FROM golang:1.27.2-alpine3.24@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS builder
 ARG GO_VERSION
 WORKDIR /app
 # The digest is what actually selects the image, so confirm it still carries the
@@ -71,6 +75,7 @@ COPY --from=ui-builder /app/out ./bifrost-http/ui
 # is an exact version, so module resolution is reproducible: a mismatch means an
 # input moved and the new graph needs re-checking, not that the check is noisy.
 ARG GO_CRYPTO_VERSION
+ARG GO_NET_VERSION
 ARG GO_OPENAPI_SPEC_VERSION
 ARG GO_OPENAPI_SWAG_VERSION
 ARG GO_OPENAPI_VALIDATE_VERSION
@@ -80,12 +85,14 @@ RUN set -eu; \
       "github.com/mark3labs/mcp-go@${GO_MCP_GO_VERSION}" \
       "github.com/mark3labs/mcp-go/mcp@${GO_MCP_GO_VERSION}" \
       "golang.org/x/crypto@${GO_CRYPTO_VERSION}" \
+      "golang.org/x/net@${GO_NET_VERSION}" \
       "github.com/go-openapi/spec@${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils@${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils@${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/validate@${GO_OPENAPI_VALIDATE_VERSION}"; \
     for pin in \
       "golang.org/x/crypto=${GO_CRYPTO_VERSION}" \
+      "golang.org/x/net=${GO_NET_VERSION}" \
       "github.com/go-openapi/spec=${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils=${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils=${GO_OPENAPI_SWAG_VERSION}" \
@@ -110,7 +117,13 @@ RUN go build \
     && test -f /app/main
 # The compiler stamped into the binary is the component Xray scans, so fail here
 # if the build somehow ran on a toolchain other than the pinned one.
-RUN go version -m /app/main | grep -qwF "go${GO_VERSION}"
+RUN set -eu; \
+    go version -m /app/main > /tmp/binary-build-info; \
+    cat /tmp/binary-build-info; \
+    grep -qwF "go${GO_VERSION}" /tmp/binary-build-info; \
+    awk -v expected="$GO_NET_VERSION" \
+      '$1 == "dep" && $2 == "golang.org/x/net" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40
 ARG BIFROST_VERSION
