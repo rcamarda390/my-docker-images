@@ -42,3 +42,27 @@ checks startup, version, rejected unauthenticated management access, and accepte
 setup-token access. A merge affecting this image publishes on main; manual dispatch remains available.
 GovCloud streaming and the full Cline/Headroom path require deployment testing
 with runtime IAM credentials; CI does not carry those credentials.
+
+## CVE-2026-108859
+
+Xray reports mcp-go v0.56.0 (CVSS 7.5, CWE-770); its fix version is N/A.
+The latest upstream release checked on 2026-10-13, v1.2.1, also buffers POST
+bodies without a limit. Updating to it would not remediate this finding.
+
+The build vendors the resolved dependencies and patches mcp-go's
+StreamableHTTPServer before compilation. Known oversized bodies are rejected
+before reading; unknown-length bodies are capped with http.MaxBytesReader.
+Both return HTTP 413 above 100 MiB, matching Bifrost's default body ceiling.
+The build runs regression checks for both paths and normal MCP initialization.
+The original module version remains recorded; no scanner metadata is hidden.
+
+In pinned Bifrost 2.2.6, production code uses mcp-go clients and an in-process
+MCPServer, with no StreamableHTTPServer constructor or ServeHTTP call. Its
+public HTTP transport is fasthttp with its own configured body limit.
+The downstream patch protects the library path if it becomes used later.
+It does not change Bifrost's configurable public HTTP request limit.
+
+Xray can continue reporting the original version despite this source fix.
+A fresh scan is required; do not claim scanner clearance from a passing build.
+Remove the patch after adopting a compatible upstream release with a verified
+bounded read. Publication uses the existing next-published-revision workflow.

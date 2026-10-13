@@ -59,7 +59,7 @@ WORKDIR /app
 # toolchain GO_VERSION names rather than trusting the tag written beside it.
 RUN go version | grep -qwF "go${GO_VERSION}" \
     && apk upgrade --no-cache \
-    && apk add --no-cache gcc musl-dev sqlite-dev binutils binutils-gold
+    && apk add --no-cache gcc musl-dev sqlite-dev binutils binutils-gold patch
 ENV CGO_ENABLED=1 \
     GOOS=linux \
     GOWORK=off \
@@ -107,8 +107,15 @@ RUN set -eu; \
       fi; \
       echo "remediated: $module $resolved"; \
     done
+# No released fix for CVE-2026-108859 exists as of 2026-10-13.
+# Patch a private vendor tree; retain the real module version in build info.
+COPY mcp-go-body-limit.patch mcp-go-body-limit_test.go /tmp/
+RUN go mod vendor \
+    && patch --batch --fuzz=0 -p1 -d vendor/github.com/mark3labs/mcp-go < /tmp/mcp-go-body-limit.patch \
+    && cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/ \
+    && go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1
 ARG BIFROST_VERSION
-RUN go build \
+RUN go build -mod=vendor \
       -ldflags="-w -s -X main.Version=v${BIFROST_VERSION} -extldflags '-static'" \
       -a -trimpath \
       -tags "sqlite_static" \

@@ -1,0 +1,22 @@
+--- a/server/streamable_http.go
++++ b/server/streamable_http.go
+@@ -379,7 +379,18 @@
+ 	var body []byte
+ 	var bodyErr error
+ 	if r.Method == http.MethodPost && r.Body != nil {
+-		body, bodyErr = io.ReadAll(r.Body)
++		// CVE-2026-108859: cap buffering before reading, including chunked bodies.
++		// Match Bifrost's default 100 MiB request ceiling.
++		const maxBodyBytes int64 = 100 << 20
++		if r.ContentLength > maxBodyBytes {
++			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
++			return
++		}
++		body, bodyErr = io.ReadAll(http.MaxBytesReader(w, r.Body, maxBodyBytes))
++		if _, tooLarge := bodyErr.(*http.MaxBytesError); tooLarge {
++			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
++			return
++		}
+ 	}
+ 
+ 	hr := &HTTPRequest{
