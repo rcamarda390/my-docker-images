@@ -81,9 +81,17 @@ identity_checksum=$(sha256sum "$runtime_root/etc/passwd" "$runtime_root/etc/grou
 tools_manifest=/tmp/unused-tools-removal.json
 node /tmp/verify-util-linux-removal.mjs audit "$runtime_root" "$tools_manifest" \
     /tmp/readelf-tool/readelf unused-tools
+# passwd.prerm calls dpkg-maintscript-helper, which left with dpkg above.
+# Provide a temporary no-op so the pre-removal script can complete; it is
+# deleted again below and asserted absent.
+maintscript_helper="$runtime_root/usr/bin/dpkg-maintscript-helper"
+test ! -e "$maintscript_helper"
+printf '#!/bin/sh\nexit 0\n' > "$maintscript_helper"
+chmod 0755 "$maintscript_helper"
 dpkg --root="$runtime_root" --purge --force-remove-essential \
     adduser passwd login.defs libpam0g libpam-runtime libpam-modules libpam-modules-bin \
     libsemanage2 diffutils libbz2-1.0
+rm -f "$maintscript_helper"
 node /tmp/verify-util-linux-removal.mjs absent "$runtime_root" "$tools_manifest" \
     /tmp/readelf-tool/readelf unused-tools
 test "$identity_checksum" = "$(sha256sum "$runtime_root/etc/passwd" "$runtime_root/etc/group")"
@@ -101,7 +109,8 @@ for package in apt libapt-pkg7.0 debian-archive-keyring sqv dpkg tar gzip \
 done
 
 for path in usr/bin/apt usr/bin/dpkg usr/bin/dpkg-query usr/bin/tar \
-            usr/bin/gzip usr/bin/curl usr/bin/perl; do
+            usr/bin/gzip usr/bin/curl usr/bin/perl \
+            usr/bin/dpkg-maintscript-helper; do
     test ! -e "$runtime_root/$path" || {
         echo "$path is still present in the runtime root" >&2
         exit 1
