@@ -1,0 +1,27 @@
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	@health path /_sidecar/health
+	respond @health "ok" 200
+
+	# Browser clients outside this CIDR list get 403.
+	@denied not remote_ip {$DASHBOARD_ALLOW_CIDR}
+	respond @denied 403
+
+	# Read-only dashboard surface only. /v1/* and every write method are
+	# never forwarded, so this port cannot relay LLM traffic.
+	@dash {
+		method GET
+		path /dashboard /dashboard/* /stats /stats-lifetime /stats-history /transformations/feed /health /livez /readyz /quota /subscription-window
+	}
+	handle @dash {
+		reverse_proxy {$HEADROOM_UPSTREAM} {
+			header_up X-Headroom-Proxy-Token {$HEADROOM_PROXY_TOKEN}
+		}
+	}
+
+	respond 404
+}

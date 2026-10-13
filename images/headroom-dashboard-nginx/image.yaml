@@ -1,0 +1,9 @@
+name: headroom-dashboard-nginx
+upstream_version: 1.30.5
+revision: 1
+build_args:
+  NGINX_DIGEST: "sha256:56b8272e43a0525f67aed68d1e0794a712d10e3e45a563e118e9a77c817e6f86"
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

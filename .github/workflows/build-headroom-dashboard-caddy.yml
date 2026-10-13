@@ -1,0 +1,46 @@
+name: Build and publish Headroom dashboard Caddy sidecar image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'images/headroom-dashboard-caddy/**'
+      - '.github/workflows/build-headroom-dashboard-caddy.yml'
+  push:
+    branches: [main]
+    paths: ['images/headroom-dashboard-caddy/**', '.github/workflows/build-headroom-dashboard-caddy.yml']
+
+# Serialize publications so two pushes cannot calculate the same next tag.
+concurrency:
+  group: headroom-dashboard-caddy-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish Headroom dashboard Caddy sidecar image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: headroom-dashboard-caddy
+      context: ./images/headroom-dashboard-caddy
+      dockerfile: ./images/headroom-dashboard-caddy/Dockerfile
+      config: images/headroom-dashboard-caddy/image.yaml
+      version_arg: CADDY_VERSION
+      platforms: linux/amd64
+      run_smoke_test: false
+      smoke_healthcheck: true
+      smoke_healthcheck_port: 8080
+      smoke_healthcheck_path: /_sidecar/health
+      smoke_env: -e HEADROOM_PROXY_TOKEN=smoke-test-token
+      scan: true
+      revision_from_published_tag_count: true
+      publish: ${{ github.event_name != 'pull_request' }}

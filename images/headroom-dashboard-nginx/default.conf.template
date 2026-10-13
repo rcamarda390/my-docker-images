@@ -1,0 +1,39 @@
+# Rendered by the nginx image's envsubst step at container start.
+# Only ${...}-braced variables are substituted; bare $vars are nginx's own.
+server {
+    listen 8080;
+    server_tokens off;
+
+    # Docker's embedded DNS; lets nginx start before headroom-mcp exists.
+    resolver ${DNS_RESOLVER} valid=30s ipv6=off;
+    set $headroom_upstream "${HEADROOM_UPSTREAM}";
+
+    # Browser clients outside this CIDR list get 403.
+    allow ${DASHBOARD_ALLOW_CIDR};
+    deny all;
+
+    # Sidecar liveness; does not touch Headroom.
+    location = /_sidecar/health {
+        allow all;
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Read-only dashboard surface only. /v1/* and every write method are
+    # never forwarded, so this port cannot relay LLM traffic.
+    location ~ ^/(dashboard(/.*)?|stats|stats-lifetime|stats-history|transformations/feed|health|livez|readyz|quota|subscription-window)$ {
+        limit_except GET {
+            deny all;
+        }
+        proxy_pass $headroom_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Headroom-Proxy-Token "${HEADROOM_PROXY_TOKEN}";
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        return 404;
+    }
+}

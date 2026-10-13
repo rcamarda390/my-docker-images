@@ -1,0 +1,10 @@
+name: headroom-dashboard-caddy
+upstream_version: 2.11.7
+revision: 1
+# CADDY_DIGEST intentionally unset: Docker Hub rate-limited digest lookup.
+# Pin it (caddy:2.11.7-alpine multi-arch index digest) before relying on this.
+build_args: {}
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
