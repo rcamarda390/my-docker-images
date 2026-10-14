@@ -42,7 +42,7 @@ python3 images/slim-docker-vsix-upgrades/test-prepare.py
 docker build --build-arg IMAGE_VERSION=2026.10.14 -t slim-docker-vsix-upgrades:validation images/slim-docker-vsix-upgrades
 ```
 
-Run **Build and publish slim VSIX upgrades for VS Code 1.98.2** manually after workflow registration on the default branch. PRs validate without publishing. The existing reusable build workflow owns build, advisory Trivy scanning and GHCR publication. Docker Hub and latest are disabled. Image name is `ghcr.io/rcamarda390/slim-docker-vsix-upgrades`. Tags use `2026.10.14-vN`; manual workflow run number plus configured revision guarantees unique revisions. The evidence job records the exact pulled registry digest and uploads metadata/SBOM/checksum evidence. Actual published tag and digest are available in its summary; do not infer them from configured revision.
+Run **Build and publish slim VSIX upgrades for VS Code 1.98.2** manually after workflow registration on the default branch. PRs validate without publishing. The existing reusable build workflow owns build, advisory Trivy scanning and GHCR and Docker Hub publication. `latest` is disabled. Images are `ghcr.io/rcamarda390/slim-docker-vsix-upgrades` and `docker.io/<DOCKERHUB_USERNAME>/slim-docker-vsix-upgrades` (always include the registry host when pulling). Tags use `2026.10.14-vN`; manual workflow run number plus configured revision guarantees unique revisions. The evidence job records the exact pulled registry digest and uploads metadata/SBOM/checksum evidence. Actual published tag and digest are available in its summary; do not infer them from configured revision.
 
 ```bash
 mkdir -p /tmp/.vsix
