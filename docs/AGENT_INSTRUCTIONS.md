@@ -157,6 +157,11 @@ A successful build does not prove security remediation succeeded.
 
 ### Persistent security memory and shared-component follow-up
 
+Use the `remediate-xray` skill at
+`.agents/skills/remediate-xray/SKILL.md` for supplied findings, open-fix audits
+and post-build scan reconciliation. The skill routes to the process below;
+this document and the shared security files remain authoritative.
+
 Read `docs/security/README.md` and `docs/security/findings.json` before every
 security change. These are the shared process and finding ledger; dated image
 security notes remain evidence. Track every supplied finding, regardless of
