@@ -20,6 +20,9 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(row['no_dsa'], 'Minor issue')
         missing, = module.review([finding], {})
         self.assertEqual(missing['status'], 'UNKNOWN')
+        finding['suite'] = None
+        upstream, = module.review([finding], tracker)
+        self.assertEqual(upstream['status'], 'UPSTREAM_REVIEW')
         finding['images']['b']['scan_status'] = 'cleared'
         self.assertEqual(list(module.review([finding], tracker)), [])
 

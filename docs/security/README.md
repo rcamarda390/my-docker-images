@@ -2,7 +2,9 @@
 
 Read this and `findings.json` before remediation or a version audit. Ledger
 starts with all 67 component rows / 36 CVEs supplied for AgentMemory on
-2026-10-14. It is not an exhaustive import of older reports. Add older/new
+2026-10-14. Separate observations now include Headroom (53 rows) and Gnosis
+(28 rows), preserving their supplied CVSS vectors and report-specific components.
+It is not an exhaustive import of older reports. Add older/new
 reports when reviewed; dated image notes remain the patch evidence.
 
 ## Agent process
@@ -53,7 +55,9 @@ Sid libraries into Trixie. A compiled-template defect requires consumer work.
 
 Fetch one tracker snapshot and print suite status/fixed version for every
 pending entry. This does not change the ledger, decide applicability or patch.
-Missing records print UNKNOWN, never fixed. Network/JSON errors fail the command.
+Missing records print UNKNOWN, never fixed. Non-Debian entries print
+UPSTREAM_REVIEW and require their upstream references. Network/JSON errors
+fail the command.
 
 ```bash
 python tools/check-debian-security.py

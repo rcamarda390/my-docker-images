@@ -16,7 +16,7 @@ def review(findings, tracker):
             'cve': finding['cve'],
             'source_package': finding['source_package'],
             'suite': finding['suite'],
-            'status': release.get('status', 'UNKNOWN'),
+            'status': release.get('status', 'UNKNOWN') if finding['suite'] else 'UPSTREAM_REVIEW',
             'fixed_version': release.get('fixed_version'),
             'urgency': release.get('urgency'),
             'no_dsa': release.get('nodsa'),

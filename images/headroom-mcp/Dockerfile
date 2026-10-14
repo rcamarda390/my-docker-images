@@ -301,8 +301,9 @@ RUN set -eux; \
     uv pip check --python /opt/venv/bin/python
 
 # Transformers 5.17.0 still trusts local checkpoint weight_map paths.
-COPY patch-transformers-shards.py security-regression.py /tmp/
-RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
+COPY patch-transformers-shards.py patch-litellm-jwt-email.py security-regression.py /tmp/
+RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py packages
 
 # The setuptools/msgpack upgrades that used to live here targeted packages
@@ -604,13 +605,14 @@ RUN find /usr/local/lib/python${PYTHON_ABI} /opt/venv \
 # Proxy/MCP does not invoke coreutils; host-installation/wrapper features are
 # outside this image's confirmed runtime scope. Audit reverse dependencies and
 # every retained native library before removing the unused command suites.
-COPY verify-runtime-unused.py security-regression.py /tmp/
+COPY verify-runtime-unused.py patch-litellm-jwt-email.py security-regression.py /tmp/
 RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-runtime-unused.py \
     && dpkg --purge --force-depends --force-remove-essential --force-remove-protected --force-bad-path \
       util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py --verify \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
-    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink()"
+    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink(); Path('/tmp/patch-litellm-jwt-email.py').unlink()"
 # Verify that purged packages didn't break critical runtime functionality.
 # `python -c "import sys"` proved nothing: it passed while libsqlite3-0 was
 # purged, so a green build shipped an image that died on startup. Import every
