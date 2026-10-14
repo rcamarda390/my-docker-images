@@ -33,7 +33,7 @@ jobs:
       # Shell-free scan artifact. All content checks run in the builder.
       run_smoke_test: false
       scan: true
-      publish_dockerhub: false
+      publish_dockerhub: true
       revision_from_run_number: ${{ github.event_name == 'workflow_dispatch' }}
       publish: ${{ github.event_name != 'pull_request' }}
 

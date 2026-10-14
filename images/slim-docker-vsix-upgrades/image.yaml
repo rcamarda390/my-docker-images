@@ -4,5 +4,5 @@ upstream_version: 2026.10.14
 revision: 1
 publish:
   ghcr: true
-  dockerhub: false
+  dockerhub: true
   latest: false
