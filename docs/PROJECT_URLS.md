@@ -2,24 +2,23 @@
 
 Use these links to identify projects. Check an image's `image.yaml`, Dockerfile, and build workflow for the actual source and version before recommending an update. This list also includes related projects that are not built by this repository. A project may use its repository or package page as its documentation; a separate documentation site is not required.
 
-| Project | Project URL | Documentation or releases | Repository use |
-| --- | --- | --- | --- |
-| Headroom | https://github.com/headroomlabs-ai/headroom | https://docs.headroomlabs.ai/docs | `images/headroom-mcp` |
-| Docker Socket Proxy | https://github.com/Tecnativa/docker-socket-proxy | https://github.com/Tecnativa/docker-socket-proxy/releases | `images/docker-socket-proxy`; check the HAProxy base image separately |
-| eBay MCP | https://github.com/YosefHayim/ebay-mcp | https://github.com/YosefHayim/ebay-mcp/releases | `images/ebay-mcp` |
-| AgentMemory | https://github.com/rohitg00/agentmemory | https://github.com/rohitg00/agentmemory/blob/main/CHANGELOG.md | `images/agentmemory-server` |
-| OmniRoute | https://github.com/diegosouzapw/OmniRoute | https://github.com/diegosouzapw/OmniRoute/wiki/User-Guide ; https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/docs/guides/DOCKER_GUIDE.md | Related project; no image listed here |
-| Bifrost | https://github.com/maximhq/bifrost | https://docs.getbifrost.ai/overview | `images/bifrost-mcp` |
-| AI CLI runner | https://www.npmjs.com/package/@anthropic-ai/claude-code, https://www.npmjs.com/package/cline | https://github.com/anthropics/claude-code/releases, https://github.com/cline/cline/releases | `images/ai-cli-runner`; npm `latest` dist-tags, lockfile pinned |
-| LiteLLM | https://github.com/BerriAI/litellm | https://github.com/BerriAI/litellm/releases | `images/litellm` |
-| SQZ MCP | https://github.com/ojuschugh1/sqz | https://github.com/ojuschugh1/sqz/releases | `images/sqz-mcp`; check the vendored Cargo.lock |
-| Zeus Dev Image | Composite image; see `images/zeus-dev-image/Dockerfile` | Check installed products individually, including https://github.com/tt-a1i/archify and https://gitlab.freedesktop.org/xdg/xdg-user-dirs | `images/zeus-dev-image` |
-| Gnosis MCP | https://pypi.org/project/gnosis-mcp/ | https://pypi.org/project/gnosis-mcp/#files | `images/gnosis-mcp` installs the PyPI package; use PyPI for version checks |
-| Gnosis (different project) | https://github.com/skorokithakis/gnosis | — | Related project; not the source of `images/gnosis-mcp` |
-| Atlassian Rovo MCP (official) | https://github.com/atlassian/atlassian-mcp-server | https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/ | Related cloud service; not the source of the Sooperset image |
-| Sooperset MCP Atlassian (used here) | https://github.com/sooperset/mcp-atlassian | https://pypi.org/project/mcp-atlassian/ | Source for `images/sooperset-mcp-atlassian` |
-
-The Sooperset image does not contain Atlassian's official Rovo MCP server.
+| # | Project | Project URL | Documentation or releases | Repository use |
+| ---: | --- | --- | --- | --- |
+| 1 | AgentMemory | https://github.com/rohitg00/agentmemory | https://github.com/rohitg00/agentmemory/blob/main/CHANGELOG.md | images/agentmemory-server |
+| 2 | AI CLI runner — Claude Code | https://github.com/anthropics/claude-code | https://www.npmjs.com/package/@anthropic-ai/claude-code | images/ai-cli-runner (Claude CLI) |
+| 3 | AI CLI runner — Cline CLI | https://github.com/cline/cline | https://www.npmjs.com/package/cline | images/ai-cli-runner (Cline CLI) |
+| 4 | Archify | https://github.com/tt-a1i/archify | https://github.com/tt-a1i/archify/releases | images/slim-archify; also used by Zeus Dev Image |
+| 5 | Bifrost | https://github.com/maximhq/bifrost | https://docs.getbifrost.ai/overview | images/bifrost-mcp |
+| 6 | CodeBurn VS Code extension | https://github.com/getagentseal/codeburn | https://marketplace.visualstudio.com/items?itemName=CodeBurn.codeburn | images/slim-docker-codeburn; compare VSIX marketplace release and repository |
+| 7 | Docker Socket Proxy | https://github.com/Tecnativa/docker-socket-proxy | https://github.com/Tecnativa/docker-socket-proxy/releases | images/docker-socket-proxy; check HAProxy base image separately |
+| 8 | eBay MCP | https://github.com/YosefHayim/ebay-mcp | https://github.com/YosefHayim/ebay-mcp/releases | images/ebay-mcp |
+| 9 | Gnosis MCP | https://github.com/nicholasglazer/gnosis-mcp | https://github.com/nicholasglazer/gnosis-mcp/releases | images/gnosis-mcp; Dockerfile currently installs pinned PyPI distribution; verify GitHub-to-package provenance |
+| 10 | Headroom | https://github.com/headroomlabs-ai/headroom | https://docs.headroomlabs.ai/docs | images/headroom-mcp |
+| 11 | LiteLLM | https://github.com/BerriAI/litellm | https://github.com/BerriAI/litellm/releases | images/litellm |
+| 12 | OmniRoute | https://github.com/diegosouzapw/OmniRoute | https://github.com/diegosouzapw/OmniRoute/wiki/User-Guide ; https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/docs/guides/DOCKER_GUIDE.md | Related project; no image listed here |
+| 13 | Sooperset MCP Atlassian | https://github.com/sooperset/mcp-atlassian | https://github.com/sooperset/mcp-atlassian/releases | images/sooperset-mcp-atlassian; not Atlassian Rovo MCP |
+| 14 | SQZ MCP | https://github.com/ojuschugh1/sqz | https://github.com/ojuschugh1/sqz/releases | images/sqz-mcp; check vendored Cargo.lock |
+| 15 | Zeus Dev Image | https://github.com/rcamarda390/my-docker-images/tree/main/images/zeus-dev-image | https://gitlab.freedesktop.org/xdg/xdg-user-dirs | Composite image; inspect Dockerfile and installed components |
 
 ## Check all images for updates
 
