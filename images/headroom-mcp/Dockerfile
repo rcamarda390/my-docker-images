@@ -27,6 +27,7 @@ ARG SQLITE_AUTOCONF=3530400
 ARG SQLITE_SHA3=454e45f61c6bd75b7420e7190732dea03ce6639c63ada47bbc592f67fc340338
 ARG ZLIB_VERSION=1.3.2
 ARG ZLIB_SHA256=b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1
+ARG ZLIB_CVE_PATCH_SHA256=110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14
 
 # Retain the existing glibc fixes and reuse the checked Gnosis backports
 # against the same Debian source. See SECURITY-20261005.md for CVE mapping.
@@ -137,6 +138,7 @@ ARG SQLITE_AUTOCONF
 ARG SQLITE_SHA3
 ARG ZLIB_VERSION
 ARG ZLIB_SHA256
+ARG ZLIB_CVE_PATCH_SHA256
 
 ENV CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup \
@@ -180,7 +182,9 @@ RUN set -eux; \
     ln -s libsqlite3.so.0.8.6 /opt/sqlite/lib/libsqlite3.so.0; \
     LD_LIBRARY_PATH=/opt/sqlite/lib python -c "import sqlite3; assert sqlite3.sqlite_version == '${SQLITE_VERSION}', sqlite3.sqlite_version; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute('insert into docs values (\"headroom\")'); assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',)"; \
     rm -rf /tmp/sqlite.tar.gz "/tmp/sqlite-autoconf-${SQLITE_AUTOCONF}"
-# Xray fixes CVE-2026-85091 and CVE-2026-27171 in zlib 1.3.2. Debian
+# zlib 1.3.2 fixes CVE-2026-27171; CVE-2026-85091 needs the later
+# checksum-pinned upstream patch already carried by Gnosis and AgentMemory.
+# Debian
 # Trixie's zlib1g release remains at 1.3.1, while Python's stdlib module needs
 # libz.so.1 at runtime. Build the checksum-pinned upstream release, retain its
 # ABI-compatible shared library, and remove the older Debian package only
@@ -192,11 +196,18 @@ RUN set -eux; \
     echo "${ZLIB_SHA256}  /tmp/zlib.tar.gz" | sha256sum --check --status; \
     tar -xzf /tmp/zlib.tar.gz -C /tmp; \
     cd "/tmp/zlib-${ZLIB_VERSION}"; \
+    curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+      "https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148.patch" \
+      --output /tmp/zlib-cve-2026-85091.patch; \
+    echo "${ZLIB_CVE_PATCH_SHA256}  /tmp/zlib-cve-2026-85091.patch" | sha256sum --check --status; \
+    patch -p1 < /tmp/zlib-cve-2026-85091.patch; \
     ./configure --prefix=/opt/zlib; \
-    make -j"$(nproc)" install; \
+    make -j"$(nproc)"; \
+    make test; \
+    make install; \
     LD_LIBRARY_PATH=/opt/zlib/lib python -c \
       "import zlib; assert zlib.ZLIB_RUNTIME_VERSION == '${ZLIB_VERSION}', zlib.ZLIB_RUNTIME_VERSION"; \
-    rm -rf /tmp/zlib.tar.gz "/tmp/zlib-${ZLIB_VERSION}"
+    rm -rf /tmp/zlib.tar.gz /tmp/zlib-cve-2026-85091.patch "/tmp/zlib-${ZLIB_VERSION}"
 # Checksums come from the matching rustup-init.sha256 file in the Rust release
 # archive.
 RUN set -eux; \
@@ -290,8 +301,9 @@ RUN set -eux; \
     uv pip check --python /opt/venv/bin/python
 
 # Transformers 5.17.0 still trusts local checkpoint weight_map paths.
-COPY patch-transformers-shards.py security-regression.py /tmp/
-RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
+COPY patch-transformers-shards.py patch-litellm-jwt-email.py security-regression.py /tmp/
+RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py packages
 
 # The setuptools/msgpack upgrades that used to live here targeted packages
@@ -593,13 +605,14 @@ RUN find /usr/local/lib/python${PYTHON_ABI} /opt/venv \
 # Proxy/MCP does not invoke coreutils; host-installation/wrapper features are
 # outside this image's confirmed runtime scope. Audit reverse dependencies and
 # every retained native library before removing the unused command suites.
-COPY verify-runtime-unused.py security-regression.py /tmp/
+COPY verify-runtime-unused.py patch-litellm-jwt-email.py security-regression.py /tmp/
 RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/verify-runtime-unused.py \
     && dpkg --purge --force-depends --force-remove-essential --force-remove-protected --force-bad-path \
       util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
+    && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py --verify \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
-    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink()"
+    && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink(); Path('/tmp/patch-litellm-jwt-email.py').unlink()"
 # Verify that purged packages didn't break critical runtime functionality.
 # `python -c "import sys"` proved nothing: it passed while libsqlite3-0 was
 # purged, so a green build shipped an image that died on startup. Import every

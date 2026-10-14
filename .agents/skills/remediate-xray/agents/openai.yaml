@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xray Docker Remediation"
+  short_description: "Remediate and track Xray findings across Docker images"
+  default_prompt: "Use $remediate-xray to remediate these Headroom Xray findings, check sibling images, update the shared ledger, and create a tested PR."

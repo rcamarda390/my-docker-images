@@ -155,6 +155,39 @@ For every HIGH/CRITICAL finding supplied by the user:
 
 A successful build does not prove security remediation succeeded.
 
+### Persistent security memory and shared-component follow-up
+
+Use the `remediate-xray` skill at
+`.agents/skills/remediate-xray/SKILL.md` for supplied findings, open-fix audits
+and post-build scan reconciliation. The skill routes to the process below;
+this document and the shared security files remain authoritative.
+
+Read `docs/security/README.md` and `docs/security/findings.json` before every
+security change. These are the shared process and finding ledger; dated image
+security notes remain evidence. Track every supplied finding, regardless of
+severity. Keep the reported CVE, component, score/CWE, supplied fix version,
+installed version and scanned immutable tag/digest; use null for missing data.
+Do not infer the scanned artifact from current main.
+
+For each CVE/source-package pair, update the existing ledger entry. Record
+per-image treatment, exact patch/version, evidence paths, last review date,
+remaining work and scan status. Keep unresolved, no-fix and disputed findings
+visible. A source patch, removed package, applicability test or passing build
+is not Xray clearance. Close only against an exact post-build digest and scan.
+
+Check every final image for the same component, including vendored/static
+copies. Reuse existing checksum-pinned patches where source/ABI matches;
+validate each image separately. Do not apply a removal decision from one
+image to another. Patch an affected sibling in the same PR when justified.
+For precompiled template defects, fix/rebuild the consuming binary rather
+than merely replacing its runtime library.
+
+Run the documented Debian tracker check during remediation and version audits.
+Check linked Debian bugs and upstream commits/releases for all pending entries,
+including downstream-patched ones. Replace carries only when an official fix
+covers every carried hunk and the existing regressions pass. Record new fix
+versions, PR/build links and subsequent scanner outcomes in the ledger.
+
 ### No-fix findings: conditional removal of unused components
 
 If the scanner, distribution tracker, or upstream project provides no usable fix,

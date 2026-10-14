@@ -32,6 +32,11 @@ RUN UV_NO_MANAGED_PYTHON=1 uv venv --python /usr/bin/python3 /opt/litellm \
     && /opt/litellm/bin/python -c 'import importlib.util; assert importlib.util.find_spec("ddtrace") is None; assert importlib.util.find_spec("pypdf") is None' \
     && /opt/litellm/bin/python -c 'import litellm; import litellm.proxy.proxy_server'
 
+COPY patch-litellm-jwt-email.py /tmp/patch-litellm-jwt-email.py
+RUN /opt/litellm/bin/python /tmp/patch-litellm-jwt-email.py /opt/litellm/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py \
+    && /opt/litellm/bin/python -c 'import litellm.proxy.auth.handle_jwt' \
+    && rm /tmp/patch-litellm-jwt-email.py
+
 FROM ${WOLFI_IMAGE} AS runtime
 
 ARG LITELLM_VERSION
@@ -42,6 +47,9 @@ RUN apk upgrade --available --no-cache \
     && adduser -D -u 10001 litellm
 
 COPY --from=builder /opt/litellm /opt/litellm
+COPY patch-litellm-jwt-email.py /tmp/patch-litellm-jwt-email.py
+RUN /opt/litellm/bin/python /tmp/patch-litellm-jwt-email.py /opt/litellm/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py --verify \
+    && rm /tmp/patch-litellm-jwt-email.py
 
 ENV PATH="/opt/litellm/bin:${PATH}" \
     LITELLM_PORT=4000
