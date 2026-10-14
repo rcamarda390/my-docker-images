@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # File: images/slim-docker-vsix-upgrades/Dockerfile
 FROM node:24-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe AS prepare
-RUN apt-get update && apt-get install -y --no-install-recommends python3 \
+RUN apt-get update && apt-get install -y --no-install-recommends python3 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 # Builder-only compatibility parser; never installed into extension payloads.
 RUN npm install --prefix /checks --ignore-scripts --no-audit --no-fund semver@7.7.2
