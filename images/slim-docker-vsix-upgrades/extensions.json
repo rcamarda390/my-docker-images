@@ -1,0 +1,19 @@
+{
+  "vscode_version": "1.98.2",
+  "source": "Microsoft Visual Studio Marketplace",
+  "extensions": [
+    {"id": "amazonwebservices.aws-toolkit-vscode", "installed": "4.10.0", "version": "4.17.0"},
+    {"id": "anthropic.claude-code", "installed": "2.1.295", "version": "2.1.299"},
+    {"id": "francescoanzalone.vsc-todo", "installed": "2.2.1", "version": "2.3.5"},
+    {"id": "esbenp.prettier-vscode", "installed": "11.0.0", "version": "11.0.3"},
+    {"id": "gitlab.gitlab-workflow", "installed": "6.64.0", "version": "6.92.0"},
+    {"id": "growthjack.claude-code-usage", "installed": "2.3.0", "version": "2.4.1"},
+    {"id": "mechatroner.rainbow-csv", "installed": "3.23.0", "version": "3.24.1"},
+    {"id": "ms-python.autopep8", "installed": "2025.3.11811013", "version": "2026.4.0"},
+    {"id": "ms-python.debugpy", "installed": "2025.15.2025100201", "version": "2026.6.0"},
+    {"id": "ms-python.python", "installed": "2025.17.2025100201", "version": "2026.4.0"},
+    {"id": "mtxr.sqltools", "installed": "0.28.5", "version": "0.28.6"},
+    {"id": "mtxr.sqltools-driver-pg", "installed": "0.5.7", "version": "0.5.8"},
+    {"id": "redhat.vscode-yaml", "installed": "1.20.2025100808", "version": "1.25.0"}
+  ]
+}

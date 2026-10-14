@@ -1,0 +1,43 @@
+# File: .github/workflows/build-slim-docker-vsix-upgrades.yml
+name: Build and publish slim VSIX upgrades image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - images/slim-docker-vsix-upgrades/**
+      - .github/workflows/build-slim-docker-vsix-upgrades.yml
+
+# Serialize publications so two dispatches cannot calculate the same next tag.
+concurrency:
+  group: slim-docker-vsix-upgrades-publish
+  cancel-in-progress: false
+
+permissions:
+  # Required by the reusable workflow contract; a caller cannot grant less
+  # than the called workflow declares.
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build and publish slim VSIX upgrades image
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: slim-docker-vsix-upgrades
+      context: ./images/slim-docker-vsix-upgrades
+      dockerfile: ./images/slim-docker-vsix-upgrades/Dockerfile
+      config: images/slim-docker-vsix-upgrades/image.yaml
+      version_arg: VSCODE_TARGET_VERSION
+      platforms: linux/amd64
+      # FROM scratch: identity, compatibility, checksum and extraction checks run in the builder.
+      run_smoke_test: false
+      scan: true
+      revision_from_published_tag_count: ${{ github.event_name == 'workflow_dispatch' }}
+      publish: ${{ github.event_name != 'pull_request' }}
