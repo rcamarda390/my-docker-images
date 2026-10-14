@@ -1,6 +1,6 @@
 name: headroom-mcp
 upstream_version: 0.40.0
-revision: 2
+revision: 3
 build_args:
   HEADROOM_COMMIT: 855390d6110e0bbb199d9b97025baac16c2f5cf3
   LITELLM_VERSION: 1.101.3
@@ -20,6 +20,7 @@ build_args:
   URLLIB3_VERSION: 2.8.0
   ZLIB_VERSION: 1.3.2
   ZLIB_SHA256: b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1
+  ZLIB_CVE_PATCH_SHA256: 110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6fe14b15b14
 publish:
   ghcr: true
   dockerhub: true
