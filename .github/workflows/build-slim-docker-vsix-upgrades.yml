@@ -1,0 +1,116 @@
+# File: .github/workflows/build-slim-docker-vsix-upgrades.yml
+name: Build and publish slim VSIX upgrades for VS Code 1.98.2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - images/slim-docker-vsix-upgrades/**
+      - .github/workflows/build-slim-docker-vsix-upgrades.yml
+
+concurrency:
+  group: slim-docker-vsix-upgrades-publish
+  cancel-in-progress: false
+
+# Required by the existing reusable workflow contract.
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    with:
+      image_name: slim-docker-vsix-upgrades
+      context: ./images/slim-docker-vsix-upgrades
+      dockerfile: ./images/slim-docker-vsix-upgrades/Dockerfile
+      config: images/slim-docker-vsix-upgrades/image.yaml
+      version_arg: IMAGE_VERSION
+      platforms: linux/amd64
+      timeout_minutes: 45
+      # Shell-free scan artifact. All content checks run in the builder.
+      run_smoke_test: false
+      scan: true
+      publish_dockerhub: false
+      revision_from_run_number: ${{ github.event_name == 'workflow_dispatch' }}
+      publish: ${{ github.event_name != 'pull_request' }}
+
+  evidence:
+    name: Retain image contents and publication digest
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Log in to GHCR for published image inspection
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract validated payload evidence
+        env:
+          IMAGE: ${{ needs.build.outputs.ghcr_image }}
+          EVENT: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            docker pull "$IMAGE"
+            image_ref=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}')
+            printf '%s\n' "$image_ref" > evidence/image-digest.txt
+          else
+            image_ref=slim-docker-vsix-upgrades:validation
+            docker build --build-arg IMAGE_VERSION=2026.10.14 \
+              --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+              -t "$image_ref" images/slim-docker-vsix-upgrades
+          fi
+          cid=$(docker create "$image_ref" /unused)
+          trap 'docker rm "$cid" >/dev/null' EXIT
+          docker cp "$cid:/slim/." evidence/slim/
+          cd evidence/slim
+          sha256sum -c metadata/SHA256SUMS
+          for checksums in metadata/extensions/*/SHA256SUMS; do
+            sha256sum -c "$checksums" > /dev/null
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          pins = json.loads(Path('../../images/slim-docker-vsix-upgrades/extensions.json').read_text())
+          manifest = json.loads(Path('manifest.json').read_text())
+          assert manifest['target_vscode'] == pins['target_vscode'] == '1.98.2'
+          expected = {(p['id'], p['version']) for p in pins['extensions']}
+          assert {(p['id'], p['version']) for p in manifest['extensions']} == expected
+          assert len(manifest['extensions']) == len(expected) == 13
+          assert len(list(Path('payload/vsix').glob('*.vsix'))) == 13
+          assert len(list(Path('payload/unpacked').iterdir())) == 13
+          for path in Path('sbom').rglob('*.json'):
+              bom = json.loads(path.read_text())
+              assert bom['bomFormat'] == 'CycloneDX'
+          for path in Path('metadata/extensions').glob('*/coverage.json'):
+              coverage = json.loads(path.read_text())
+              assert coverage['extraction_verified']
+              assert coverage['archive_uncompressed_bytes'] == coverage['extracted_bytes']
+          print('Final image: 13 original VSIX packages, complete extraction, metadata and SBOMs verified')
+          PY
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            printf 'Published image: %s\n' "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
+            cat ../image-digest.txt >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain metadata, checksums and SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: slim-vsix-upgrades-evidence
+          path: |
+            evidence/image-digest.txt
+            evidence/slim/manifest.json
+            evidence/slim/metadata/
+            evidence/slim/sbom/
+          retention-days: 30
