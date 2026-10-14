@@ -2,18 +2,83 @@
   "vscode_version": "1.98.2",
   "source": "Microsoft Visual Studio Marketplace",
   "extensions": [
-    {"id": "amazonwebservices.aws-toolkit-vscode", "installed": "4.10.0", "version": "4.17.0"},
-    {"id": "anthropic.claude-code", "installed": "2.1.295", "version": "2.1.299"},
-    {"id": "francescoanzalone.vsc-todo", "installed": "2.2.1", "version": "2.3.5"},
-    {"id": "esbenp.prettier-vscode", "installed": "11.0.0", "version": "11.0.3"},
-    {"id": "gitlab.gitlab-workflow", "installed": "6.64.0", "version": "6.92.0"},
-    {"id": "growthjack.claude-code-usage", "installed": "2.3.0", "version": "2.4.1"},
-    {"id": "mechatroner.rainbow-csv", "installed": "3.23.0", "version": "3.24.1"},
-    {"id": "ms-python.autopep8", "installed": "2025.3.11811013", "version": "2026.4.0"},
-    {"id": "ms-python.debugpy", "installed": "2025.15.2025100201", "version": "2026.6.0"},
-    {"id": "ms-python.python", "installed": "2025.17.2025100201", "version": "2026.4.0"},
-    {"id": "mtxr.sqltools", "installed": "0.28.5", "version": "0.28.6"},
-    {"id": "mtxr.sqltools-driver-pg", "installed": "0.5.7", "version": "0.5.8"},
-    {"id": "redhat.vscode-yaml", "installed": "1.20.2025100808", "version": "1.25.0"}
+    {
+      "id": "amazonwebservices.aws-toolkit-vscode",
+      "installed": "4.10.0",
+      "version": "4.17.0",
+      "sha256": "fbfe4262a7e41c01cfc1625806fc8592fee5bc5f542dee97a5981e45c1372b0b"
+    },
+    {
+      "id": "anthropic.claude-code",
+      "installed": "2.1.295",
+      "version": "2.1.299",
+      "sha256": "c4776f521668113527622a689e6f03ce2a677791eef39787996f7a9316c343d4"
+    },
+    {
+      "id": "francescoanzalone.vsc-todo",
+      "installed": "2.2.1",
+      "version": "2.3.5",
+      "sha256": "ee63b39f453324a08537dd51e2bdb1de3c58fff9b2a861d0d5266baa1f37d84d"
+    },
+    {
+      "id": "esbenp.prettier-vscode",
+      "installed": "11.0.0",
+      "version": "11.0.3",
+      "sha256": "a966c72d664e038d17a4d019da1a2f3e8f08cec4d88cc10d239358ffba9fba99"
+    },
+    {
+      "id": "gitlab.gitlab-workflow",
+      "installed": "6.64.0",
+      "version": "6.92.0",
+      "sha256": "0d1d20e1a1c059e3eee3a20734fbf1ac50c11e86261cc9a2126e33e00bc1e264"
+    },
+    {
+      "id": "growthjack.claude-code-usage",
+      "installed": "2.3.0",
+      "version": "2.4.1",
+      "sha256": "31824cde04a1025cd233a5ae853716677194c26556254c01c7b07af29ee12f19"
+    },
+    {
+      "id": "mechatroner.rainbow-csv",
+      "installed": "3.23.0",
+      "version": "3.24.1",
+      "sha256": "c59a4aea924d5e7c6e75abb32628448bd5404915e2f3dfa19fbbdf177dea4606"
+    },
+    {
+      "id": "ms-python.autopep8",
+      "installed": "2025.3.11811013",
+      "version": "2026.4.0",
+      "sha256": "a6bda5216055d54c9ad3d94c6bc057cd54418cfe4d47399b92e2ea1701b0abf5"
+    },
+    {
+      "id": "ms-python.debugpy",
+      "installed": "2025.15.2025100201",
+      "version": "2026.6.0",
+      "sha256": "3ae417f78bce17992b9e0efba160a43a85a8b695bd387e150d4df24e366c7b01"
+    },
+    {
+      "id": "ms-python.python",
+      "installed": "2025.17.2025100201",
+      "version": "2026.4.0",
+      "sha256": "1d07e60d5eab257ea5d691b26def3fff642b4d2c04fab94424e8b8fe25baf656"
+    },
+    {
+      "id": "mtxr.sqltools",
+      "installed": "0.28.5",
+      "version": "0.28.6",
+      "sha256": "4a95451fe41ff6da67366e09e73ddf3a15b3cd83f42e49c3366f3c2473319085"
+    },
+    {
+      "id": "mtxr.sqltools-driver-pg",
+      "installed": "0.5.7",
+      "version": "0.5.8",
+      "sha256": "1a3b7c63e89baf8df591b0e8f382084da71ddce30b07e44ca2aace6f3ed43f06"
+    },
+    {
+      "id": "redhat.vscode-yaml",
+      "installed": "1.20.2025100808",
+      "version": "1.25.0",
+      "sha256": "2a833480d9754d83afb64df758c50735201d759b53cdb29be7b7a8114dca2ae4"
+    }
   ]
 }

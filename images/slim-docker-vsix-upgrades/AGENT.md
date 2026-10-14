@@ -24,7 +24,7 @@ Target VS Code: `1.98.2`. Source: Microsoft Marketplace only.
 
 SBOM = package.json files found in the VSIX only. Minified bundles are not enumerated.
 Xray scanned / components found / vulns found / zero vulns are four different claims.
-SHA-256 recorded at build time (not pinned in git). Compare with `metadata/SHA256SUMS`.
+VSIX SHA-256 pinned in `extensions.json` (first-use from CI); mismatch fails the build. Bumping a version means updating its hash.
 
 ## Extract
 

@@ -128,6 +128,8 @@ def process(ext, vscode, root, now):
     key = f"{ext_id}-{version}"
     url, platform, data = download(publisher, name, version)
     digest = hashlib.sha256(data).hexdigest()
+    if digest != ext.get("sha256"):
+        raise ValueError(f"{key}: SHA-256 mismatch: pinned {ext.get('sha256')}, got {digest}")
     vsix = root / "payload/vsix" / f"{key}.vsix"
     vsix.parent.mkdir(parents=True, exist_ok=True)
     vsix.write_bytes(data)
@@ -253,7 +255,7 @@ def main(config, dest, vscode):
     wj("metadata/build-provenance.json", {
         "built_at": now, "source": cfg["source"], "target_vscode": vscode,
         "config_sha256": hashlib.sha256(Path(config).read_bytes()).hexdigest(),
-        "hash_pinning": "none: SHA-256 recorded at build time from Marketplace download",
+        "hash_pinning": "extensions.json sha256, enforced before extraction",
         "builder": "python:3.12-slim"})
     wj("sbom/combined.cdx.json", {
         "bomFormat": "CycloneDX", "specVersion": "1.5", "version": 1,

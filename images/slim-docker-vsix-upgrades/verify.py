@@ -24,7 +24,8 @@ assert unpacked == sorted(f"{i}-{v}" for i, v in want), f"unexpected unpacked se
 for e in manifest["extensions"]:
     key = e["key"]
     vsix = root / "payload/vsix" / f"{key}.vsix"
-    assert hashlib.sha256(vsix.read_bytes()).hexdigest() == e["sha256"], f"{key}: sha mismatch"
+    pinned = {x["id"]: x["sha256"] for x in cfg["extensions"]}[e["id"]]
+    assert hashlib.sha256(vsix.read_bytes()).hexdigest() == e["sha256"] == pinned, f"{key}: sha mismatch"
     meta = root / "metadata/extensions" / key
     for f in ("SHA256SUMS", "files.json", "coverage.json", "compatibility.json", "extension.cdx.json"):
         assert (meta / f).is_file(), f"{key}: missing {f}"
