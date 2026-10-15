@@ -24,12 +24,16 @@ static void check(const char *pattern, const char *text, int flags, int expected
     regfree(&expression);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     struct rlimit no_core = {0, 0};
     assert(setrlimit(RLIMIT_CORE, &no_core) == 0);
-    const char *locales[] = {"C", "C.UTF-8"};
-    for (unsigned int i = 0; i < sizeof(locales) / sizeof(locales[0]); ++i) {
+    /* Locales default to C and C.UTF-8; pass names as arguments for images
+       that ship without C.UTF-8 (libc-bin purged). */
+    const char *default_locales[] = {"C", "C.UTF-8"};
+    const char **locales = argc > 1 ? (const char **)(argv + 1) : default_locales;
+    unsigned int locale_count = argc > 1 ? (unsigned int)(argc - 1) : 2;
+    for (unsigned int i = 0; i < locale_count; ++i) {
         assert(setlocale(LC_ALL, locales[i]) != NULL);
         /* Sourceware #24269 / CVE-2019-9192: baseline overflows its stack. */
         check("(|)(\\1\\1)*", "D", REG_EXTENDED, REG_ESPACE);
