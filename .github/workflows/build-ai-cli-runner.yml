@@ -2,6 +2,9 @@ name: Build and publish AI CLI runner image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/build-ai-cli-runner.yml
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:
@@ -24,12 +27,13 @@ jobs:
           node-version: '24'
       - name: Package pinned CLI payloads and verify checksums
         run: bash images/ai-cli-runner/build-airgap.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ai-cli-runner-airgap-xray
           path: images/ai-cli-runner/dist/
           if-no-files-found: error
   build:
+    if: github.event_name == 'workflow_dispatch'
     name: Build and publish AI CLI runner image
     uses: ./.github/workflows/build-image.yml
     secrets: inherit
