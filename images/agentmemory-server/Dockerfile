@@ -3,7 +3,7 @@
 ARG III_VERSION=0.22.1
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda4
 ARG DASH_DEBIAN_VERSION=0.5.12-12
 ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 
@@ -17,6 +17,7 @@ ARG DASH_DEBIAN_VERSION
 ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
+COPY verify-glibc-regex.c /tmp/verify-glibc-regex.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
@@ -59,9 +60,10 @@ RUN set -eux; \
     done; \
     gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
     /tmp/verify-glibc-normalize; \
+    gcc -Wall -Wextra -Werror -O2 /tmp/verify-glibc-regex.c -o /out/verify-glibc-regex; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Backport the repository-tested resolver, stdio and secure-loader fixes for AgentMemory."; \
+      "Backport the repository-tested resolver, stdio and secure-loader fixes for AgentMemory; bound recursive regex backreference walks."; \
     DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)"; \
     cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
@@ -201,6 +203,7 @@ LABEL org.opencontainers.image.title="agentmemory-mcp" \
 # after all apt work, then fail the build if it remains installed.
 COPY --from=native_patched /out/ /tmp/native/
 COPY --from=glibc_patched /out/ /tmp/glibc/
+COPY --from=glibc_patched /out/verify-glibc-regex /usr/local/bin/verify-glibc-regex
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates tini gosu curl \
  && apt-get upgrade -y --no-install-recommends \
@@ -232,6 +235,7 @@ RUN apt-get update \
  && ! command -v perl \
  && install -m 0755 /tmp/native/verify-native-runtime /usr/local/bin/verify-native-runtime \
  && /usr/local/bin/verify-native-runtime \
+ && /usr/local/bin/verify-glibc-regex \
  && rm -rf /tmp/native /tmp/glibc /var/lib/apt/lists/*
 
 COPY --from=iii-image /app/iii /usr/local/bin/iii
