@@ -29,7 +29,9 @@ func (b *xrayBody) Read(p []byte) (int, error) {
 func TestXrayBodyLimit(t *testing.T) {
 	const limit int64 = 100 << 20
 	s := NewStreamableHTTPServer(NewMCPServer("body-limit-test", "1"))
-	for _, length := range []int64{limit + 1, -1} {
+	// The reader cap must hold even if ContentLength is absent or understated.
+	for _, length := range []int64{limit + 1, -1, 0, 1} {
+		t.Logf("oversized body with ContentLength=%d", length)
 		body := &xrayBody{}
 		r := httptest.NewRequest(http.MethodPost, "http://localhost/mcp", nil)
 		r.Body = io.NopCloser(body)
