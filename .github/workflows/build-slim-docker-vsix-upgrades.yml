@@ -105,7 +105,7 @@ jobs:
             cat ../image-digest.txt >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Retain metadata, checksums and SBOMs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: slim-vsix-upgrades-evidence
           path: |
