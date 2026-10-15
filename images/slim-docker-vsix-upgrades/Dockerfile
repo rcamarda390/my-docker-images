@@ -8,7 +8,9 @@ RUN npm install --prefix /checks --ignore-scripts --no-audit --no-fund semver@7.
 ENV NODE_PATH=/checks/node_modules
 ARG IMAGE_VERSION
 ARG SOURCE_REVISION
-ENV IMAGE_VERSION=${IMAGE_VERSION} SOURCE_REVISION=${SOURCE_REVISION}
+ARG EXTENSION_ID=
+ARG IMAGE_NAME=slim-docker-vsix-upgrades
+ENV IMAGE_VERSION=${IMAGE_VERSION} SOURCE_REVISION=${SOURCE_REVISION} EXTENSION_ID=${EXTENSION_ID} IMAGE_NAME=${IMAGE_NAME}
 WORKDIR /checks
 COPY prepare.py test-prepare.py extensions.json ./
 RUN python3 test-prepare.py && python3 prepare.py extensions.json /slim
@@ -16,7 +18,8 @@ COPY AGENT.md /slim/AGENT.md
 
 FROM scratch
 ARG IMAGE_VERSION
-LABEL org.opencontainers.image.title="slim-docker-vsix-upgrades" \
+ARG IMAGE_NAME=slim-docker-vsix-upgrades
+LABEL org.opencontainers.image.title="${IMAGE_NAME}" \
       org.opencontainers.image.version="${IMAGE_VERSION}" \
       org.opencontainers.image.source="https://github.com/rcamarda390/my-docker-images" \
       slim.payload.method="official-marketplace-vsix" \

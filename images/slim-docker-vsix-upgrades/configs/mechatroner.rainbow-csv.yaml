@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/mechatroner.rainbow-csv.yaml
+name: slim-docker-vsix-mechatroner.rainbow-csv
+upstream_version: 3.24.1
+revision: 1
+build_args:
+  EXTENSION_ID: mechatroner.rainbow-csv
+  IMAGE_NAME: slim-docker-vsix-mechatroner.rainbow-csv
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/gitlab.gitlab-workflow.yaml
+name: slim-docker-vsix-gitlab.gitlab-workflow
+upstream_version: 6.92.0
+revision: 1
+build_args:
+  EXTENSION_ID: gitlab.gitlab-workflow
+  IMAGE_NAME: slim-docker-vsix-gitlab.gitlab-workflow
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

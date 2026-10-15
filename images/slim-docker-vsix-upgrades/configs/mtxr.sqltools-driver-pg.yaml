@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/mtxr.sqltools-driver-pg.yaml
+name: slim-docker-vsix-mtxr.sqltools-driver-pg
+upstream_version: 0.5.8
+revision: 1
+build_args:
+  EXTENSION_ID: mtxr.sqltools-driver-pg
+  IMAGE_NAME: slim-docker-vsix-mtxr.sqltools-driver-pg
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

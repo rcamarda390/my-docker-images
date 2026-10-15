@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/amazonwebservices.aws-toolkit-vscode.yaml
+name: slim-docker-vsix-amazonwebservices.aws-toolkit-vscode
+upstream_version: 4.17.0
+revision: 1
+build_args:
+  EXTENSION_ID: amazonwebservices.aws-toolkit-vscode
+  IMAGE_NAME: slim-docker-vsix-amazonwebservices.aws-toolkit-vscode
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

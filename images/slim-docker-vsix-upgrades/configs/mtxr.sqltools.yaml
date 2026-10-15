@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/mtxr.sqltools.yaml
+name: slim-docker-vsix-mtxr.sqltools
+upstream_version: 0.28.6
+revision: 1
+build_args:
+  EXTENSION_ID: mtxr.sqltools
+  IMAGE_NAME: slim-docker-vsix-mtxr.sqltools
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

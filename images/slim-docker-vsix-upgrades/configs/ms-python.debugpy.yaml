@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/ms-python.debugpy.yaml
+name: slim-docker-vsix-ms-python.debugpy
+upstream_version: 2026.6.0
+revision: 1
+build_args:
+  EXTENSION_ID: ms-python.debugpy
+  IMAGE_NAME: slim-docker-vsix-ms-python.debugpy
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
