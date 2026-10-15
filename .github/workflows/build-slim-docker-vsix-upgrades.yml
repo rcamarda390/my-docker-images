@@ -23,13 +23,17 @@ on:
           - mtxr.sqltools
           - mtxr.sqltools-driver-pg
           - redhat.vscode-yaml
+      search:
+        description: Optional text search (e.g. gitlab); overrides the pick list. Must match one extension (an exact id wins).
+        type: string
+        default: ''
   pull_request:
     paths:
       - images/slim-docker-vsix-upgrades/**
       - .github/workflows/build-slim-docker-vsix-upgrades.yml
 
 concurrency:
-  group: slim-docker-vsix-upgrades-publish-${{ inputs.extension || 'all' }}
+  group: slim-docker-vsix-upgrades-publish-${{ inputs.search || inputs.extension || 'all' }}
   cancel-in-progress: false
 
 # Required by the existing reusable workflow contract.
@@ -38,19 +42,42 @@ permissions:
   packages: write
   pull-requests: write
 
-env:
-  # Empty on pull_request, where the combined image is validated.
-  EXT: ${{ inputs.extension != 'all' && inputs.extension || '' }}
-
 jobs:
+  resolve:
+    name: Resolve selected extension
+    runs-on: ubuntu-latest
+    outputs:
+      ext: ${{ steps.pick.outputs.ext }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: pick
+        env:
+          PICK: ${{ inputs.extension }}
+          SEARCH: ${{ inputs.search }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, sys
+          ids = [e['id'].lower() for e in json.load(open('images/slim-docker-vsix-upgrades/extensions.json'))['extensions']]
+          search = os.environ['SEARCH'].strip().lower()
+          pick = os.environ['PICK'].strip().lower()
+          if search:
+              hits = [i for i in ids if i == search] or [i for i in ids if search in i]
+              if len(hits) != 1:
+                  sys.exit(f"::error::search '{search}' matched {len(hits)} extensions: {hits}")
+              pick = hits[0]
+          if pick not in ('', 'all') and pick not in ids:
+              sys.exit(f"::error::unknown extension {pick}")
+          print('ext=' + ('' if pick == 'all' else pick))
+          PY
   build:
+    needs: resolve
     uses: ./.github/workflows/build-image.yml
     secrets: inherit
     with:
-      image_name: ${{ (inputs.extension == 'all' || inputs.extension == '') && 'slim-docker-vsix-upgrades' || format('slim-docker-vsix-{0}', inputs.extension) }}
+      image_name: ${{ needs.resolve.outputs.ext == '' && 'slim-docker-vsix-upgrades' || format('slim-docker-vsix-{0}', needs.resolve.outputs.ext) }}
       context: ./images/slim-docker-vsix-upgrades
       dockerfile: ./images/slim-docker-vsix-upgrades/Dockerfile
-      config: ${{ (inputs.extension == 'all' || inputs.extension == '') && 'images/slim-docker-vsix-upgrades/image.yaml' || format('images/slim-docker-vsix-upgrades/configs/{0}.yaml', inputs.extension) }}
+      config: ${{ needs.resolve.outputs.ext == '' && 'images/slim-docker-vsix-upgrades/image.yaml' || format('images/slim-docker-vsix-upgrades/configs/{0}.yaml', needs.resolve.outputs.ext) }}
       version_arg: IMAGE_VERSION
       platforms: linux/amd64
       timeout_minutes: 45
@@ -63,7 +90,7 @@ jobs:
 
   evidence:
     name: Retain image contents and publication digest
-    needs: build
+    needs: [resolve, build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,7 +108,7 @@ jobs:
       - name: Extract validated payload evidence
         env:
           IMAGE: ${{ needs.build.outputs.ghcr_image }}
-          EXT: ${{ env.EXT }}
+          EXT: ${{ needs.resolve.outputs.ext }}
           EVENT: ${{ github.event_name }}
         shell: bash
         run: |
@@ -141,7 +168,7 @@ jobs:
       - name: Retain metadata, checksums and SBOMs
         uses: actions/upload-artifact@v7
         with:
-          name: slim-vsix-upgrades-evidence-${{ env.EXT || 'all' }}
+          name: slim-vsix-upgrades-evidence-${{ needs.resolve.outputs.ext || 'all' }}
           path: |
             evidence/image-digest.txt
             evidence/attribution.md
