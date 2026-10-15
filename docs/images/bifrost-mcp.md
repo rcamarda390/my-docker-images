@@ -30,6 +30,11 @@ the new A2A handler calls a generic `ServeHTTP`, not mcp-go's.
 
 Deployment notes from the upstream release:
 
+- MCP OAuth server hardening: before upgrading, list every remote OAuth callback
+  URI in `client.oauth2_server_config.allowed_redirect_uris` (loopback and
+  `cursor://anysphere.cursor-mcp` are always allowed). Unlisted remote callbacks
+  are rejected, including existing registrations. Keep the 2.2.6 `issuer_url`
+  requirement as well.
 - 45 config-store and 9 log-store migrations. `move_config_json_vk_limits_to_model_configs`
   is non-reversible; back up `/app/data` first. Run a single pod during rollout
   if virtual-key limits must stay enforced.
