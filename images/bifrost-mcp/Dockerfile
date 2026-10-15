@@ -107,13 +107,14 @@ RUN set -eu; \
       fi; \
       echo "remediated: $module $resolved"; \
     done
-# No released fix for CVE-2026-108859 exists as of 2026-10-13.
+# No upstream fix verified for CVE-2026-108859 as of 2026-10-15;
+# v1.3.0 still buffers without a cap.
 # Patch a private vendor tree; retain the real module version in build info.
 COPY mcp-go-body-limit.patch mcp-go-body-limit_test.go /tmp/
 RUN go mod vendor \
     && patch --batch --fuzz=0 -p1 -d vendor/github.com/mark3labs/mcp-go < /tmp/mcp-go-body-limit.patch \
     && cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/ \
-    && go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1
+    && go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1 -v
 ARG BIFROST_VERSION
 RUN go build -mod=vendor \
       -ldflags="-w -s -X main.Version=v${BIFROST_VERSION} -extldflags '-static'" \
@@ -130,6 +131,9 @@ RUN set -eu; \
     grep -qwF "go${GO_VERSION}" /tmp/binary-build-info; \
     awk -v expected="$GO_NET_VERSION" \
       '$1 == "dep" && $2 == "golang.org/x/net" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info; \
+    awk -v expected="$GO_MCP_GO_VERSION" \
+      '$1 == "dep" && $2 == "github.com/mark3labs/mcp-go" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40
