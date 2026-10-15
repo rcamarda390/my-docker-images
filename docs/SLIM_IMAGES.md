@@ -15,15 +15,15 @@ Repo policy already: immutable tag `<upstream_version>-v<revision>`. Keep it.
 | Item | Value |
 | --- | --- |
 | Repo | `slim-<software>` e.g. `slim-archify` |
-| Tag | `<upstream_version>-v<revision>` e.g. `3.0.1-v1` |
-| Full | `ghcr.io/rcamarda390/slim-archify:3.0.1-v1` (+ docker.io mirror) |
+| Tag | `<upstream_version>-v<revision>` e.g. `3.1.0-v1` |
+| Full | `ghcr.io/rcamarda390/slim-archify:3.1.0-v1` (+ docker.io mirror) |
 | Dir | `images/slim-archify/` (`Dockerfile`, `image.yaml`) |
 | Workflow | `.github/workflows/build-slim-archify.yml` → shared `build-image.yml` |
 | Label | `slim.payload.software`, `slim.payload.version`, `slim.payload.path=/payload`, `slim.payload.install=<none|npm-ci|pip|...>` |
 
 Why not `slim-image-<sw>-<ver>-vX` as repo name: version in repo name = new repo per version, breaks Artifactory retention/promotion rules, breaks `image.yaml` flow. Version belongs in tag. Prefix `slim-` is enough to group them. Change if user wants other prefix.
 
-## 2. archify findings (v3.0.1, MIT)
+## 2. archify findings (analysed on v3.0.1, MIT; 3.1.0 re-verified for doctor/demo/render/validate only, size and file counts below not re-measured)
 
 - It is an agent SKILL, not an app. Folder `archify/` = Node ESM scripts + SKILL.md + assets. 11 MB, 314 files.
 - Runtime: Node >=18. Runtime imports only `node:*` builtins. `parse5/saxes/ajv/yaml` are devDependencies, used only by build/test scripts, NOT by `bin/archify.mjs`.
@@ -58,7 +58,7 @@ Rule: whatever gets scanned must equal whatever runs. C breaks that → prefer A
 
 1. Build time (best, immutable):
 ```dockerfile
-COPY --from=ghcr.io/rcamarda390/slim-archify:3.0.1-v1@sha256:<digest> /payload /opt/archify
+COPY --from=ghcr.io/rcamarda390/slim-archify:3.1.0-v1@sha256:<digest> /payload /opt/archify
 ```
 Works only if build host reaches registry/Artifactory remote. Target image then re-scanned as a whole. Fits `images/*/Dockerfile` pattern.
 
@@ -122,5 +122,5 @@ Default = build time. Startup only when payload truly optional/swappable. Never 
 ## Next steps
 
 1. Dispatch `build-slim-archify.yml`, read first failure if any.
-2. Xray scan `docker.io/rcamarda390/slim-archify:3.0.1-v1`.
+2. Xray scan `docker.io/rcamarda390/slim-archify:3.1.0-v1`.
 3. Add consumer `COPY --from` to chosen target image, rescan.

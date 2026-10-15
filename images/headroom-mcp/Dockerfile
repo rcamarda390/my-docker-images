@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-ARG HEADROOM_VERSION=0.40.0
-ARG HEADROOM_COMMIT=855390d6110e0bbb199d9b97025baac16c2f5cf3
+ARG HEADROOM_VERSION=0.41.0
+ARG HEADROOM_COMMIT=76133cff59b71284399bf760c5578dc373c97231
 ARG LITELLM_VERSION=1.101.3
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
@@ -273,12 +273,12 @@ RUN uv pip install --python /opt/venv/bin/python \
 # botocore accepts urllib3<3 for Python >=3.10, so this stays within its
 # declared range; the assertion below proves boto3/botocore still import
 # cleanly against the bumped version.
-# Upstream 0.40.0 already locks urllib3 2.8.0; verify without overriding it.
+# Upstream 0.41.0 already locks urllib3 2.8.0; verify without overriding it.
 RUN PATH="/opt/venv/bin:${PATH}" python -c \
       "import importlib.metadata, boto3, botocore; \
        assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'" \
     && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
-# MCP stays on the supported 1.x API. Upstream 0.40.0 already locks
+# MCP stays on the supported 1.x API. Upstream 0.41.0 already locks
 # the fixed fsspec and multidict releases, verified by security-regression.py.
 RUN uv pip install --python /opt/venv/bin/python \
       --upgrade-package mcp "mcp==${MCP_VERSION}" \
