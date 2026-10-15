@@ -52,7 +52,7 @@ class Extraction(unittest.TestCase):
 class Configs(unittest.TestCase):
     def test_every_pin_has_matching_config(self):
         here = Path(__file__).parent
-        if not (here / 'configs').is_dir():  # Docker builder context omits configs
+        if not (here / 'configs').is_dir():  # configs are copied into the builder, so this skip only guards odd layouts
             self.skipTest('configs not present')
         pins = json.loads((here / 'extensions.json').read_text())['extensions']
         self.assertEqual(len(list((here / 'configs').glob('*.yaml'))), len(pins))

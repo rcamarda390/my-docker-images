@@ -13,6 +13,7 @@ ARG IMAGE_NAME=slim-docker-vsix-upgrades
 ENV IMAGE_VERSION=${IMAGE_VERSION} SOURCE_REVISION=${SOURCE_REVISION} EXTENSION_ID=${EXTENSION_ID} IMAGE_NAME=${IMAGE_NAME}
 WORKDIR /checks
 COPY prepare.py test-prepare.py extensions.json ./
+COPY configs ./configs
 RUN python3 test-prepare.py && python3 prepare.py extensions.json /slim
 COPY AGENT.md /slim/AGENT.md
 
