@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/anthropic.claude-code.yaml
+name: slim-docker-vsix-anthropic.claude-code
+upstream_version: 2.1.299
+revision: 1
+build_args:
+  EXTENSION_ID: anthropic.claude-code
+  IMAGE_NAME: slim-docker-vsix-anthropic.claude-code
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

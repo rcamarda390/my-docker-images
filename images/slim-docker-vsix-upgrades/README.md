@@ -19,6 +19,10 @@ New, independent image for Microsoft VS Code **1.98.2**. Original Marketplace VS
 | mtxr.sqltools-driver-pg | 0.5.7 | 0.5.8 | ^1.78.0 | universal |
 | redhat.vscode-yaml | 1.20.2025100808 | 1.25.0 | ^1.90.0 | universal |
 
+## Per-extension images
+
+The workflow's manual run has an **extension** choice. `all` builds the combined `slim-docker-vsix-upgrades` image from `image.yaml`. Any one extension builds `slim-docker-vsix-<extension-id>` (e.g. `slim-docker-vsix-gitlab.gitlab-workflow`) from `configs/<extension-id>.yaml`, tagged `<extension version>-vN`. Configs must match `extensions.json` (checked by `test-prepare.py`); update both when a pin changes. The Dockerfile takes `EXTENSION_ID` and `IMAGE_NAME` build args, set by the config. Each run's summary lists where watched npm packages (hono, MCP SDK, qs, ...) sit per VSIX.
+
 ## Provenance and validation
 
 `extensions.json` pins official Marketplace URLs, original VSIX SHA-256 values, verified manifest engine requirements, platforms and verification dates. Microsoft Marketplace packages were downloaded and their ZIP and package manifests inspected on 2026-10-14. All selected engine ranges permit 1.98.2 using npm semver. Linux x64 is selected where the retrieved artifact is platform-specific. These are verified upgrade candidates, not a claim that each is the newest compatible release. Native binary execution/AL2 glibc compatibility is outside the scan-artifact acceptance test.

@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/ms-python.python.yaml
+name: slim-docker-vsix-ms-python.python
+upstream_version: 2026.4.0
+revision: 1
+build_args:
+  EXTENSION_ID: ms-python.python
+  IMAGE_NAME: slim-docker-vsix-ms-python.python
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

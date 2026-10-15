@@ -2,6 +2,7 @@
 """Regression checks for archive safety and lossless extraction."""
 import importlib.util
 import io
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -46,6 +47,21 @@ class Extraction(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     prepare.extract(z, root)
                 self.assertEqual(list(root.iterdir()), [])
+
+
+class Configs(unittest.TestCase):
+    def test_every_pin_has_matching_config(self):
+        here = Path(__file__).parent
+        if not (here / 'configs').is_dir():  # configs are copied into the builder, so this skip only guards odd layouts
+            self.skipTest('configs not present')
+        pins = json.loads((here / 'extensions.json').read_text())['extensions']
+        self.assertEqual(len(list((here / 'configs').glob('*.yaml'))), len(pins))
+        for pin in pins:
+            i = pin['id'].lower()
+            text = (here / 'configs' / f'{i}.yaml').read_text()
+            for line in (f'name: slim-docker-vsix-{i}', f"upstream_version: {pin['version']}",
+                         f'  EXTENSION_ID: {i}', f'  IMAGE_NAME: slim-docker-vsix-{i}'):
+                self.assertIn(line + '\n', text)
 
 
 if __name__ == '__main__':

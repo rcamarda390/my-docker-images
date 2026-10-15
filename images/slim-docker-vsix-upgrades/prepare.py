@@ -173,6 +173,12 @@ def prepare(pin, target_vscode, root, local_source=None):
 def main():
     pins_path, destination, *sources = sys.argv[1:]
     pins = json.loads(Path(pins_path).read_text())
+    only = os.environ.get('EXTENSION_ID', '').lower()
+    if only:  # single-extension image; empty means all pinned extensions
+        pins['extensions'] = [x for x in pins['extensions'] if x['id'].lower() == only]
+        if len(pins['extensions']) != 1:
+            raise ValueError(f'EXTENSION_ID not pinned: {only}')
+    image = os.environ.get('IMAGE_NAME') or 'slim-docker-vsix-upgrades'
     root = Path(destination)
     if root.exists():
         raise ValueError('Destination must not exist; use a clean build directory')
@@ -189,7 +195,7 @@ def main():
         for component in sbom['components']:
             components.setdefault(component['bom-ref'], component)
         print(pin['id'] + ': identity, checksum, compatibility and extraction verified', flush=True)
-    write_json(root / 'manifest.json', dict(image='slim-docker-vsix-upgrades', target_vscode=pins['target_vscode'],
+    write_json(root / 'manifest.json', dict(image=image, target_vscode=pins['target_vscode'],
                method='official-marketplace-vsix', extensions=records))
     write_json(root / 'metadata/inventory.json', records)
     write_json(root / 'metadata/compatibility.json', [r['compatibility'] for r in records])
@@ -197,7 +203,7 @@ def main():
                pins_sha256=digest(Path(pins_path).read_bytes()), git_revision=os.environ.get('SOURCE_REVISION'),
                source='Microsoft Visual Studio Marketplace', limitations=LIMITATIONS))
     write_json(root / 'sbom/combined.cdx.json', dict(bomFormat='CycloneDX', specVersion='1.5', version=1,
-               metadata=dict(component=dict(type='container', name='slim-docker-vsix-upgrades',
+               metadata=dict(component=dict(type='container', name=image,
                                             version=os.environ.get('IMAGE_VERSION', '2026.10.14'))),
                components=list(components.values())))
     (root / 'metadata/SHA256SUMS').write_text(''.join(f"{r['sha256']}  {r['vsix']}\n" for r in records))

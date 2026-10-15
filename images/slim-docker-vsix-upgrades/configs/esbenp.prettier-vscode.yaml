@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/esbenp.prettier-vscode.yaml
+name: slim-docker-vsix-esbenp.prettier-vscode
+upstream_version: 11.0.3
+revision: 1
+build_args:
+  EXTENSION_ID: esbenp.prettier-vscode
+  IMAGE_NAME: slim-docker-vsix-esbenp.prettier-vscode
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false

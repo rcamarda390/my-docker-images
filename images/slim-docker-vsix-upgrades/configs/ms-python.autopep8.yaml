@@ -1,0 +1,11 @@
+# File: images/slim-docker-vsix-upgrades/configs/ms-python.autopep8.yaml
+name: slim-docker-vsix-ms-python.autopep8
+upstream_version: 2026.4.0
+revision: 1
+build_args:
+  EXTENSION_ID: ms-python.autopep8
+  IMAGE_NAME: slim-docker-vsix-ms-python.autopep8
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
