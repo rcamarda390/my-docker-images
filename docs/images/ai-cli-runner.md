@@ -15,7 +15,7 @@ RHEL EC2 runners. Not an MCP server; there is no service or health endpoint.
 
 ## Tag
 
-`<upstream_version>-v<revision>`, e.g. `claude2.1.295-cline3.0.70-v1`.
+`<upstream_version>-v<revision>`, e.g. `claude2.1.300-cline3.0.71-v1`.
 `revision` resets to `v1` per version pair and is derived from published
 Docker Hub tags. Published to GHCR and Docker Hub only; mirror to Artifactory
 manually. No `latest`.

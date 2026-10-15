@@ -10,8 +10,8 @@
 # blocking Trivy gate and cannot be removed from the base. Same digest as
 # images/litellm.
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG CLAUDE_CODE_VERSION=2.1.295
-ARG CLINE_VERSION=3.0.70
+ARG CLAUDE_CODE_VERSION=2.1.300
+ARG CLINE_VERSION=3.0.71
 
 # Builder only: npm resolves the pinned platform packages from package-lock.json
 # (integrity-checked) and is discarded with this stage.
