@@ -19,6 +19,34 @@ The project removed or avoided custom Go dependency overrides that downgraded de
 
 When maintaining the Bifrost image, prefer an upstream-compatible build unless a documented air-gap or security requirement makes a divergence necessary.
 
+## Upgrade to 2.3.0
+
+The image builds `transports/v2.3.0` at commit
+`9237ec06672406e437b3cb33fc793ffd0403b3ae` (peeled tag commit). Upstream
+`transports/go.mod` is unchanged from 2.2.6 for every pinned module, so all
+Xray Go pins and the mcp-go body-limit patch are retained. mcp-go is still
+v0.43.2 upstream and `server.StreamableHTTPServer` is still not constructed;
+the new A2A handler calls a generic `ServeHTTP`, not mcp-go's.
+
+Deployment notes from the upstream release:
+
+- 45 config-store and 9 log-store migrations. `move_config_json_vk_limits_to_model_configs`
+  is non-reversible; back up `/app/data` first. Run a single pod during rollout
+  if virtual-key limits must stay enforced.
+- `enforce_vk_object_ownership` defaults to `true` (files/batches only via the
+  creating virtual key); set `client.enforce_vk_object_ownership: false` to share.
+- Warp AI assistant is on by default; set `feature_flags.flags.warp.enabled: false`
+  for air-gapped deployments.
+- Gateway request ID is `x-bifrost-request-id`; provider `base_url` may not carry
+  userinfo, query or fragment; semantic cache skips tool-call responses unless
+  `cache_tool_call_responses: true`; truncated Bedrock Converse streams return 502.
+- Bedrock fixes: guardrail `guardContent`/`tagSuffix`, document `cachePoint`,
+  Claude root `oneOf/anyOf/allOf` tool schemas, thinking-block ordering, and
+  `/bedrock_passthrough` (InvokeAgent, Retrieve, ApplyGuardrail).
+
+Full Xray clearance, GovCloud streaming and the Cline/Headroom path still need
+deployment testing.
+
 ## Upgrade to 2.2.6
 
 The image builds `transports/v2.2.6` at commit
@@ -56,7 +84,7 @@ Both return HTTP 413 above 100 MiB, matching Bifrost's default body ceiling.
 The build runs regression checks for both paths and normal MCP initialization.
 The original module version remains recorded; no scanner metadata is hidden.
 
-In pinned Bifrost 2.2.6, production code uses mcp-go clients and an in-process
+In pinned Bifrost 2.3.0, production code uses mcp-go clients and an in-process
 MCPServer, with no StreamableHTTPServer constructor or ServeHTTP call. Its
 public HTTP transport is fasthttp with its own configured body limit.
 The downstream patch protects the library path if it becomes used later.

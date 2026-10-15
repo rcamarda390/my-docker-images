@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:1.7
 
-ARG BIFROST_VERSION=2.2.6
-ARG BIFROST_COMMIT=8b4fce4f1709d66f9208d02f50552da522535f9e
+ARG BIFROST_VERSION=2.3.0
+ARG BIFROST_COMMIT=9237ec06672406e437b3cb33fc793ffd0403b3ae
 
-# Bifrost v2.2.6 declares Go 1.27.0; Xray's supplied Go findings require
+# Bifrost v2.3.0 declares Go 1.27.0; Xray's supplied Go findings require
 # Go 1.27.2 (or 1.26.9). Stay on the upstream Go 1.27 release line.
 # Xray also reads the compiler version from the binary's build info, so keep
 # the toolchain pinned and verified as part of the image supply chain.
 ARG GO_VERSION=1.27.2
 
-# Keep downstream Go pins only where upstream v2.2.6 still resolves below the
+# Keep downstream Go pins only where upstream v2.3.0 still resolves below the
 # verified Xray fix:
 #   mcp-go v0.43.2          CVE-2026-81092; fixed in v0.56.0
 #   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0;
@@ -22,7 +22,7 @@ ARG GO_VERSION=1.27.2
 #                           v0.27.1; v0.27.3 is required by go-openapi/spec v0.22.9
 #   go-openapi/validate     XRAY-1032963 (9.3, CWE-918) and XRAY-1032962
 #     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
-# Upstream v2.2.6 already requires x/text v0.41.0,
+# Upstream v2.3.0 already requires x/text v0.41.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
 # Drop a pin once upstream's own go.mod requires that version or newer.
