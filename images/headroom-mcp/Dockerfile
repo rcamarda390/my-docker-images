@@ -7,7 +7,7 @@ ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda2
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
 ARG PIP_VERSION=26.2.1
 ARG PYJWT_VERSION=2.15.1
 ARG TOKENIZERS_VERSION=0.23.2
@@ -39,6 +39,7 @@ ARG DASH_DEBIAN_VERSION
 ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
+COPY verify-glibc-regex.c /tmp/verify-glibc-regex.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
@@ -81,9 +82,10 @@ RUN set -eux; \
     done; \
     gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
     /tmp/verify-glibc-normalize; \
+    gcc -Wall -Wextra -Werror -O2 /tmp/verify-glibc-regex.c -o /out/verify-glibc-regex; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Retain Headroom rcamarda1 fixes; add resolver, wordexp, tdelete, strfmon, iconv and secure-loader backports."; \
+      "Retain Headroom rcamarda1 fixes; add resolver, wordexp, tdelete, strfmon, iconv and secure-loader backports; bound recursive regex backreference walks."; \
     if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
       tail -n 200 /tmp/glibc-build.log; exit 1; \
     fi; \
@@ -447,9 +449,11 @@ ENV HEADROOM_SKIP_UPSTREAM_CHECK=1
 ENV HEADROOM_OUTPUT_SHAPER=1
 
 COPY --from=glibc_patched /out/ /tmp/glibc/
+COPY --from=glibc_patched /out/verify-glibc-regex /usr/local/bin/verify-glibc-regex
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
+    && /usr/local/bin/verify-glibc-regex \
     && rm -rf /tmp/glibc \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --create-home --home-dir /home/headroom \
@@ -612,6 +616,7 @@ RUN rm -f /usr/local/lib/python${PYTHON_ABI}/lib-dynload/_uuid*.so \
       util-linux mount bsdutils libmount1 libblkid1 libsmartcols1 libuuid1 coreutils \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py --verify \
     && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py runtime \
+    && /usr/local/bin/verify-glibc-regex \
     && PATH="/opt/venv/bin:${PATH}" python -c "from pathlib import Path; Path('/tmp/verify-runtime-unused.py').unlink(); Path('/tmp/security-regression.py').unlink(); Path('/tmp/patch-litellm-jwt-email.py').unlink()"
 # Verify that purged packages didn't break critical runtime functionality.
 # `python -c "import sys"` proved nothing: it passed while libsqlite3-0 was

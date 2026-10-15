@@ -17,7 +17,7 @@ ARG PYTHON_VERSION=3.13
 # ---------------------------------------------------------------------------
 ARG DEBIAN_SUITE=trixie
 ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda4
 ARG DASH_DEBIAN_VERSION=0.5.12-12
 ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 
@@ -29,6 +29,7 @@ ARG DASH_DEBIAN_VERSION
 ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
+COPY verify-glibc-regex.c /tmp/verify-glibc-regex.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
@@ -71,9 +72,10 @@ RUN set -eux; \
     done; \
     gcc -Wall -Wextra -Werror -O2 -I elf /tmp/verify-glibc-normalize.c -o /tmp/verify-glibc-normalize; \
     /tmp/verify-glibc-normalize; \
+    gcc -Wall -Wextra -Werror -O2 /tmp/verify-glibc-regex.c -o /out/verify-glibc-regex; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Retain rcamarda2 fixes; add CVE-2026-8674 resolver and CVE-2026-86805/CVE-2026-95818 secure-loader backports."; \
+      "Retain rcamarda2 fixes; add CVE-2026-8674 resolver and CVE-2026-86805/CVE-2026-95818 secure-loader backports; bound recursive regex backreference walks."; \
     if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
       tail -n 200 /tmp/glibc-build.log; exit 1; \
     fi; \
@@ -224,6 +226,7 @@ ARG DASH_BACKPORT_VERSION
 COPY --from=builder /opt/sqlite/lib/libsqlite3.so* /usr/local/lib/
 COPY --from=builder /opt/zlib/lib/libz.so* /usr/local/lib/
 COPY --from=glibc_patched /out/ /tmp/glibc/
+COPY --from=glibc_patched /out/verify-glibc-regex /usr/local/bin/verify-glibc-regex
 
 # Xray's fixed floor for CVE-2026-63072, CVE-2026-54874,
 # CVE-2026-18798, CVE-2026-63076, CVE-2026-63075, CVE-2026-14457,
@@ -377,6 +380,7 @@ RUN ! command -v pip \
        done \
     && python /usr/local/share/gnosis/verify-security-runtime.py \
     && python /usr/local/share/gnosis/verify-native-runtime.py \
+    && /usr/local/bin/verify-glibc-regex \
     && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
     && python -c "import sqlite3, sqlite_vec; assert sqlite3.sqlite_version == '${SQLITE_VERSION}'; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute(\"insert into docs values ('security fixed')\"); assert db.execute(\"select count(*) from docs where docs match 'fixed'\").fetchone()[0] == 1; db.enable_load_extension(True); db.load_extension(sqlite_vec.loadable_path()); db.execute('create virtual table vectors using vec0(embedding float[2])')" \
     && python -c "from importlib.metadata import version; from packaging.version import Version; assert Version(version('setuptools')) >= Version('80.10.0'); assert Version(version('msgpack')) >= Version('1.2.1'); assert Version('2.15.0') <= Version(version('PyJWT')) < Version('3'); assert Version('1.30.0') <= Version(version('mcp')) < Version('2')" \

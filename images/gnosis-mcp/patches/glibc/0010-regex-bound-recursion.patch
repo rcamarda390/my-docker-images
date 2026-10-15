@@ -1,0 +1,128 @@
+From: ChatGPT Work Codex /root
+Subject: [PATCH] posix: bound recursive backreference walks and return REG_ESPACE
+
+CVE-2018-20796 / CVE-2019-9192 downstream resource bound.
+Keep errors distinct from match/no-match and preserve caller cleanup.
+
+--- a/posix/regexec.c
++++ b/posix/regexec.c
+@@ -84,13 +84,13 @@
+ static reg_errcode_t add_epsilon_src_nodes (const re_dfa_t *dfa,
+ 					    re_node_set *dest_nodes,
+ 					    const re_node_set *candidates);
+-static bool check_dst_limits (const re_match_context_t *mctx,
++static int check_dst_limits (const re_match_context_t *mctx,
+ 			      const re_node_set *limits,
+ 			      Idx dst_node, Idx dst_idx, Idx src_node,
+ 			      Idx src_idx);
+ static int check_dst_limits_calc_pos_1 (const re_match_context_t *mctx,
+ 					int boundaries, Idx subexp_idx,
+-					Idx from_node, Idx bkref_idx);
++					Idx from_node, Idx bkref_idx, unsigned int depth);
+ static int check_dst_limits_calc_pos (const re_match_context_t *mctx,
+ 				      Idx limit, Idx subexp_idx,
+ 				      Idx node, Idx str_idx,
+@@ -220,7 +220,7 @@
+     err = re_search_internal (preg, string, length, start, length,
+ 			      length, nmatch, pmatch, eflags);
+   lock_unlock (dfa->lock);
+-  return err != REG_NOERROR;
++  return err == REG_ESPACE ? REG_ESPACE : err != REG_NOERROR;
+ }
+ 
+ #ifdef _LIBC
+@@ -1658,10 +1658,13 @@
+       if (sctx->limits.nelem)
+ 	{
+ 	  Idx to_idx = str_idx + naccepted;
+-	  if (check_dst_limits (mctx, &sctx->limits,
+-				dfa->nexts[prev_node], to_idx,
+-				prev_node, str_idx))
+-	    continue;
++	  int limited = check_dst_limits (mctx, &sctx->limits,
++                                          dfa->nexts[prev_node], to_idx,
++                                          prev_node, str_idx);
++          if (limited < 0)
++            return REG_ESPACE;
++          if (limited)
++            continue;
+ 	}
+       ok = re_node_set_insert (cur_dest, prev_node);
+       if (__glibc_unlikely (! ok))
+@@ -1848,7 +1851,7 @@
+     return REG_NOERROR;
+ }
+ 
+-static bool
++static int
+ check_dst_limits (const re_match_context_t *mctx, const re_node_set *limits,
+ 		  Idx dst_node, Idx dst_idx, Idx src_node, Idx src_idx)
+ {
+@@ -1870,6 +1873,9 @@
+       src_pos = check_dst_limits_calc_pos (mctx, limits->elems[lim_idx],
+ 					   subexp_idx, src_node, src_idx,
+ 					   src_bkref_idx);
++
++      if (dst_pos == 2 || src_pos == 2)
++        return -1; /* Recursion budget exhausted.  */
+ 
+       /* In case of:
+ 	 <src> <dst> ( <subexp> )
+@@ -1885,8 +1891,14 @@
+ 
+ static int
+ check_dst_limits_calc_pos_1 (const re_match_context_t *mctx, int boundaries,
+-			     Idx subexp_idx, Idx from_node, Idx bkref_idx)
+-{
++			     Idx subexp_idx, Idx from_node, Idx bkref_idx,
++                             unsigned int depth)
++{
++  /* ponytail: bound this recursive backreference walk to 64 frames;
++     retire when upstream supplies a nonrecursive implementation.  */
++  if (depth == 64)
++    return 2; /* Propagated to regexec as REG_ESPACE, never REG_NOMATCH.  */
++
+   const re_dfa_t *const dfa = mctx->dfa;
+   const re_node_set *eclosures = dfa->eclosures + from_node;
+   Idx node_idx;
+@@ -1932,7 +1944,9 @@
+ 
+ 		  cpos =
+ 		    check_dst_limits_calc_pos_1 (mctx, boundaries, subexp_idx,
+-						 dst, bkref_idx);
++						 dst, bkref_idx, depth + 1);
++		  if (cpos == 2)
++		    return 2;
+ 		  if (cpos == -1 /* && (boundaries & 1) */)
+ 		    return -1;
+ 		  if (cpos == 0 && (boundaries & 2))
+@@ -1987,7 +2001,7 @@
+ 
+   /* Else, examine epsilon closure.  */
+   return check_dst_limits_calc_pos_1 (mctx, boundaries, subexp_idx,
+-				      from_node, bkref_idx);
++				      from_node, bkref_idx, 0);
+ }
+ 
+ /* Check the limitations of sub expressions LIMITS, and remove the nodes
+@@ -2128,10 +2142,17 @@
+ 
+ 	  if (to_idx > sctx->last_str_idx
+ 	      || sctx->sifted_states[to_idx] == NULL
+-	      || !STATE_NODE_CONTAINS (sctx->sifted_states[to_idx], dst_node)
+-	      || check_dst_limits (mctx, &sctx->limits, node,
+-				   str_idx, dst_node, to_idx))
++	      || !STATE_NODE_CONTAINS (sctx->sifted_states[to_idx], dst_node))
+ 	    continue;
++          int limited = check_dst_limits (mctx, &sctx->limits, node,
++                                          str_idx, dst_node, to_idx);
++          if (limited < 0)
++            {
++              err = REG_ESPACE;
++              goto free_return;
++            }
++          if (limited)
++            continue;
+ 
+ 	  if (local_sctx.sifted_states == NULL)
+ 	    {
