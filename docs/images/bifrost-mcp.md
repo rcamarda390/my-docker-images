@@ -122,10 +122,14 @@ mcp-go through v1.3.0.
 - Reachability, from pinned Bifrost `transports/v2.3.0` (`9237ec06672406e437b3cb33fc793ffd0403b3ae`): `grep -rn "NewStreamableHTTPServer\|StreamableHTTPServer"` over non-test Go files matches only `examples/mcps/*` (separate `go.mod` per example, not in the `./bifrost-http` binary). The only gateway consumer, `transports/bifrost-http/handlers/mcpserver.go`, uses `server.NewMCPServer` and its in-process `MCPServer`, never a `StreamableHTTPServer` or its `ServeHTTP`. The patch/fork is defence in depth.
 - Upstream fix, unreleased: https://github.com/mark3labs/mcp-go/pull/1092 (4 MiB default, `WithMaxRequestBodyBytes`). mcp-go v1.3.0 is still unbounded.
 
-#### Fork experiment (candidate; Xray behaviour unproven)
+#### Fork replace (adopted; Xray cleared `2.3.0-v5` on 2026-10-16)
 
 `github.com/rcamarda390/mcp-go` branch `claude/bifrost-body-limit` = upstream v0.56.0 + cherry-pick of PR #1092 (commit `aa78020aa10ffa85f1cdce32bfbbef35c98a5870`). The Dockerfile now `go mod edit -replace`s mcp-go to it and no longer applies `mcp-go-body-limit.patch` (removed). The fork's tags/`main` could not be pushed from the agent session, so the version is the pseudo-version `v0.0.0-20261016132355-aa78020aa10f`.
 
 Go build info keeps `dep github.com/mark3labs/mcp-go v0.56.0` and adds `=> github.com/rcamarda390/mcp-go <pseudo-version>`; the build asserts both lines. A scanner reading only the `dep` line may still report the CVE. The regression test now uses the fork's 4 MiB `DefaultMaxRequestBodyBytes`.
 
 Outcome rule: if Xray clears the fork build, keep it until upstream releases PR #1092, then drop the replace. If Xray still reports it, revert to the vendor patch (git history: PR #72) and keep the finding documented as not reachable and source-fixed.
+
+#### Result (2026-10-16)
+
+User Xray scan of `rcamarda390/bifrost-mcp/2.3.0-v5` (image digest not supplied): clean. Both findings cleared: XRAY-1110429 (go-jose pinned to v4.1.6) and CVE-2026-108859 (mcp-go resolved to the fork). So Xray follows the `=>` replacement in Go build info. Keep the fork until a released mcp-go contains upstream PR #1092, then drop the replace and fork. The fork's tags and `main` are still unpushed (agent session limits); the Dockerfile pins the commit by pseudo-version.
