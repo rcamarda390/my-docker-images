@@ -22,6 +22,8 @@ ARG GO_VERSION=1.27.2
 #                           v0.27.1; v0.27.3 is required by go-openapi/spec v0.22.9
 #   go-openapi/validate     XRAY-1032963 (9.3, CWE-918) and XRAY-1032962
 #     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
+#   go-jose/v4 v4.1.4       XRAY-1110429 (7.5, CWE-407); fixed in v4.1.6
+#                           (indirect upstream)
 # Upstream v2.3.0 already requires x/text v0.41.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
@@ -34,6 +36,7 @@ ARG GO_OPENAPI_VALIDATE_VERSION=v0.26.1
 # mcp-go v0.43.2 is reported by Xray as CVE-2026-81092 (6.8, CWE-346),
 # fixed in v0.56.0.
 ARG GO_MCP_GO_VERSION=v0.56.0
+ARG GO_JOSE_VERSION=v4.1.6
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG BIFROST_VERSION
@@ -80,12 +83,14 @@ ARG GO_OPENAPI_SPEC_VERSION
 ARG GO_OPENAPI_SWAG_VERSION
 ARG GO_OPENAPI_VALIDATE_VERSION
 ARG GO_MCP_GO_VERSION
+ARG GO_JOSE_VERSION
 RUN set -eu; \
     GOFLAGS=-mod=mod go get \
       "github.com/mark3labs/mcp-go@${GO_MCP_GO_VERSION}" \
       "github.com/mark3labs/mcp-go/mcp@${GO_MCP_GO_VERSION}" \
       "golang.org/x/crypto@${GO_CRYPTO_VERSION}" \
       "golang.org/x/net@${GO_NET_VERSION}" \
+      "github.com/go-jose/go-jose/v4@${GO_JOSE_VERSION}" \
       "github.com/go-openapi/spec@${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils@${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils@${GO_OPENAPI_SWAG_VERSION}" \
@@ -93,6 +98,7 @@ RUN set -eu; \
     for pin in \
       "golang.org/x/crypto=${GO_CRYPTO_VERSION}" \
       "golang.org/x/net=${GO_NET_VERSION}" \
+      "github.com/go-jose/go-jose/v4=${GO_JOSE_VERSION}" \
       "github.com/go-openapi/spec=${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils=${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils=${GO_OPENAPI_SWAG_VERSION}" \
@@ -131,6 +137,9 @@ RUN set -eu; \
     grep -qwF "go${GO_VERSION}" /tmp/binary-build-info; \
     awk -v expected="$GO_NET_VERSION" \
       '$1 == "dep" && $2 == "golang.org/x/net" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info; \
+    awk -v expected="$GO_JOSE_VERSION" \
+      '$1 == "dep" && $2 == "github.com/go-jose/go-jose/v4" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
     awk -v expected="$GO_MCP_GO_VERSION" \
       '$1 == "dep" && $2 == "github.com/mark3labs/mcp-go" { found = ($3 == expected) } END { exit !found }' \
