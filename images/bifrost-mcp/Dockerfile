@@ -69,7 +69,7 @@ WORKDIR /app
 # toolchain GO_VERSION names rather than trusting the tag written beside it.
 RUN go version | grep -qwF "go${GO_VERSION}" \
     && apk upgrade --no-cache \
-    && apk add --no-cache gcc musl-dev sqlite-dev binutils binutils-gold patch
+    && apk add --no-cache gcc musl-dev sqlite-dev binutils binutils-gold git
 ENV CGO_ENABLED=1 \
     GOOS=linux \
     GOWORK=off \
