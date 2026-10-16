@@ -99,3 +99,19 @@ Xray can continue reporting the original version despite this source fix.
 A fresh scan is required; do not claim scanner clearance from a passing build.
 Remove the patch after adopting a compatible upstream release with a verified
 bounded read. Publication uses the existing next-published-revision workflow.
+
+## XRAY-1110429: go-jose v4.1.4
+
+Source: Xray scan of `bifrost-mcp:2.3.0-v3` (7.5, CWE-407). Component
+`github.com/go-jose/go-jose/v4` v4.1.4, fixed in v4.1.6. It is an indirect
+upstream dependency of Bifrost 2.3.0 (`transports/go.mod`).
+
+Remediation: Dockerfile pins `GO_JOSE_VERSION=v4.1.6`, checks the resolved
+module list, and asserts the version in the final binary's build info. Drop the
+pin once upstream requires v4.1.6 or newer. Status: pending rescan of the new
+published digest.
+
+The same scan still reports CVE-2026-108859 (mcp-go 0.56.0, no fix version). It
+stays open in the scanner: the downstream body-limit patch is retained, and
+the module version is unchanged. Verified 2026-10-16: no official fix in
+mcp-go through v1.3.0.
