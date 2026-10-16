@@ -55,7 +55,9 @@ Sid libraries into Trixie. A compiled-template defect requires consumer work.
 
 Fetch one tracker snapshot and print suite status/fixed version for every
 pending entry. This does not change the ledger, decide applicability or patch.
-Missing records print UNKNOWN, never fixed. Non-Debian entries print
+Missing records print UNKNOWN, never fixed. Fixed-version leads from Forky and Sid also print as
+`replacement_candidates`; these are source-review leads, not compatible binary
+packages or proof that precompiled consumers contain the fix. Non-Debian entries print
 UPSTREAM_REVIEW and require their upstream references. Network/JSON errors
 fail the command.
 

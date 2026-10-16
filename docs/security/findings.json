@@ -17,7 +17,103 @@
     {"cve": "CVE-2026-5435", "source_package": "glibc", "suite": "trixie", "reported_packages": ["libc-bin", "libc6"], "reported_score": 7.3, "reported_cwe": ["CWE-787"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Minor issue"},"sid":{"status":"resolved","fixed_version":"2.43-3","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-5435", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "downstream-fixed", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null, "latest_report_id": "headroom-mcp-xray-20261015", "tracker_review": {"date": "2026-10-15", "suite_status": "open", "fixed_version": null}}, "gnosis-mcp": {"treatment": "downstream-fixed", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
     {"cve": "CVE-2026-54369", "source_package": "acl", "suite": "trixie", "reported_packages": ["libacl1"], "reported_score": 7.1, "reported_cwe": ["CWE-59"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Will be fixed first in unstable, then point release update; not to be backported by individual patches"},"sid":{"status":"resolved","fixed_version":"2.4.0-1","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54369", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "removed-in-source", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "gnosis-mcp": {"treatment": "removed-in-source", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
     {"cve": "CVE-2026-54371", "source_package": "attr", "suite": "trixie", "reported_packages": ["libattr1"], "reported_score": 7.1, "reported_cwe": ["CWE-59"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Will be fixed first in unstable, then point release update; not to be backported by individual patches"},"sid":{"status":"resolved","fixed_version":"1:2.6.0-1","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54371", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "removed-in-source", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "gnosis-mcp": {"treatment": "removed-in-source", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
-    {"cve": "CVE-2026-102010", "source_package": "gcc-14", "suite": "trixie", "reported_packages": ["libatomic1", "libstdc++6", "libgcc-s1", "gcc-14-base"], "reported_score": 7, "reported_cwe": ["CWE-825"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Minor issue"},"sid":{"status":"resolved","fixed_version":"14.4.0-3","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-102010", "images": {"agentmemory-mcp": {"treatment": "open-consumer-analysis", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "open-consumer-analysis", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null, "latest_report_id": "headroom-mcp-xray-20261015", "tracker_review": {"date": "2026-10-15", "suite_status": "open", "fixed_version": null}}, "gnosis-mcp": {"treatment": "open-consumer-analysis", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Rebuild any affected PBDS template consumer with patched headers; runtime library replacement alone cannot fix a precompiled consumer."},
+    {
+  "cve": "CVE-2026-102010",
+  "source_package": "gcc-14",
+  "suite": "trixie",
+  "reported_packages": [
+    "libatomic1",
+    "libstdc++6",
+    "libgcc-s1",
+    "gcc-14-base"
+  ],
+  "reported_score": 7,
+  "reported_cwe": [
+    "CWE-825"
+  ],
+  "reported_fix_version": null,
+  "reported_installed_version": null,
+  "last_reviewed": "2026-10-16",
+  "debian_tracker_review": {
+    "date": "2026-10-16",
+    "trixie": {
+      "status": "open",
+      "fixed_version": null,
+      "no_dsa": "Minor issue"
+    },
+    "sid": {
+      "status": "resolved",
+      "fixed_version": "14.4.0-3",
+      "no_dsa": null
+    },
+    "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
+    "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+  },
+  "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-102010",
+  "images": {
+    "agentmemory-mcp": {
+      "treatment": "open-consumer-analysis",
+      "evidence": [
+        "images/agentmemory-server/SECURITY-20261012.md",
+        "images/agentmemory-server/Dockerfile"
+      ],
+      "scan_status": "pending",
+      "scan_digest": null,
+      "scan_url": null,
+      "consumer_review": {
+        "date": "2026-10-16",
+        "observed_tag": "0.9.30-v5",
+        "onnxruntime_version": "1.24.3",
+        "result": "No PBDS identifiers in reviewed ONNX and selected pinned dependency sources; complete binary/native dependency provenance remains unproven.",
+        "evidence": "docs/security/PBDS-CONSUMERS-20261016.md"
+      }
+    },
+    "headroom-mcp": {
+      "treatment": "open-consumer-analysis",
+      "evidence": [
+        "images/headroom-mcp/SECURITY-20261014.md",
+        "images/headroom-mcp/SECURITY-20261012.md",
+        "images/headroom-mcp/Dockerfile"
+      ],
+      "scan_status": "pending",
+      "scan_digest": null,
+      "scan_url": null,
+      "latest_report_id": "headroom-mcp-xray-20261015",
+      "tracker_review": {
+        "date": "2026-10-15",
+        "suite_status": "open",
+        "fixed_version": null
+      },
+      "consumer_review": {
+        "date": "2026-10-16",
+        "observed_tag": "0.41.0-v2",
+        "onnxruntime_version": "1.26.0",
+        "result": "No PBDS identifiers in reviewed ONNX and selected pinned dependency sources; complete binary/native dependency provenance remains unproven.",
+        "evidence": "docs/security/PBDS-CONSUMERS-20261016.md"
+      }
+    },
+    "gnosis-mcp": {
+      "treatment": "open-consumer-analysis",
+      "evidence": [
+        "images/gnosis-mcp/SECURITY-20261008.md",
+        "images/gnosis-mcp/SECURITY-20261002.md",
+        "images/gnosis-mcp/SECURITY-v17.md",
+        "images/gnosis-mcp/Dockerfile"
+      ],
+      "scan_status": "pending",
+      "scan_digest": null,
+      "scan_url": null,
+      "consumer_review": {
+        "date": "2026-10-16",
+        "observed_tag": "0.17.5-v15",
+        "onnxruntime_version": "1.28.0",
+        "result": "No PBDS identifiers in reviewed ONNX and selected pinned dependency sources; complete binary/native dependency provenance remains unproven.",
+        "evidence": "docs/security/PBDS-CONSUMERS-20261016.md"
+      }
+    }
+  },
+  "remaining": "Verified upstream header fix with a failing/passing AddressSanitizer regression. No affected ONNX consumer established across observed 1.24.3, 1.26.0 and 1.28.0 sources plus 22 selected dependencies per version. Complete remaining native/stripped-binary provenance and obtain exact-digest Xray observations; rebuild confirmed affected consumers with the fixed header. Sid GCC 14.4.0-3 alone does not fix precompiled templates."
+},
     {"cve": "CVE-2026-6238", "source_package": "glibc", "suite": "trixie", "reported_packages": ["libc-bin", "libc6"], "reported_score": 6.5, "reported_cwe": ["CWE-126"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Minor issue"},"sid":{"status":"resolved","fixed_version":"2.43-3","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-6238", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "downstream-fixed", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null, "latest_report_id": "headroom-mcp-xray-20261015", "tracker_review": {"date": "2026-10-15", "suite_status": "open", "fixed_version": null}}, "gnosis-mcp": {"treatment": "downstream-fixed", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
     {"cve": "CVE-2026-86805", "source_package": "glibc", "suite": "trixie", "reported_packages": ["libc-bin", "libc6"], "reported_score": 6.3, "reported_cwe": ["CWE-367"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Minor issue"},"sid":{"status":"resolved","fixed_version":"2.43-7","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-86805", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "downstream-fixed", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null, "latest_report_id": "headroom-mcp-xray-20261015", "tracker_review": {"date": "2026-10-15", "suite_status": "open", "fixed_version": null}}, "gnosis-mcp": {"treatment": "downstream-fixed", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
     {"cve": "CVE-2026-54370", "source_package": "acl", "suite": "trixie", "reported_packages": ["libacl1"], "reported_score": 6.3, "reported_cwe": ["CWE-367"], "reported_fix_version": null, "reported_installed_version": null, "last_reviewed": "2026-10-16", "debian_tracker_review": {"date":"2026-10-16","trixie":{"status":"open","fixed_version":null,"no_dsa":"Will be fixed first in unstable, then point release update; not to be backported by individual patches"},"sid":{"status":"resolved","fixed_version":"2.4.0-1","no_dsa":null},"scope":"Official tracker status only; existing per-image treatment and scan status unchanged.","evidence":"docs/security/DEBIAN-AUDIT-20261016.md"}, "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54370", "images": {"agentmemory-mcp": {"treatment": "downstream-fixed", "evidence": ["images/agentmemory-server/SECURITY-20261012.md", "images/agentmemory-server/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "headroom-mcp": {"treatment": "removed-in-source", "evidence": ["images/headroom-mcp/SECURITY-20261014.md", "images/headroom-mcp/SECURITY-20261012.md", "images/headroom-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}, "gnosis-mcp": {"treatment": "removed-in-source", "evidence": ["images/gnosis-mcp/SECURITY-20261008.md", "images/gnosis-mcp/SECURITY-20261002.md", "images/gnosis-mcp/SECURITY-v17.md", "images/gnosis-mcp/Dockerfile"], "scan_status": "pending", "scan_digest": null, "scan_url": null}}, "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks."},
