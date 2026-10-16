@@ -55,28 +55,9 @@ RUN set -eux; \
     mkdir -p /build /out; cd /build; \
     apt-get source -t "${GLIBC_SOURCE_SUITE}" "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
-    for patch_spec in \
-      "965b580070b8184b0dd390800d9194291a600e67:e564c003db5103b22e5b5ed8d624690ca6722eb1cd1c5b867649a345694a7bdd" \
-      "dfc8ef388ef7856f318ade7dec501f92ce54f9e3:d8646d3888c1c6bff55e77bbf275f5549391f4536efcd176c2a1e654857f8f4b" \
-      "9318c2571576017d280a31b7b9ab576c9b696b1a:4dac7eb1610b938dbb3c9ddc390bdf0f4da01e1f757a47f61022ed45bffaa88e" \
-      "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
-      "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
-      "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
-      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
-      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
-      commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
-      patch="/tmp/glibc-${commit}.patch"; \
-      curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
-      echo "$checksum  $patch" | sha256sum -c -; \
-      if git apply --check "$patch"; then \
-        git apply "$patch"; \
-      elif git apply --reverse --check "$patch"; then \
-        echo "Upstream patch already present in Debian source: $commit"; \
-      else \
-        echo "Upstream patch is neither applicable nor already present: $commit" >&2; \
-        exit 1; \
-      fi; \
-    done; \
+    # forky 2.43-7 already carries the resolver, wordexp, tdelete, strfmon, iconv
+    # and secure-loader fixes (Debian tracker); the 2.41-era carries are dropped.
+    # verify-glibc-normalize and the runtime regressions still test the behavior.
     for patch in /tmp/glibc-patches/*.patch; do \
       if git apply --check "$patch"; then \
         git apply "$patch"; \
@@ -92,7 +73,7 @@ RUN set -eux; \
     gcc -Wall -Wextra -Werror -O2 /tmp/verify-glibc-regex.c -o /out/verify-glibc-regex; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Retain Headroom rcamarda1 fixes; add resolver, wordexp, tdelete, strfmon, iconv and secure-loader backports; bound recursive regex backreference walks."; \
+      "Rebuild forky glibc for trixie; bound recursive regex backreference walks."; \
     if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
       tail -n 200 /tmp/glibc-build.log; exit 1; \
     fi; \
