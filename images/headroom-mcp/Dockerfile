@@ -6,8 +6,11 @@ ARG LITELLM_VERSION=1.101.3
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
 ARG DEBIAN_SUITE=trixie
-ARG GLIBC_DEBIAN_VERSION=2.41-12+deb13u4
-ARG GLIBC_BACKPORT_VERSION=2.41-12+deb13u4+rcamarda3
+# glibc is rebuilt from Debian forky source (trixie has no fix for the
+# "no-DSA" CVEs). Builder-only: forky is never configured in the runtime.
+ARG GLIBC_SOURCE_SUITE=forky
+ARG GLIBC_DEBIAN_VERSION=2.43-7
+ARG GLIBC_BACKPORT_VERSION=2.43-7+rcamarda1
 ARG PIP_VERSION=26.2.1
 ARG PYJWT_VERSION=2.15.1
 ARG TOKENIZERS_VERSION=0.23.2
@@ -17,8 +20,8 @@ ARG MCP_VERSION=1.30.0
 ARG FSSPEC_VERSION=2026.6.0
 ARG MULTIDICT_VERSION=6.9.1
 ARG AIOHTTP_VERSION=3.14.5
+# Floors: dash source is resolved from trixie at build time, never pinned.
 ARG DASH_DEBIAN_VERSION=0.5.12-12
-ARG DASH_BACKPORT_VERSION=0.5.12-12+rcamarda1
 ARG TRANSFORMERS_VERSION=5.17.0
 ARG URLLIB3_VERSION=2.8.0
 ARG RUSTUP_VERSION=1.28.2
@@ -33,43 +36,28 @@ ARG ZLIB_CVE_PATCH_SHA256=110ff14375733173d8aa54574473424fbd7dfe4b81f1ca34a759c6
 # against the same Debian source. See SECURITY-20261005.md for CVE mapping.
 FROM debian:${DEBIAN_SUITE}-slim AS glibc_patched
 ARG DEBIAN_SUITE
+ARG GLIBC_SOURCE_SUITE
 ARG GLIBC_DEBIAN_VERSION
+ARG GLIBC_SOURCE_SUITE
 ARG GLIBC_BACKPORT_VERSION
 ARG DASH_DEBIAN_VERSION
-ARG DASH_BACKPORT_VERSION
 COPY patches/glibc/ /tmp/glibc-patches/
 COPY verify-glibc-normalize.c /tmp/verify-glibc-normalize.c
 COPY verify-glibc-regex.c /tmp/verify-glibc-regex.c
 RUN set -eux; \
     sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources; \
+    printf 'Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: %s\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' "${GLIBC_SOURCE_SUITE}" > /etc/apt/sources.list.d/glibc-source.sources; \
+    printf 'Package: *\nPin: release n=%s\nPin-Priority: 100\n' "${GLIBC_SOURCE_SUITE}" > /etc/apt/preferences.d/glibc-source; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl devscripts dpkg-dev git quilt; \
-    apt-get build-dep -y --no-install-recommends "glibc=${GLIBC_DEBIAN_VERSION}" "dash=${DASH_DEBIAN_VERSION}"; \
+    apt-get build-dep -y --no-install-recommends -t "${GLIBC_SOURCE_SUITE}" "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    apt-get build-dep -y --no-install-recommends -t "${DEBIAN_SUITE}" dash; \
     mkdir -p /build /out; cd /build; \
-    apt-get source "glibc=${GLIBC_DEBIAN_VERSION}"; \
+    apt-get source -t "${GLIBC_SOURCE_SUITE}" "glibc=${GLIBC_DEBIAN_VERSION}"; \
     cd "glibc-${GLIBC_DEBIAN_VERSION%%-*}"; \
-    for patch_spec in \
-      "965b580070b8184b0dd390800d9194291a600e67:e564c003db5103b22e5b5ed8d624690ca6722eb1cd1c5b867649a345694a7bdd" \
-      "dfc8ef388ef7856f318ade7dec501f92ce54f9e3:d8646d3888c1c6bff55e77bbf275f5549391f4536efcd176c2a1e654857f8f4b" \
-      "9318c2571576017d280a31b7b9ab576c9b696b1a:4dac7eb1610b938dbb3c9ddc390bdf0f4da01e1f757a47f61022ed45bffaa88e" \
-      "5256941bc811248670eda4636dccd0a390d34dec:aaa730edd654b954bc7f2b82eaadee091d87c47c5ea250a9f579172cfbda6b96" \
-      "e43e46f94398b3de446fec11da1e7633ea5202ec:b521dbf688487b2a6f3f4f51cc5968382cff04d556c56c25ae87b3b4905ce823" \
-      "ec116a0fbedcc860631e525e70b409cf295f27da:eb93b11c64893543ad81a8afffbc9d51c822f8d60fc416439433f37dfcbc66cd" \
-      "f806c45178dbca3be08a25cc5dd6d5542ce84a59:ffad85d2a8e7e6b420e085483a1ae1031a13421b5eb7c1df281b6e35468eb9c3" \
-      "506ea57086bfb9ce3daff1c14246a1cb532aba0a:1e3b92a4fdb8ca306c8272b156a30ed9aa3b26f4851f11430b64b118621d5382"; do \
-      commit="${patch_spec%%:*}"; checksum="${patch_spec#*:}"; \
-      patch="/tmp/glibc-${commit}.patch"; \
-      curl -fsSL "https://sourceware.org/git/?p=glibc.git;a=patch;h=${commit}" -o "$patch"; \
-      echo "$checksum  $patch" | sha256sum -c -; \
-      if git apply --check "$patch"; then \
-        git apply "$patch"; \
-      elif git apply --reverse --check "$patch"; then \
-        echo "Upstream patch already present in Debian source: $commit"; \
-      else \
-        echo "Upstream patch is neither applicable nor already present: $commit" >&2; \
-        exit 1; \
-      fi; \
-    done; \
+    # forky 2.43-7 already carries the resolver, wordexp, tdelete, strfmon, iconv
+    # and secure-loader fixes (Debian tracker); the 2.41-era carries are dropped.
+    # verify-glibc-normalize and the runtime regressions still test the behavior.
     for patch in /tmp/glibc-patches/*.patch; do \
       if git apply --check "$patch"; then \
         git apply "$patch"; \
@@ -85,11 +73,11 @@ RUN set -eux; \
     gcc -Wall -Wextra -Werror -O2 /tmp/verify-glibc-regex.c -o /out/verify-glibc-regex; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
       dch --force-distribution --distribution "${DEBIAN_SUITE}" --newversion "${GLIBC_BACKPORT_VERSION}" \
-      "Retain Headroom rcamarda1 fixes; add resolver, wordexp, tdelete, strfmon, iconv and secure-loader backports; bound recursive regex backreference walks."; \
+      "Rebuild forky glibc for trixie; bound recursive regex backreference walks."; \
     if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
       tail -n 200 /tmp/glibc-build.log; exit 1; \
     fi; \
-    cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
+    cp ../libc6_*_*.deb ../libc-bin_*_*.deb ../libc-gconv-modules-extra_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
 
@@ -97,8 +85,11 @@ RUN set -eux; \
 # Use its existing libc fnmatch build option rather than removing /bin/sh,
 # which runs the service entrypoint.
 RUN set -eux; \
-    cd /build; apt-get source "dash=${DASH_DEBIAN_VERSION}"; \
-    cd "dash-${DASH_DEBIAN_VERSION%%-*}"; \
+    cd /build; apt-get source -t "${DEBIAN_SUITE}" dash; \
+    cd dash-*/; \
+    dash_src="$(dpkg-parsechangelog -S Version)"; \
+    dpkg --compare-versions "$dash_src" ge "${DASH_DEBIAN_VERSION}"; \
+    DASH_BACKPORT_VERSION="${dash_src}+rcamarda1"; \
     grep -q -- '--disable-fnmatch' debian/rules; \
     sed -i 's/--disable-fnmatch/--enable-fnmatch/' debian/rules; \
     DEBFULLNAME="rcamarda390 image build" DEBEMAIL="rcamarda390@users.noreply.github.com" \
@@ -421,8 +412,8 @@ ARG MULTIDICT_VERSION
 ARG AIOHTTP_VERSION
 ARG TRANSFORMERS_VERSION
 ARG URLLIB3_VERSION
-ARG GLIBC_BACKPORT_VERSION
-ARG DASH_BACKPORT_VERSION
+ARG GLIBC_DEBIAN_VERSION
+ARG DASH_DEBIAN_VERSION
 ARG PYTHON_VERSION
 ARG PYTHON_ABI
 ARG SQLITE_VERSION
@@ -452,7 +443,7 @@ COPY --from=glibc_patched /out/ /tmp/glibc/
 COPY --from=glibc_patched /out/verify-glibc-regex /usr/local/bin/verify-glibc-regex
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
+    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/libc-gconv-modules-extra_*_*.deb /tmp/glibc/dash_*_*.deb \
     && /usr/local/bin/verify-glibc-regex \
     && rm -rf /tmp/glibc \
     && rm -rf /var/lib/apt/lists/* \
@@ -656,12 +647,16 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
  && { PATH="/opt/venv/bin:${PATH}" python -c \
     "import awscrt; print(f'  awscrt {awscrt.__version__} also available')" || true; } \
  && /bin/dash -c "echo 'Verification: dash entrypoint shell OK'" \
- && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
- && test "$(dpkg-query -W -f='${Version}' libc-bin)" = "${GLIBC_BACKPORT_VERSION}" \
+ && for v in "$(dpkg-query -W -f='${Version}' libc6)" "$(dpkg-query -W -f='${Version}' libc-bin)"; do \
+      case "$v" in *+rcamarda*) ;; *) exit 1;; esac; \
+      dpkg --compare-versions "$v" ge "${GLIBC_DEBIAN_VERSION}"; \
+    done \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libssl3t64)" ge '3.5.7-1~deb13u3' \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' openssl-provider-legacy)" ge '3.5.7-1~deb13u3' \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" ge '10.46-1~deb13u3' \
- && test "$(dpkg-query -W -f='${Version}' dash)" = "${DASH_BACKPORT_VERSION}" \
+ && v="$(dpkg-query -W -f='${Version}' dash)" \
+ && case "$v" in *+rcamarda*) ;; *) exit 1;; esac \
+ && dpkg --compare-versions "$v" ge "${DASH_DEBIAN_VERSION}" \
  && dpkg-query -W libc6 libc-bin libssl3t64 libpcre2-8-0 dash \
  && for package in \
       libsqlite3-0 zlib1g libpam-modules-bin libncursesw6 openssl tar libudev1 \
