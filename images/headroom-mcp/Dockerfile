@@ -77,7 +77,7 @@ RUN set -eux; \
     if ! DEB_BUILD_OPTIONS="nocheck" dpkg-buildpackage -B -uc -us -j"$(nproc)" > /tmp/glibc-build.log 2>&1; then \
       tail -n 200 /tmp/glibc-build.log; exit 1; \
     fi; \
-    cp ../libc6_*_*.deb ../libc-bin_*_*.deb /out/; \
+    cp ../libc6_*_*.deb ../libc-bin_*_*.deb ../libc-gconv-modules-extra_*_*.deb /out/; \
     dpkg-deb -f /out/libc6_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"; \
     dpkg-deb -f /out/libc-bin_*_*.deb Version | grep -Fx "${GLIBC_BACKPORT_VERSION}"
 
@@ -443,7 +443,7 @@ COPY --from=glibc_patched /out/ /tmp/glibc/
 COPY --from=glibc_patched /out/verify-glibc-regex /usr/local/bin/verify-glibc-regex
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/dash_*_*.deb \
+    && apt-get install -y --no-install-recommends /tmp/glibc/libc6_*_*.deb /tmp/glibc/libc-bin_*_*.deb /tmp/glibc/libc-gconv-modules-extra_*_*.deb /tmp/glibc/dash_*_*.deb \
     && /usr/local/bin/verify-glibc-regex \
     && rm -rf /tmp/glibc \
     && rm -rf /var/lib/apt/lists/* \
