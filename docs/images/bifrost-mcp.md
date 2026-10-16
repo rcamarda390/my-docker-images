@@ -115,3 +115,10 @@ The same scan still reports CVE-2026-108859 (mcp-go 0.56.0, no fix version). It
 stays open in the scanner: the downstream body-limit patch is retained, and
 the module version is unchanged. Verified 2026-10-16: no official fix in
 mcp-go through v1.3.0.
+
+### CVE-2026-108859 tracking (2026-10-16)
+
+- Scanned `2.3.0-v3` still reports mcp-go 0.56.0; published `2.3.0-v4` carries the same downstream source patch. Rescan pending.
+- Reachability: Bifrost 2.3.0 builds no `StreamableHTTPServer` (clients and in-process `MCPServer` only), so the vulnerable path is not exercised. The patch is defence in depth.
+- Upstream fix in review, not released: https://github.com/mark3labs/mcp-go/pull/1092 (4 MiB default, `WithMaxRequestBodyBytes`). mcp-go v1.3.0 still unbounded. Adopt a release containing it, then drop `mcp-go-body-limit.patch`.
+- Fork + `go.mod replace` was considered: Go build info keeps the original `dep` line and adds `=> <replacement>`, so scanner behaviour is unproven. Experiment only; not adopted.
