@@ -1635,17 +1635,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -1713,17 +1709,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -1787,20 +1779,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "6.5+20250216-2"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "6.6+20260608-2"
-          },
           "fixed_version": "6.6+20251231-1",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -1870,20 +1855,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "14.2.0-19"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "14.4.0-3"
-          },
           "fixed_version": "14.4.0-3",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -1951,21 +1929,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-5",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2037,17 +2007,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2119,17 +2085,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2190,17 +2152,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "1:1.3.dfsg+really1.3.1-1"
-          },
-          "urgency": "not yet assigned"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "1:1.3.dfsg+really1.3.2-3"
-          },
-          "urgency": "not yet assigned"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2268,21 +2226,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-3",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2343,20 +2293,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.3.2-2"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.4.0-1"
-          },
           "fixed_version": "2.4.0-1",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2417,20 +2360,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "1:2.5.2-3"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "1:2.6.0-1"
-          },
           "fixed_version": "1:2.6.0-1",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2500,20 +2436,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "14.2.0-19"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "14.4.0-3"
-          },
           "fixed_version": "14.4.0-3",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2581,21 +2510,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-3",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2663,21 +2584,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-7",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2738,20 +2651,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.3.2-2"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.4.0-1"
-          },
           "fixed_version": "2.4.0-1",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2812,17 +2718,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "9.7-3"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "9.10-1"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2883,17 +2785,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "9.7-3"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "9.10-1"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -2961,21 +2859,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-5",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3043,21 +2933,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-5",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3125,21 +3007,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-4",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3200,20 +3074,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "1:1.3.dfsg+really1.3.1-1"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "1:1.3.dfsg+really1.3.2-3"
-          },
           "fixed_version": "1:1.3.dfsg+really1.3.2-1",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3280,17 +3147,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "0.5.12-12"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "0.5.12-12"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3358,21 +3221,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-6",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3440,17 +3295,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3518,17 +3369,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3596,21 +3443,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-5",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3671,17 +3510,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "9.7-3"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "9.10-1"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3742,17 +3577,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "9.7-3"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "9.10-1"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3820,21 +3651,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-7",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3901,17 +3724,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "0.5.12-12"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "0.5.12-12"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -3979,21 +3798,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-7",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4061,21 +3872,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-7",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4139,20 +3942,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "6.5+20250216-2"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "6.6+20260608-2"
-          },
           "fixed_version": "6.5+20251115-2",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4220,21 +4016,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-3",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4302,17 +4090,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "2.43-7"
-          },
-          "urgency": "unimportant"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4380,21 +4164,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "2.41-12+deb13u4"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": "",
-          "next_point_update": true
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "resolved",
-          "repositories": {
-            "sid": "2.43-7"
-          },
           "fixed_version": "2.43-4",
-          "urgency": "not yet assigned"
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
@@ -4524,19 +4300,13 @@
         "date": "2026-10-16",
         "trixie": {
           "status": "open",
-          "repositories": {
-            "trixie": "1.0.8-6"
-          },
-          "urgency": "not yet assigned",
-          "nodsa": "Minor issue",
-          "nodsa_reason": ""
+          "fixed_version": null,
+          "no_dsa": "Minor issue"
         },
         "sid": {
           "status": "open",
-          "repositories": {
-            "sid": "1.0.8-6"
-          },
-          "urgency": "not yet assigned"
+          "fixed_version": null,
+          "no_dsa": null
         },
         "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
         "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
