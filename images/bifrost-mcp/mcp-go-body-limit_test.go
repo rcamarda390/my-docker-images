@@ -12,7 +12,7 @@ import (
 type xrayBody struct{ read int64 }
 
 func (b *xrayBody) Read(p []byte) (int, error) {
-	const size int64 = (100 << 20) + 65536
+	const size int64 = DefaultMaxRequestBodyBytes + 65536
 	if b.read >= size {
 		return 0, io.EOF
 	}
@@ -27,7 +27,7 @@ func (b *xrayBody) Read(p []byte) (int, error) {
 }
 
 func TestXrayBodyLimit(t *testing.T) {
-	const limit int64 = 100 << 20
+	const limit int64 = DefaultMaxRequestBodyBytes
 	s := NewStreamableHTTPServer(NewMCPServer("body-limit-test", "1"))
 	// The reader cap must hold even if ContentLength is absent or understated.
 	for _, length := range []int64{limit + 1, -1, 0, 1} {
