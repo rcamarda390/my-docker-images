@@ -37,6 +37,13 @@ ARG GO_OPENAPI_VALIDATE_VERSION=v0.26.1
 # fixed in v0.56.0.
 ARG GO_MCP_GO_VERSION=v0.56.0
 ARG GO_JOSE_VERSION=v4.1.6
+# CVE-2026-108859: mcp-go (all releases through v1.3.0) reads POST bodies
+# without a cap. rcamarda390/mcp-go is upstream v0.56.0 plus the unreleased
+# upstream fix, https://github.com/mark3labs/mcp-go/pull/1092. Drop this
+# replace once a released mcp-go contains that fix. The fork's tags cannot be
+# pushed from the agent session, so the exact commit is pinned as a pseudo-version.
+ARG MCP_GO_FORK_COMMIT=aa78020aa10ffa85f1cdce32bfbbef35c98a5870
+ARG MCP_GO_FORK_VERSION=v0.0.0-20261016132355-aa78020aa10f
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG BIFROST_VERSION
@@ -113,14 +120,21 @@ RUN set -eu; \
       fi; \
       echo "remediated: $module $resolved"; \
     done
-# No upstream fix verified for CVE-2026-108859 as of 2026-10-15;
-# v1.3.0 still buffers without a cap.
-# Patch a private vendor tree; retain the real module version in build info.
-COPY mcp-go-body-limit.patch mcp-go-body-limit_test.go /tmp/
-RUN go mod vendor \
-    && patch --batch --fuzz=0 -p1 -d vendor/github.com/mark3labs/mcp-go < /tmp/mcp-go-body-limit.patch \
-    && cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/ \
-    && go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1 -v
+# Route the mcp-go module to the fork. Build info keeps the original dep line and
+# records the replacement on a "=>" line, so the substitution stays visible.
+ARG MCP_GO_FORK_COMMIT
+ARG MCP_GO_FORK_VERSION
+COPY mcp-go-body-limit_test.go /tmp/
+RUN set -eu; \
+    case "$MCP_GO_FORK_VERSION" in *"$(printf %.12s "$MCP_GO_FORK_COMMIT")") ;; \
+      *) echo "fork version does not match fork commit" >&2; exit 1;; esac; \
+    go mod edit -replace "github.com/mark3labs/mcp-go=github.com/rcamarda390/mcp-go@${MCP_GO_FORK_VERSION}"; \
+    GOPRIVATE=github.com/rcamarda390/mcp-go GOFLAGS=-mod=mod go mod download github.com/mark3labs/mcp-go; \
+    test "$(go list -m -f '{{.Replace.Path}} {{.Replace.Version}}' github.com/mark3labs/mcp-go)" \
+      = "github.com/rcamarda390/mcp-go ${MCP_GO_FORK_VERSION}"; \
+    GOPRIVATE=github.com/rcamarda390/mcp-go go mod vendor; \
+    cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/; \
+    go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1 -v
 ARG BIFROST_VERSION
 RUN go build -mod=vendor \
       -ldflags="-w -s -X main.Version=v${BIFROST_VERSION} -extldflags '-static'" \
@@ -143,6 +157,9 @@ RUN set -eu; \
       /tmp/binary-build-info; \
     awk -v expected="$GO_MCP_GO_VERSION" \
       '$1 == "dep" && $2 == "github.com/mark3labs/mcp-go" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info; \
+    awk -v expected="$MCP_GO_FORK_VERSION" \
+      '$1 == "=>" && $2 == "github.com/rcamarda390/mcp-go" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40

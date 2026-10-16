@@ -118,7 +118,14 @@ mcp-go through v1.3.0.
 
 ### CVE-2026-108859 tracking (2026-10-16)
 
-- Scanned `2.3.0-v3` still reports mcp-go 0.56.0; published `2.3.0-v4` carries the same downstream source patch. Rescan pending.
-- Reachability: Bifrost 2.3.0 builds no `StreamableHTTPServer` (clients and in-process `MCPServer` only), so the vulnerable path is not exercised. The patch is defence in depth.
-- Upstream fix in review, not released: https://github.com/mark3labs/mcp-go/pull/1092 (4 MiB default, `WithMaxRequestBodyBytes`). mcp-go v1.3.0 still unbounded. Adopt a release containing it, then drop `mcp-go-body-limit.patch`.
-- Fork + `go.mod replace` was considered: Go build info keeps the original `dep` line and adds `=> <replacement>`, so scanner behaviour is unproven. Experiment only; not adopted.
+- Scanned `2.3.0-v3` reports mcp-go 0.56.0; published `2.3.0-v4` still carried the downstream vendor patch. Rescan of v4 pending.
+- Reachability, from pinned Bifrost `transports/v2.3.0` (`9237ec06672406e437b3cb33fc793ffd0403b3ae`): `grep -rn "NewStreamableHTTPServer\|StreamableHTTPServer"` over non-test Go files matches only `examples/mcps/*` (separate `go.mod` per example, not in the `./bifrost-http` binary). The only gateway consumer, `transports/bifrost-http/handlers/mcpserver.go`, uses `server.NewMCPServer` and its in-process `MCPServer`, never a `StreamableHTTPServer` or its `ServeHTTP`. The patch/fork is defence in depth.
+- Upstream fix, unreleased: https://github.com/mark3labs/mcp-go/pull/1092 (4 MiB default, `WithMaxRequestBodyBytes`). mcp-go v1.3.0 is still unbounded.
+
+#### Fork experiment (candidate; Xray behaviour unproven)
+
+`github.com/rcamarda390/mcp-go` branch `claude/bifrost-body-limit` = upstream v0.56.0 + cherry-pick of PR #1092 (commit `aa78020aa10ffa85f1cdce32bfbbef35c98a5870`). The Dockerfile now `go mod edit -replace`s mcp-go to it and no longer applies `mcp-go-body-limit.patch` (removed). The fork's tags/`main` could not be pushed from the agent session, so the version is the pseudo-version `v0.0.0-20261016132355-aa78020aa10f`.
+
+Go build info keeps `dep github.com/mark3labs/mcp-go v0.56.0` and adds `=> github.com/rcamarda390/mcp-go <pseudo-version>`; the build asserts both lines. A scanner reading only the `dep` line may still report the CVE. The regression test now uses the fork's 4 MiB `DefaultMaxRequestBodyBytes`.
+
+Outcome rule: if Xray clears the fork build, keep it until upstream releases PR #1092, then drop the replace. If Xray still reports it, revert to the vendor patch (git history: PR #72) and keep the finding documented as not reachable and source-fixed.
