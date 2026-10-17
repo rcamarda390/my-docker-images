@@ -391,6 +391,7 @@ Temporary Headroom edits proven in a running container must be folded back into 
 
 ### Gnosis MCP — `images/gnosis-mcp/`
 
+- Upstream is only `https://github.com/nicholasglazer/gnosis-mcp` (releases/tags). There is no separate package upstream: the image installs that release hash-locked via `requirements.lock`. See `docs/images/gnosis-mcp.md`.
 - Preserve the air-gap design.
 - Bundle required embedding/tokenizer/model artifacts during build.
 - Validate with offline environment settings.
