@@ -12,6 +12,16 @@ def review(findings, tracker):
             continue
         advisory = tracker.get(finding['source_package'], {}).get(finding['cve'], {})
         release = advisory.get('releases', {}).get(finding['suite'], {})
+        # Other-suite fixes are source-review leads, not compatible binaries
+        # or proof that a precompiled consumer contains the fix.
+        candidates = []
+        if finding['suite']:
+            for suite in ('forky', 'sid'):
+                candidate = advisory.get('releases', {}).get(suite, {})
+                fixed_version = candidate.get('fixed_version')
+                if (suite != finding['suite'] and candidate.get('status') == 'resolved'
+                        and fixed_version not in (None, '', '0')):
+                    candidates.append({'suite': suite, 'fixed_version': fixed_version})
         yield {
             'cve': finding['cve'],
             'source_package': finding['source_package'],
@@ -20,6 +30,7 @@ def review(findings, tracker):
             'fixed_version': release.get('fixed_version'),
             'urgency': release.get('urgency'),
             'no_dsa': release.get('nodsa'),
+            'replacement_candidates': candidates,
         }
 
 

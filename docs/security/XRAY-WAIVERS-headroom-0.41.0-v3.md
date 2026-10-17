@@ -28,4 +28,8 @@ CVE-2026-5435, 6238, 6368, 6791, 8674, 18374, 19499, 19542, 77117, 80489, 86805,
 - CVE-2026-95619, CVE-2026-102010 (gcc-14 runtime libs: libstdc++6, libgcc-s1, gcc-14-base): fix only in sid 14.4.0-3. 95619 allocation path not used on Linux posix_memalign; 102010 is a template compiled into the ONNX wheel, needs consumer rebuild. Runtime libs required by ONNX/Rust. Open.
 
 ## Note
-Version suffix changes cannot clear these; do not rename versions to satisfy the scanner. Clearing requires Xray waivers/ignore rules, or a base whose advisory data lists the fixes (forky), which is a separate decision.
+Version suffix changes cannot clear these; do not rename versions to satisfy the scanner. A waiver or ignore rule only suppresses the scanner row; it is explicit risk acceptance, not clearance. Findings stay open and visible in the ledger (`scan_status` pending) until a post-build scan of an exact digest no longer reports them. A base whose advisory data lists the fixes (forky) is a separate decision.
+
+## Absent from this scan (headroom-mcp only, marked cleared in ledger)
+CVE-2025-69720, 6141 (ncurses), 2026-54369, 54370 (acl), 54371 (attr), 56391, 56392, 2017-18018, 2025-5278 (coreutils), 2026-85091, 27171 (zlib), 2026-85670 (tokenizers).
+Assumes the supplied Xray table is the complete result for the digest. Other images keep their own status.
