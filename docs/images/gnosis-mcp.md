@@ -2,6 +2,14 @@
 
 [Back to repository README](../../README.md) · [Image source](../../images/gnosis-mcp/)
 
+## Upstream (single source of truth)
+
+Gnosis MCP upstream is **https://github.com/nicholasglazer/gnosis-mcp** (releases and tags there). There is one project and one release line.
+
+The image installs that project's own tagged release, hash-locked in `requirements.lock`, so the build never pulls a mutable GitHub archive. The installable file is the release artifact of the same GitHub release; its version always equals the GitHub tag. Do not treat it as a separate upstream, fork or version stream.
+
+Version checks: compare `image.yaml` `upstream_version` with the latest GitHub release/tag. Unreleased commits on GitHub `main` are not candidates.
+
 The repository contains an air-gap-oriented Gnosis MCP image at:
 
 ```text
@@ -74,5 +82,5 @@ Successful publication pushes the same immutable 0.17.5-vN tag to Docker Hub
 Docker Hub revision for the upstream version; failed builds do not consume it.
 The workflow summary supplies the exact image reference to import into Artifactory.
 
-New PyPI upstream releases require updating image.yaml and requirements.in,
+A new upstream GitHub release requires updating image.yaml and requirements.in,
 regenerating requirements.lock, and validating compatibility before publication.

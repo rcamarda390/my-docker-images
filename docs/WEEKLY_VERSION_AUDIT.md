@@ -15,7 +15,7 @@
 | agentmemory-server / agentmemory-mcp | AgentMemory upstream release, lockfile and iii compatibility |
 | ai-cli-runner | Claude Code CLI **and** Cline CLI independently, comparing package versions and locks |
 | bifrost-mcp | Bifrost transports release stream, commit pin and downstream patches |
-| gnosis-mcp | Nicholas Glazer GitHub upstream; verify packaged PyPI version and source provenance separately |
+| gnosis-mcp | Nicholas Glazer GitHub releases/tags are the only upstream; image version must equal the latest GitHub release (ignore unreleased `main` commits) |
 | headroom-mcp | Headroom release, commit pin and security patches |
 | slim-archify | Archify stable release, commit pin and runtime Node compatibility |
 | slim-docker-codeburn | CodeBurn upstream, Marketplace VSIX version and remediated payload |
