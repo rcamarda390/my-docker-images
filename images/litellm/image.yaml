@@ -1,7 +1,8 @@
 name: litellm
-upstream_version: 1.94.3
-revision: 2
+upstream_version: 1.106.0
+revision: 1
 publish:
   ghcr: true
   dockerhub: true
   latest: false
+
