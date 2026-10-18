@@ -1,13 +1,16 @@
 # syntax=docker/dockerfile:1.7
 
-ARG EBAY_MCP_VERSION=1.16.0
-ARG EBAY_MCP_COMMIT=edb937b44a47bf3d353ab9afb8818b6834ac222c
+ARG EBAY_MCP_VERSION=1.18.3
+# Upstream v1.18.3 retains package.json version 1.18.0; verify both identities.
+ARG EBAY_PACKAGE_VERSION=1.18.0
+ARG EBAY_MCP_COMMIT=034bebcce8b92d350fb933b8e1c945ec8002d886
 ARG NODE_VERSION=22.23.2
 ARG PNPM_VERSION=10.14.0
 ARG NODE_IMAGE_DIGEST=sha256:72c5815a06aed9a2273aea5628d74d348af57843a7b547af2fe53dd3e4b95261
 
 FROM node:${NODE_VERSION}-alpine3.23@${NODE_IMAGE_DIGEST} AS builder
 ARG EBAY_MCP_VERSION
+ARG EBAY_PACKAGE_VERSION
 ARG EBAY_MCP_COMMIT
 ARG NODE_VERSION
 ARG PNPM_VERSION
@@ -23,7 +26,7 @@ RUN set -eux; \
     git clone --depth 1 --branch "v${EBAY_MCP_VERSION}" \
       https://github.com/YosefHayim/ebay-mcp.git .; \
     test "$(git rev-parse HEAD)" = "${EBAY_MCP_COMMIT}"; \
-    test "$(node -p "require('./package.json').version")" = "${EBAY_MCP_VERSION}"
+    test "$(node -p "require('./package.json').version")" = "${EBAY_PACKAGE_VERSION}"
 
 # Keep vulnerable transitive runtime dependencies above their fixed versions. These exact
 # overrides are applied to the pinned upstream lockfile before installation.
@@ -34,6 +37,7 @@ RUN node -e "const fs=require('fs'); const p=require('./package.json'); p.pnpm=p
 
 FROM node:${NODE_VERSION}-alpine3.23@${NODE_IMAGE_DIGEST}
 ARG EBAY_MCP_VERSION
+ARG EBAY_PACKAGE_VERSION
 ARG EBAY_MCP_COMMIT
 ARG NODE_VERSION
 
@@ -74,3 +78,4 @@ LABEL org.opencontainers.image.title="ebay-mcp" \
       org.opencontainers.image.revision="${EBAY_MCP_COMMIT}"
 
 CMD ["node", "build/serverHttp.js"]
+
