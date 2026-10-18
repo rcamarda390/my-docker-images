@@ -103,7 +103,7 @@ check "claude CLI" 1 command -v claude
 check "Bifrost update checks disabled" 1 test "${BIFROST_NO_UPDATE_CHECK:-}" = 1
 check "Bifrost CLI help" 1 bifrost --help
 check "Bifrost CLI source-build checksum" 1 bash -c 'cd /usr/local/bin && sha256sum -c /usr/local/share/zeus/bifrost.sha256'
-check "Bifrost Go 1.26.6" 1 grep -q go1.26.6 /usr/local/share/zeus/bifrost-build-info.txt
+check "Bifrost Go 1.27.2" 1 grep -q go1.27.2 /usr/local/share/zeus/bifrost-build-info.txt
 check "AgentMemory MCP entry point" 1 test -f /opt/agentmemory/node_modules/@agentmemory/agentmemory/dist/index.mjs
 check "AgentMemory CLI" 1 command -v agentmemory
 check "AgentMemory MCP" 1 command -v agentmemory-mcp
@@ -111,6 +111,32 @@ check "Archify CLI" 1 command -v archify
 check "xdg-user-dir" 1 command -v xdg-user-dir
 check "GitLab MCP dependencies" 1 test -x /opt/gitlab-mcp-server/node_modules/.bin/tsc
 check "TypeScript 6.0.3" 1 node -e 'if (require("/opt/gitlab-mcp-server/node_modules/typescript/package.json").version !== "6.0.3") process.exit(1)'
+
+check "upgraded data stack and SQL round trip" 1 python3 -c '
+from importlib.metadata import version
+import numpy as np
+import pandas as pd
+import duckdb
+import sqlglot
+import s3fs
+import aiobotocore
+expected = {"numpy": "2.5.4", "pandas": "3.0.6", "duckdb": "1.5.6", "s3fs": "2026.9.0", "fsspec": "2026.9.0", "aiobotocore": "3.9.2", "boto3": "1.43.106", "botocore": "1.43.106", "multidict": "6.9.1"}
+assert {name: version(name) for name in expected} == expected
+frame = pd.DataFrame({"value": np.array([1, 2, 3])})
+with duckdb.connect() as con:
+    con.register("source", frame)
+    assert con.execute("SELECT SUM(value) FROM source").fetchone() == (6,)
+assert sqlglot.parse_one("SELECT SUM(value) FROM source", read="redshift")
+'
+check "upgraded AgentMemory and engine SDK versions" 1 node -e '
+const fs = require("node:fs");
+for (const root of ["/opt/agentmemory", "/opt/agentmemory-mcp"]) {
+  const version = name => JSON.parse(fs.readFileSync(`${root}/node_modules/${name}/package.json`)).version;
+  if (version("@agentmemory/agentmemory") !== "0.9.30" || version("iii-sdk") !== "0.22.1") process.exit(1);
+}
+'
+check "Cline CLI 3.0.73" 1 bash -o pipefail -c 'cline --version | grep -qwF 3.0.73'
+check "Claude Code CLI 2.1.302" 1 bash -o pipefail -c 'claude --version | grep -qwF 2.1.302'
 
 check "Xray fixed package versions" 1 python3 /usr/local/bin/verify-security.py
 check "node-forge CVE-2026-85393 backport" 1 node /usr/local/bin/patch-node-forge.cjs --check
@@ -122,3 +148,4 @@ if [ "$failures" -gt 0 ]; then
 fi
 
 log "All required software present."
+

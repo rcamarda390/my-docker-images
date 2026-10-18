@@ -1,11 +1,12 @@
 name: zeus-dev-image
-upstream_version: 2.0.0
-revision: 0
+upstream_version: 2.1.0
+revision: 1
 build_args:
-  BIFROST_CLI_COMMIT: a0d7aafab999509121154452e455d970ae2572b4
-  ARCHIFY_COMMIT: 06dd052602dd9a369e4d034e24faef0917b5a60c
+  BIFROST_CLI_COMMIT: 555e0ea5863f8e80f0735967657f889d7b5b8ba0
+  ARCHIFY_COMMIT: 1c2b42d660e4a7571813fb43839c79e3e9ca7720
   XDG_USER_DIRS_COMMIT: cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
 publish:
   ghcr: true
   dockerhub: true
   latest: false
+
