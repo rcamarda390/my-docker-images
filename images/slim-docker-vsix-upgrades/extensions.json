@@ -15,13 +15,13 @@
     {
       "id": "anthropic.claude-code",
       "installed_version": "2.1.295",
-      "version": "2.1.299",
+      "version": "2.1.301",
       "target_platform": "linux-x64",
-      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.299/vspackage?targetPlatform=linux-x64",
-      "sha256": "c4776f521668113527622a689e6f03ce2a677791eef39787996f7a9316c343d4",
+      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.301/vspackage?targetPlatform=linux-x64",
+      "sha256": "0b171124cd24afd196a870ea9258309dfbfb97e6b8d8d525d7dbb3225fecc500",
       "vscode_engine": "^1.94.0",
       "stable": true,
-      "verified_at": "2026-10-14T15:07:12.899370+00:00"
+      "verified_at": "2026-10-18T13:38:16.082058+00:00"
     },
     {
       "id": "francescoanzalone.vsc-todo",
@@ -59,13 +59,13 @@
     {
       "id": "growthjack.claude-code-usage",
       "installed_version": "2.3.0",
-      "version": "2.4.1",
+      "version": "2.5.0",
       "target_platform": "universal",
-      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/growthjack/vsextensions/claude-code-usage/2.4.1/vspackage",
-      "sha256": "31824cde04a1025cd233a5ae853716677194c26556254c01c7b07af29ee12f19",
+      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/growthjack/vsextensions/claude-code-usage/2.5.0/vspackage",
+      "sha256": "bf5384fe4d7d2b78ed1696db857758b4ce5078e69deb72c26c8d17918270097c",
       "vscode_engine": "^1.74.0",
       "stable": true,
-      "verified_at": "2026-10-14T15:07:13.088561+00:00"
+      "verified_at": "2026-10-18T13:38:06.567460+00:00"
     },
     {
       "id": "mechatroner.rainbow-csv",
@@ -103,13 +103,13 @@
     {
       "id": "ms-python.python",
       "installed_version": "2025.17.2025100201",
-      "version": "2026.4.0",
+      "version": "2026.10.0",
       "target_platform": "linux-x64",
-      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-python/vsextensions/python/2026.4.0/vspackage?targetPlatform=linux-x64",
-      "sha256": "1d07e60d5eab257ea5d691b26def3fff642b4d2c04fab94424e8b8fe25baf656",
+      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-python/vsextensions/python/2026.10.0/vspackage?targetPlatform=linux-x64",
+      "sha256": "9a84de731b622ee440e0bd979965f6a7577afa48bea6c3d4257d8865efc74780",
       "vscode_engine": "^1.95.0",
       "stable": true,
-      "verified_at": "2026-10-14T15:07:13.275639+00:00"
+      "verified_at": "2026-10-18T13:38:07.079900+00:00"
     },
     {
       "id": "mtxr.sqltools",
@@ -136,13 +136,13 @@
     {
       "id": "redhat.vscode-yaml",
       "installed_version": "1.20.2025100808",
-      "version": "1.25.0",
+      "version": "2.0.0",
       "target_platform": "universal",
-      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/redhat/vsextensions/vscode-yaml/1.25.0/vspackage",
-      "sha256": "2a833480d9754d83afb64df758c50735201d759b53cdb29be7b7a8114dca2ae4",
-      "vscode_engine": "^1.90.0",
+      "source_url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/redhat/vsextensions/vscode-yaml/2.0.0/vspackage",
+      "sha256": "4bba62ccda962b720dcb0829e85cf4109c94e86653dcd39fd7500c3687ad8c60",
+      "vscode_engine": "^1.91.0",
       "stable": true,
-      "verified_at": "2026-10-14T15:07:13.283825+00:00"
+      "verified_at": "2026-10-18T13:38:05.480959+00:00"
     }
   ]
 }

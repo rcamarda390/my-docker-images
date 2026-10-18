@@ -1,6 +1,6 @@
 # File: images/slim-docker-vsix-upgrades/configs/redhat.vscode-yaml.yaml
 name: slim-docker-vsix-redhat.vscode-yaml
-upstream_version: 1.25.0
+upstream_version: 2.0.0
 revision: 1
 build_args:
   EXTENSION_ID: redhat.vscode-yaml
@@ -9,3 +9,4 @@ publish:
   ghcr: true
   dockerhub: true
   latest: false
+
