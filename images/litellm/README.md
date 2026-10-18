@@ -20,6 +20,10 @@ The manual `Build and publish LiteLLM image` workflow calculates the next
 revision from successfully published Docker Hub tags, smoke-tests the health
 endpoint, and blocks publication on HIGH/CRITICAL Trivy findings.
 
+LiteLLM 1.106.0 requires a master key at startup. Supply LITELLM_MASTER_KEY
+through runtime secret management; the image never contains a default key.
+The CI health test uses a disposable run-specific key.
+
 Runtime credentials and configuration must be supplied through environment
 variables or mounted files. Do not bake AWS credentials into the image.
 

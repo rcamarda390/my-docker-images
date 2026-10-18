@@ -34,6 +34,8 @@ jobs:
       version_arg: LITELLM_VERSION
       platforms: linux/amd64
       run_smoke_test: false
+      # Disposable CI-only key; production keys are supplied at runtime.
+      smoke_env: -e LITELLM_MASTER_KEY=sk-ci-smoke-${{ github.run_id }}
       smoke_healthcheck: true
       smoke_healthcheck_port: 4000
       smoke_healthcheck_path: /health/liveliness
@@ -41,3 +43,4 @@ jobs:
       block_on_scan_failure: true
       revision_from_published_tag_count: true
       publish: ${{ github.event_name != 'pull_request' }}
+
