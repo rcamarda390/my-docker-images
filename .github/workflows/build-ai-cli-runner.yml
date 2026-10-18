@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - images/ai-cli-runner/**
       - .github/workflows/build-ai-cli-runner.yml
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
@@ -33,7 +34,6 @@ jobs:
           path: images/ai-cli-runner/dist/
           if-no-files-found: error
   build:
-    if: github.event_name == 'workflow_dispatch'
     name: Build and publish AI CLI runner image
     uses: ./.github/workflows/build-image.yml
     secrets: inherit
@@ -58,3 +58,4 @@ jobs:
       block_on_scan_failure: true
       revision_from_published_tag_count: true
       publish: ${{ github.event_name != 'pull_request' }}
+
