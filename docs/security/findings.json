@@ -25,7 +25,7 @@
     {
       "date": "2026-10-18",
       "pr_url": "https://github.com/rcamarda390/my-docker-images/pull/87",
-      "validation": "Source-version upgrade validation: all 40 previously pending tracker entries were rechecked (37 open, 3 upstream-review); no Debian fix or clearance was inferred. eBay candidate exposed four blocking npm findings; reuse fixed sibling pins with physical-copy assertions. Preserve and record Zeus's five advisory findings. All sibling source/runtime categories reviewed; unknown embedded copies remain explicitly unverified."
+      "validation": "Source-version upgrade validation: all 40 previously pending tracker entries were rechecked (37 open, 3 upstream-review); no Debian fix or clearance was inferred. eBay candidate exposed four blocking npm findings; reuse fixed sibling pins with physical-copy assertions. Preserve and record Zeus's five advisory findings. All sibling source/runtime categories reviewed; unknown embedded copies remain explicitly unverified. Replacement eBay candidate run 39143618442 passes build, all physical-version assertions, MCP/health smoke and the blocking HIGH/CRITICAL Trivy gate."
     }
   ],
   "reports": [
@@ -2334,6 +2334,17 @@
         }
       ],
       "note": "Runtime smoke passed; Trivy findings are advisory under the existing caller policy. Bifrost CLI itself has zero reported findings in this scan. Docker Compose 5.6.0's embedded Go/x/net copies need a separate source rebuild or fixed upstream artifact. Existing node-forge malformed/valid-signature carry passes but remains reported."
+    },
+    {
+      "id": "ebay-mcp-trivy-20261018-pr87-fixed",
+      "image": "ebay-mcp",
+      "tag": "mcp-smoke:39143618442",
+      "digest": null,
+      "finding_count": 0,
+      "source": "https://github.com/rcamarda390/my-docker-images/actions/runs/39143618442",
+      "commit": "3e88542c7d528979c870c9517c9f4b5dff2390ce",
+      "observations": [],
+      "note": "Existing blocking HIGH/CRITICAL Trivy gate passed. All three pinned dependencies were physically asserted in two pnpm runtime copies each. MCP initialization/tools-list (8 selected tools) and HTTP health passed. This candidate result is not a published-digest Xray clearance."
     }
   ],
   "component_treatments": {
@@ -5376,17 +5387,18 @@
       "patch_sha256": null,
       "images": {
         "ebay-mcp": {
-          "treatment": "dependency-pin-awaiting-build",
+          "treatment": "dependency-pin-built",
           "fixed_version": "1.32.1",
           "evidence": [
             "images/ebay-mcp/Dockerfile",
             "images/ebay-mcp/SECURITY-20261018.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "mcp-smoke:39133216899",
+          "scan_tag": "mcp-smoke:39143618442",
           "scan_digest": null,
-          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39133216899",
-          "latest_report_id": "ebay-mcp-trivy-20261018-pr87"
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39143618442",
+          "latest_report_id": "ebay-mcp-trivy-20261018-pr87-fixed",
+          "scan_result": "not-reported-by-trivy-candidate"
         },
         "agentmemory-mcp": {
           "treatment": "source-already-pins-fixed-version",
@@ -5419,7 +5431,7 @@
           "scan_url": null
         }
       },
-      "remaining": "Rebuild the eBay candidate, verify all installed copies, pass the blocking Trivy gate, then obtain a post-publication Xray scan of the exact digest. Other embedded/official-payload copies remain unverified; see report sibling review."
+      "remaining": "Replacement eBay candidate passed the blocking HIGH/CRITICAL Trivy gate and MCP runtime tests. Keep scan_status pending until a post-publication Xray scan of the exact immutable digest; other embedded/official-payload copies remain unverified."
     },
     {
       "cve": "CVE-2026-84292",
@@ -5439,17 +5451,18 @@
       "patch_sha256": null,
       "images": {
         "ebay-mcp": {
-          "treatment": "dependency-pin-awaiting-build",
+          "treatment": "dependency-pin-built",
           "fixed_version": "3.1.8",
           "evidence": [
             "images/ebay-mcp/Dockerfile",
             "images/ebay-mcp/SECURITY-20261018.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "mcp-smoke:39133216899",
+          "scan_tag": "mcp-smoke:39143618442",
           "scan_digest": null,
-          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39133216899",
-          "latest_report_id": "ebay-mcp-trivy-20261018-pr87"
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39143618442",
+          "latest_report_id": "ebay-mcp-trivy-20261018-pr87-fixed",
+          "scan_result": "not-reported-by-trivy-candidate"
         },
         "agentmemory-mcp": {
           "treatment": "source-already-pins-fixed-version",
@@ -5462,7 +5475,7 @@
           "scan_url": null
         }
       },
-      "remaining": "Rebuild the eBay candidate, verify all installed copies, pass the blocking Trivy gate, then obtain a post-publication Xray scan of the exact digest. Other embedded/official-payload copies remain unverified; see report sibling review."
+      "remaining": "Replacement eBay candidate passed the blocking HIGH/CRITICAL Trivy gate and MCP runtime tests. Keep scan_status pending until a post-publication Xray scan of the exact immutable digest; other embedded/official-payload copies remain unverified."
     },
     {
       "cve": "CVE-2026-84394",
@@ -5482,17 +5495,18 @@
       "patch_sha256": null,
       "images": {
         "ebay-mcp": {
-          "treatment": "dependency-pin-awaiting-build",
+          "treatment": "dependency-pin-built",
           "fixed_version": "3.1.8",
           "evidence": [
             "images/ebay-mcp/Dockerfile",
             "images/ebay-mcp/SECURITY-20261018.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "mcp-smoke:39133216899",
+          "scan_tag": "mcp-smoke:39143618442",
           "scan_digest": null,
-          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39133216899",
-          "latest_report_id": "ebay-mcp-trivy-20261018-pr87"
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39143618442",
+          "latest_report_id": "ebay-mcp-trivy-20261018-pr87-fixed",
+          "scan_result": "not-reported-by-trivy-candidate"
         },
         "agentmemory-mcp": {
           "treatment": "source-already-pins-fixed-version",
@@ -5505,7 +5519,7 @@
           "scan_url": null
         }
       },
-      "remaining": "Rebuild the eBay candidate, verify all installed copies, pass the blocking Trivy gate, then obtain a post-publication Xray scan of the exact digest. Other embedded/official-payload copies remain unverified; see report sibling review."
+      "remaining": "Replacement eBay candidate passed the blocking HIGH/CRITICAL Trivy gate and MCP runtime tests. Keep scan_status pending until a post-publication Xray scan of the exact immutable digest; other embedded/official-payload copies remain unverified."
     },
     {
       "cve": "CVE-2026-90711",
@@ -5525,17 +5539,18 @@
       "patch_sha256": null,
       "images": {
         "ebay-mcp": {
-          "treatment": "dependency-pin-awaiting-build",
+          "treatment": "dependency-pin-built",
           "fixed_version": "2.0.8",
           "evidence": [
             "images/ebay-mcp/Dockerfile",
             "images/ebay-mcp/SECURITY-20261018.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "mcp-smoke:39133216899",
+          "scan_tag": "mcp-smoke:39143618442",
           "scan_digest": null,
-          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39133216899",
-          "latest_report_id": "ebay-mcp-trivy-20261018-pr87"
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39143618442",
+          "latest_report_id": "ebay-mcp-trivy-20261018-pr87-fixed",
+          "scan_result": "not-reported-by-trivy-candidate"
         },
         "agentmemory-mcp": {
           "treatment": "source-already-pins-fixed-version",
@@ -5548,7 +5563,7 @@
           "scan_url": null
         }
       },
-      "remaining": "Rebuild the eBay candidate, verify all installed copies, pass the blocking Trivy gate, then obtain a post-publication Xray scan of the exact digest. Other embedded/official-payload copies remain unverified; see report sibling review."
+      "remaining": "Replacement eBay candidate passed the blocking HIGH/CRITICAL Trivy gate and MCP runtime tests. Keep scan_status pending until a post-publication Xray scan of the exact immutable digest; other embedded/official-payload copies remain unverified."
     },
     {
       "cve": "CVE-2026-85393",
