@@ -120,7 +120,7 @@ jobs:
             printf '%s\n' "$image_ref" > evidence/image-digest.txt
           else
             image_ref=slim-docker-vsix-upgrades:validation
-            docker build --build-arg IMAGE_VERSION=2026.10.14 \
+            docker build --build-arg IMAGE_VERSION=2026.10.18 \
               --build-arg SOURCE_REVISION="$GITHUB_SHA" \
               -t "$image_ref" images/slim-docker-vsix-upgrades
           fi
@@ -176,3 +176,4 @@ jobs:
             evidence/slim/metadata/
             evidence/slim/sbom/
           retention-days: 30
+

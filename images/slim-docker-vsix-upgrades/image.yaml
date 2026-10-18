@@ -1,8 +1,9 @@
 # File: images/slim-docker-vsix-upgrades/image.yaml
 name: slim-docker-vsix-upgrades
-upstream_version: 2026.10.14
+upstream_version: 2026.10.18
 revision: 1
 publish:
   ghcr: true
   dockerhub: true
   latest: false
+
