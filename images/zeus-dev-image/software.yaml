@@ -57,46 +57,46 @@ python_packages:
     - {name: apache-airflow-providers-fab, version: constraints}
     - {name: msgpack, version: "1.2.3", note: "security fix; explicitly upgraded after providers"}
     - {name: urllib3, version: "2.8.0", note: "also pinned in AWS CLI venv and both pip vendor trees"}
-    - {name: PyJWT, version: "2.15.0"}
-    - {name: Mako, version: "1.4.2"}
+    - {name: PyJWT, version: "2.15.1"}
+    - {name: Mako, version: "1.4.3"}
     - {name: Werkzeug, version: "3.1.9"}
     - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
     - {name: pip, version: "26.2.1", note: "vendored urllib3 upgraded to 2.8.0 and msgpack to 1.2.3, bundled pkg_resources (setuptools 70.3.0) removed; SBOM and installation record kept consistent"}
-    - {name: numpy, version: "1.26.4"}
-    - {name: pandas, version: "2.2.3"}
-    - {name: psycopg2-binary, version: "2.9.11"}
+    - {name: numpy, version: "2.5.4"}
+    - {name: pandas, version: "3.0.6"}
+    - {name: psycopg2-binary, version: "2.9.13"}
     - {name: tabulate, version: "0.10.0"}
     - {name: sqlparse, version: "0.6.0"}
-    - {name: cryptography, version: "50.0.0"}
+    - {name: cryptography, version: "50.0.2"}
     - {name: colorama, version: "0.4.6"}
     - {name: PyYAML, version: "6.0.3"}
-    - {name: duckdb, version: "1.5.3"}
-    - {name: sqlglot, version: "30.4.2"}
-    - {name: s3fs, version: "2026.7.0"}
-    - {name: fsspec, version: "2026.7.0", note: "security fix; matches s3fs and Airflow constraints"}
+    - {name: duckdb, version: "1.5.6"}
+    - {name: sqlglot, version: "30.23.0"}
+    - {name: s3fs, version: "2026.9.0"}
+    - {name: fsspec, version: "2026.9.0", note: "security fix; resolved with s3fs and the installed Airflow providers"}
     - {name: asyncssh, version: "2.24.1", note: "security fix; explicitly upgraded after providers"}
     - {name: multidict, version: "6.9.1", note: "security fix; explicitly upgraded after providers"}
-    - {name: aiobotocore, version: "3.9.1", note: "Airflow constraint; resolved together with S3FS and boto3/botocore 1.43.75"}
+    - {name: aiobotocore, version: "3.9.2", note: "resolved together with S3FS and boto3/botocore 1.43.106; requires botocore >=1.43.101,<1.43.107"}
     - {name: jira, version: "3.10.5"}
     - {name: beautifulsoup4, version: "4.15.0"}
     - {name: html2text, version: "2025.4.15"}
-    - {name: markdown-it-py, version: "3.0.0"}
-    - {name: sqlfluff, version: "4.2.0"}
-    - {name: botocore, version: "1.43.75"}
-    - {name: boto3, version: "1.43.75"}
+    - {name: markdown-it-py, version: "4.2.0"}
+    - {name: sqlfluff, version: "4.4.0"}
+    - {name: botocore, version: "1.43.106"}
+    - {name: boto3, version: "1.43.106"}
     - {name: awscli, version: "1.46.1", note: "CLI v1; isolated in /opt/aws-cli with pip 26.2.1 and urllib3 2.8.0"}
-    - {name: ruff, version: "0.15.11", optional: true}
+    - {name: ruff, version: "0.17.1", optional: true}
     - {name: pyfiglet, version: unpinned, optional: true}
 
 npm_packages:
   source: https://www.npmjs.com/
   packages:
     - {name: pyright, version: unpinned, optional: true}
-    - {name: "@agentmemory/agentmemory", version: "0.9.29"}
-    - {name: "@agentmemory/mcp", version: "0.9.29"}
-    - {name: cline, version: "3.0.61", note: "CLI in /opt/cline, not VS Code extension"}
-    - {name: "@anthropic-ai/claude-code", version: "2.1.260"}
-    - {name: "@modelcontextprotocol/sdk", version: "1.32.0", note: "GitLab MCP dependencies only"}
+    - {name: "@agentmemory/agentmemory", version: "0.9.30"}
+    - {name: "@agentmemory/mcp", version: "0.9.30"}
+    - {name: cline, version: "3.0.73", note: "CLI in /opt/cline, not VS Code extension"}
+    - {name: "@anthropic-ai/claude-code", version: "2.1.302"}
+    - {name: "@modelcontextprotocol/sdk", version: "1.32.1", note: "GitLab MCP dependencies only"}
     - {name: axios, version: "1.20.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
     - {name: typescript, version: "6.0.3", note: "GitLab MCP dependencies only; avoids native Go compiler binary"}
@@ -116,7 +116,7 @@ npm_overrides:
       - {name: axios, version: "1.20.0"}
       - {name: simple-git, version: "4.0.1"}
       - {name: "@simple-git/argv-parser", version: "2.0.1"}
-      - {name: "@modelcontextprotocol/sdk", version: "1.32.0"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.32.1"}
       - {name: "@hono/node-server", version: "2.1.3"}
       - {name: "@ai-sdk/provider-utils@3", version: "3.0.41"}
       - {name: "@ai-sdk/provider-utils@4", version: "4.0.57"}
@@ -129,12 +129,12 @@ npm_overrides:
       - {name: axios, version: "1.20.0"}
       - {name: simple-git, version: "4.0.1"}
       - {name: "@simple-git/argv-parser", version: "2.0.1"}
-      - {name: "@modelcontextprotocol/sdk", version: "1.32.0"}
+      - {name: "@modelcontextprotocol/sdk", version: "1.32.1"}
       - {name: "@hono/node-server", version: "2.1.3"}
       - {name: "@ai-sdk/provider-utils@3", version: "3.0.41"}
       - {name: "@ai-sdk/provider-utils@4", version: "4.0.57"}
       - {name: "@ai-sdk/provider-utils@5", version: "5.0.53", note: "version-scoped overrides preserve supported major branches, including nested peers"}
-      - {name: iii-sdk, version: "0.11.2", note: "matches AgentMemory's pinned engine SDK"}
+      - {name: iii-sdk, version: "0.22.1", note: "matches AgentMemory 0.9.30 and its compatible engine SDK"}
       - {name: "@opentelemetry/api-logs", version: "0.200.0"}
       - {name: "@opentelemetry/core", version: "2.9.0"}
       - {name: "@opentelemetry/context-async-hooks", version: "2.9.0"}
@@ -157,11 +157,11 @@ downloaded_binaries:
 
 source_binaries:
   - name: bifrost-cli
-    version: "0.10.6"
-    source: https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli
-    commit: a0d7aafab999509121154452e455d970ae2572b4
-    toolchain: "Go 1.26.6"
-    note: Same CLI release; rebuilt with fixed Go toolchain, upstream tests, recorded build info and checksum.
+    version: "1.0.0"
+    source: https://github.com/maximhq/bifrost/tree/555e0ea5863f8e80f0735967657f889d7b5b8ba0/cli
+    commit: 555e0ea5863f8e80f0735967657f889d7b5b8ba0
+    toolchain: "Go 1.27.2"
+    note: Pinned CLI 1.0.0 release; built with fixed Go toolchain, upstream tests, recorded build info and checksum.
 
 source_builds:
   - name: pcre2
@@ -171,8 +171,8 @@ source_builds:
     note: "UBI10-native pcre2 and pcre2-syntax RPMs; upstream tests, exported ABI comparison and runtime Git/grep/DNF checks. Remove carry when UBI10 supplies equivalent fixes."
   - name: archify
     source: https://github.com/tt-a1i/archify
-    version: "2.17.0-dev.1"
-    commit: 06dd052602dd9a369e4d034e24faef0917b5a60c
+    version: "3.1.0"
+    commit: 1c2b42d660e4a7571813fb43839c79e3e9ca7720
     note: Git commit is also in image.yaml and Dockerfile.
   - name: xdg-user-dir
     source: https://gitlab.freedesktop.org/xdg/xdg-user-dirs
@@ -182,9 +182,10 @@ source_builds:
 
 build_only:
   - {name: golang, version: "1.26.8-alpine3.23", source: "https://hub.docker.com/_/golang", note: "Compose binary build-info verification only"}
-  - {name: golang, version: "1.26.6-alpine3.23", source: "https://hub.docker.com/_/golang", note: "Bifrost CLI source build; compiler excluded from final image"}
+  - {name: golang, version: "1.27.2-alpine3.24", source: "https://hub.docker.com/_/golang", note: "Bifrost CLI source build; compiler excluded from final image"}
   - {name: alpine, version: "3.23.4", source: "https://hub.docker.com/_/alpine", note: "Archify source stage; digest pinned in Dockerfile"}
   - {name: meson, version: "1.10.0", source: "https://pypi.org/project/meson/", note: "xdg-user-dir build stage"}
   - {name: ninja, version: "1.13.0", source: "https://pypi.org/project/ninja/", note: "xdg-user-dir build stage"}
   - {name: gcc, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
   - {name: git, version: repo, source: "Red Hat UBI 10 repositories", note: "xdg-user-dir build stage"}
+

@@ -22,16 +22,16 @@ Docker and does not prove a build has passed.
 - Docker CLI with `docker exec` for use through the host daemon; Buildx is excluded
 - `xdg-user-dir` from pinned xdg-user-dirs commit `cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb`
 - Apache Airflow 3.3.2 with Python 3.12 constraints and the selected providers
-- AWS CLI 1.46.1, boto3/botocore 1.43.75
-- AgentMemory CLI and MCP package 0.9.29, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
-- Bifrost CLI 0.10.6, installed and built from the same pinned source using Go 1.26.6
-- Cline CLI 3.0.61 with undici 6.28.1, and Claude Code CLI 2.1.260
-- SQLFluff 4.2.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.3 and setuptools 84.0.0
-- Security pins: urllib3 2.8.0 (main Python and AWS CLI), PyJWT 2.15.0, Mako 1.4.2, Werkzeug 3.1.9
-- GitLab MCP SDK 1.32.0 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
+- AWS CLI 1.46.1, boto3/botocore 1.43.106
+- AgentMemory CLI and MCP package 0.9.30, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
+- Bifrost CLI 1.0.0, installed and built from the same pinned source using Go 1.27.2
+- Cline CLI 3.0.73 with undici 6.28.1, and Claude Code CLI 2.1.302
+- SQLFluff 4.4.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.3 and setuptools 84.0.0
+- Security pins: urllib3 2.8.0 (main Python and AWS CLI), PyJWT 2.15.1, Mako 1.4.3, Werkzeug 3.1.9
+- GitLab MCP SDK 1.32.1 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
 - pip 26.2.1 for developer package management and the AWS CLI virtual environment, with vendored urllib3 upgraded to 2.8.0 and pip compatibility patches retained
 - TypeScript 6.0.3 for the GitLab MCP dependencies
-- Archify 2.17.0-dev.1 from pinned commit `06dd052602dd9a369e4d034e24faef0917b5a60c`
+- Archify 3.1.0 from pinned commit `1c2b42d660e4a7571813fb43839c79e3e9ca7720`
 - GitLab MCP Node dependencies under `/opt/gitlab-mcp-server/node_modules`
 - OS utilities and optional convenience tools in the Dockerfile
 
@@ -79,8 +79,7 @@ are not baked into the image. Other supported agents (Codex, Gemini, OpenCode)
 are not dependencies and are not added by this change; installing them from
 the chooser requires npm connectivity.
 
-The CLI is now compiled from the previously verified upstream commit using Go
-1.26.6. This preserves CLI 0.10.6 while addressing the Go compiler findings.
+The CLI is compiled from the pinned upstream 1.0.0 release using Go 1.27.2.
 The builder runs upstream tests and records `go version -m` output and a checksum;
 only the static linux/amd64 binary and verification metadata enter the final image.
 
@@ -94,7 +93,7 @@ storage. `BIFROST_NO_UPDATE_CHECK=1` disables upstream public update checks
 using its supported environment switch. Deliver updates by rebuilding the image.
 
 Source inspection matched the binary's embedded commit
-[`a0d7aaf`](https://github.com/maximhq/bifrost/tree/a0d7aafab999509121154452e455d970ae2572b4/cli).
+[`555e0ea`](https://github.com/maximhq/bifrost/tree/555e0ea5863f8e80f0735967657f889d7b5b8ba0/cli).
 The source-build checksum is checked during build and smoke validation.
 A live gateway/Bedrock session must be tested in the deployment environment.
 
@@ -109,3 +108,15 @@ upstream PR #1152 for CVE-2026-85393. Its regression rejects malformed signature
 and verifies valid ones during build/smoke. The upstream package version remains
 1.4.0, so scanners can still report it; this is a tested backport, not a released
 package upgrade. Unfixed RPMs remain subject to the rebuilt image's scan. Required developer tools are retained.
+
+
+## Source refresh 2026-10-18
+
+Zeus 2.1.0 upgrades the applications and Python pins listed in software.yaml.
+Airflow stays at 3.3.2. S3FS/fsspec 2026.9.0 and aiobotocore 3.9.2 require
+boto3/botocore 1.43.106; the individually newer 1.43.114 pair is incompatible.
+Keep multidict 6.9.1 because aiobotocore requires <7. TypeScript stays at 6.0.3
+to preserve the existing compiler design. AgentMemory 0.9.30 uses iii-sdk 0.22.1;
+its OpenTelemetry helper adaptation reuses the existing server-image carry.
+AgentMemory 0.9.30 enables REST authentication by default; preserve generated secrets/data
+outside the container. No deployed state is migrated by the image build.

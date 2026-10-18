@@ -10,7 +10,7 @@
 # Archify CLI source -- fetch the exact commit without carrying Git metadata
 # into the final image.
 # ============================================================
-ARG ARCHIFY_COMMIT=06dd052602dd9a369e4d034e24faef0917b5a60c
+ARG ARCHIFY_COMMIT=1c2b42d660e4a7571813fb43839c79e3e9ca7720
 ARG XDG_USER_DIRS_COMMIT=cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS archify-source
 ARG ARCHIFY_COMMIT
@@ -54,27 +54,28 @@ RUN set -e; \
     test "$(HOME=/tmp/xdg-user-dirs-test /out/usr/local/bin/xdg-user-dir DOCUMENTS)" = /tmp/xdg-user-dirs-test
 
 # ============================================================
-# Rebuild the unchanged Bifrost CLI source with Xray's fixed Go toolchain.
+# Build the pinned Bifrost CLI 1.0.0 release with the supported fixed Go toolchain.
 # ============================================================
-FROM golang:1.26.6-alpine3.23 AS bifrost-cli-build
-ARG BIFROST_CLI_COMMIT=a0d7aafab999509121154452e455d970ae2572b4
+FROM golang:1.27.2-alpine3.24@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS bifrost-cli-build
+ARG BIFROST_CLI_COMMIT=555e0ea5863f8e80f0735967657f889d7b5b8ba0
 ENV GOTOOLCHAIN=local GOWORK=off CGO_ENABLED=0
 RUN apk add --no-cache git \
     && git init /src \
     && git -C /src remote add origin https://github.com/maximhq/bifrost.git \
     && git -C /src fetch --depth 1 origin "$BIFROST_CLI_COMMIT" \
     && git -C /src checkout --detach FETCH_HEAD \
-    && test "$(git -C /src rev-parse HEAD)" = "$BIFROST_CLI_COMMIT"
+    && test "$(git -C /src rev-parse HEAD)" = "$BIFROST_CLI_COMMIT" \
+    && grep -Rqs BIFROST_NO_UPDATE_CHECK /src/cli
 WORKDIR /src/cli
 RUN set -eux; \
-    test "$(go env GOVERSION)" = go1.26.6; \
+    test "$(go env GOVERSION)" = go1.27.2; \
     go list -m all; \
     go test ./...; \
     mkdir -p /out; \
-    go build -trimpath -ldflags "-s -w -buildid= -X main.version=v0.10.6 -X main.commit=${BIFROST_CLI_COMMIT}" -o /out/bifrost .; \
+    go build -trimpath -ldflags "-s -w -buildid= -X main.version=v1.0.0 -X main.commit=${BIFROST_CLI_COMMIT}" -o /out/bifrost .; \
     go version -m /out/bifrost > /out/bifrost-build-info.txt; \
     cat /out/bifrost-build-info.txt; \
-    grep -q 'go1.26.6' /out/bifrost-build-info.txt; \
+    grep -q 'go1.27.2' /out/bifrost-build-info.txt; \
     /out/bifrost version; \
     cd /out; sha256sum bifrost > bifrost.sha256
 
@@ -145,7 +146,7 @@ RUN dnf upgrade -y \
 # project, so there is no single "upstream_version" to track. This ARG is
 # the version_arg the shared build-image.yml workflow expects; it labels
 # the image with the local zeus-dev-image release number from image.yaml.
-ARG ZEUS_DEV_IMAGE_VERSION=2.0.0
+ARG ZEUS_DEV_IMAGE_VERSION=2.1.0
 LABEL org.opencontainers.image.title="zeus-dev-image" \
       org.opencontainers.image.description="UBI10/Python 3.12 base image candidate: Airflow, AWS CLI, Cline, Claude Code, AgentMemory MCP" \
       org.opencontainers.image.version="${ZEUS_DEV_IMAGE_VERSION}"
@@ -278,45 +279,45 @@ RUN set -eux; \
     python3 -c "from airflow.providers.fab import __version__; print('FAB version:', __version__)"
 # ============================================================
 # Python dependencies
-# Resolve S3FS and the AWS SDK together; aiobotocore matches Airflow constraints.
+# Resolve S3FS and the AWS SDK together; aiobotocore bounds botocore to <1.43.107.
 # ============================================================
 COPY upgrade-pip-urllib3.py /tmp/upgrade-pip-urllib3.py
 COPY patch-pip-vendor.py /tmp/patch-pip-vendor.py
 RUN set -eux; \
     pip3 install --no-input --no-cache-dir --upgrade pip==26.2.1; \
     pip3 install --no-input --no-cache-dir \
-        numpy==1.26.4 \
-        pandas==2.2.3 \
-        psycopg2-binary==2.9.11 \
+        numpy==2.5.4 \
+        pandas==3.0.6 \
+        psycopg2-binary==2.9.13 \
         tabulate==0.10.0 \
         sqlparse==0.6.0 \
-        cryptography==50.0.0 \
+        cryptography==50.0.2 \
         colorama==0.4.6 \
         PyYAML==6.0.3 \
-        duckdb==1.5.3 \
-        sqlglot==30.4.2 \
-        s3fs==2026.7.0 \
-        fsspec==2026.7.0 \
-        aiobotocore==3.9.1 \
-        botocore==1.43.75 \
-        boto3==1.43.75 \
+        duckdb==1.5.6 \
+        sqlglot==30.23.0 \
+        s3fs==2026.9.0 \
+        fsspec==2026.9.0 \
+        aiobotocore==3.9.2 \
+        botocore==1.43.106 \
+        boto3==1.43.106 \
         jira==3.10.5 \
         beautifulsoup4==4.15.0 \
         html2text==2025.4.15 \
-        markdown-it-py==3.0.0; \
+        markdown-it-py==4.2.0; \
     \
-    pip3 install --no-input --no-cache-dir sqlfluff==4.2.0; \
+    pip3 install --no-input --no-cache-dir sqlfluff==4.4.0; \
     \
     python3 -m venv /opt/aws-cli; \
     /opt/aws-cli/bin/pip install --no-input --no-cache-dir awscli==1.46.1 pip==26.2.1 urllib3==2.8.0; \
     ln -sf /opt/aws-cli/bin/aws /usr/local/bin/aws; \
     aws --version; \
-    pip3 install --no-input --no-cache-dir ruff==0.15.11 \
+    pip3 install --no-input --no-cache-dir ruff==0.17.1 \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
-        urllib3==2.8.0 PyJWT==2.15.0 Mako==1.4.2 Werkzeug==3.1.9 \
+        urllib3==2.8.0 PyJWT==2.15.1 Mako==1.4.3 Werkzeug==3.1.9 \
         asyncssh==2.24.1 multidict==6.9.1; \
     python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
     python3 /tmp/upgrade-pip-urllib3.py; \
@@ -339,10 +340,10 @@ COPY patch-cline-simple-git.mjs /tmp/patch-cline-simple-git.mjs
 COPY patch-node-forge.cjs /usr/local/bin/patch-node-forge.cjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
-    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.11.2","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.22.1","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.1","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
     cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
-    npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.29; \
-    npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.29; \
+    npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.30; \
+    npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.30; \
     for prefix in /opt/agentmemory /opt/agentmemory-mcp; do \
         AGENTMEMORY_ROOT="$prefix" node /tmp/patch-iii-otel2.mjs; \
         (cd "$prefix" && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk OpenTelemetry compatibility smoke OK')"); \
@@ -350,17 +351,17 @@ RUN set -eux; \
     ln -sf /opt/agentmemory/node_modules/.bin/agentmemory /usr/local/bin/agentmemory; \
     ln -sf /opt/agentmemory-mcp/node_modules/@agentmemory/mcp/bin.mjs /usr/local/bin/agentmemory-mcp; \
     mkdir -p /opt/cline; \
-    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.0","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
-    npm install --prefix /opt/cline cline@3.0.61; \
+    printf '%s\n' '{"name":"zeus-cline","version":"1.0.0","private":true,"overrides":{"undici":"6.28.1","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.1","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53","@opentelemetry/core":"2.9.0"}}' > /opt/cline/package.json; \
+    npm install --prefix /opt/cline cline@3.0.73; \
     node /tmp/patch-cline-simple-git.mjs; \
     node /usr/local/bin/patch-node-forge.cjs; \
     ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
-    npm install -g @anthropic-ai/claude-code@2.1.260; \
+    npm install -g @anthropic-ai/claude-code@2.1.302; \
     cline --version; \
     claude --version; \
     rm -f /tmp/patch-iii-otel2.mjs /tmp/patch-cline-simple-git.mjs
 
-# Preserve the CLI release and source commit; only its Go toolchain changes.
+# Preserve the pinned CLI release, source commit and verified build information.
 COPY --from=bifrost-cli-build /out/bifrost /usr/local/bin/bifrost
 COPY --from=bifrost-cli-build /out/bifrost.sha256 /usr/local/share/zeus/bifrost.sha256
 COPY --from=bifrost-cli-build /out/bifrost-build-info.txt /usr/local/share/zeus/bifrost-build-info.txt
@@ -373,7 +374,7 @@ RUN cd /usr/local/bin && sha256sum -c /usr/local/share/zeus/bifrost.sha256 && bi
 # @modelcontextprotocol/sdk, axios, TypeScript, and Node.js types.
 RUN set -eux; \
     npm install --prefix /opt/gitlab-mcp-server --legacy-peer-deps \
-        @modelcontextprotocol/sdk@1.32.0 \
+        @modelcontextprotocol/sdk@1.32.1 \
         axios@1.20.0 \
         @types/node \
         typescript@6.0.3; \
@@ -390,7 +391,7 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
     && archify --help >/dev/null \
     && archify_version="$(node -p "require('/opt/archify/package.json').version")" \
     && echo "Archify version: ${archify_version}" \
-    && test "${archify_version}" = "2.17.0-dev.1"
+    && test "${archify_version}" = "3.1.0"
 
 # Remove inherited vi/Vim packages after the last installation. Keep unrelated
 # dependencies installed; the normal verification below checks remaining tools.
@@ -450,3 +451,4 @@ RUN chmod 755 /usr/local/bin/verify-installation.sh \
 # The UBI Python image defaults to an unprivileged runtime user.
 USER 1001
 CMD ["/bin/bash"]
+
