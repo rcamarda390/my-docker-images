@@ -2,6 +2,10 @@ name: Build and publish sqz MCP image
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - images/sqz-mcp/**
+      - .github/workflows/build-sqz-mcp.yml
 
 concurrency:
   group: sqz-mcp-publish
@@ -34,3 +38,4 @@ jobs:
       # Failed builds consume no revision and existing tags are never reused.
       revision_from_published_tag_count: true
       publish: ${{ github.event_name != 'pull_request' }}
+
