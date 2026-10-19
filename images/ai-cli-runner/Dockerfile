@@ -44,7 +44,11 @@ ARG IMAGE_VERSION=unknown
 # beyond the binaries; bash is for Claude Code's shell tool. Add nothing else
 # without an Xray-driven reason: every package is scanned.
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache --upgrade glibc \
+    && apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
     && apk add --no-cache git ca-certificates-bundle bash \
     && apk add --no-cache --upgrade 'zlib>=1.3.2.1_rc20260601-r0'
 # Xray: CVE-2026-85091 (7.4, CWE-787) in wolfi zlib 1.3.2-r5, fixed in
@@ -52,6 +56,17 @@ RUN apk upgrade --available --no-cache \
 # supply it; the check below proves it landed. Drop once the pinned WOLFI_IMAGE
 # base already carries a fixed zlib.
 RUN apk info -v zlib | grep -qv '^zlib-1.3.2-r5$'
+
+# Wolfi's 2.44-r8 fixes CVE-2026-86805, CVE-2026-89092 and CVE-2026-8674.
+# The base's apk world pins concrete packages to r6; virtual glibc cannot
+# override them. Upgrade libcrypt1 too: it requires the matching glibc revision.
+RUN set -eu; \
+    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+    done
 
 COPY --from=builder /out/opt /opt
 # Retain registry archives, integrity pins and flat payloads for Xray inspection.

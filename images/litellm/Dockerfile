@@ -42,9 +42,22 @@ FROM ${WOLFI_IMAGE} AS runtime
 ARG LITELLM_VERSION
 
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache --upgrade glibc \
+    && apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
     && apk add --no-cache ca-certificates libsndfile python3 \
     && adduser -D -u 10001 litellm
+
+# Same apk world pins as ai-cli-runner; libcrypt1 requires matching glibc.
+RUN set -eu; \
+    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+    done
 
 COPY --from=builder /opt/litellm /opt/litellm
 COPY patch-litellm-jwt-email.py /tmp/patch-litellm-jwt-email.py
