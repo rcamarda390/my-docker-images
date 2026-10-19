@@ -95,7 +95,7 @@ npm_packages:
     - {name: "@agentmemory/agentmemory", version: "0.9.30"}
     - {name: "@agentmemory/mcp", version: "0.9.30"}
     - {name: cline, version: "3.0.73", note: "CLI in /opt/cline, not VS Code extension"}
-    - {name: "@anthropic-ai/claude-code", version: "2.1.302"}
+    - {name: "@anthropic-ai/claude-code", version: "2.1.303"}
     - {name: "@modelcontextprotocol/sdk", version: "1.32.1", note: "GitLab MCP dependencies only"}
     - {name: axios, version: "1.20.0", note: "GitLab MCP dependencies only"}
     - {name: "@types/node", version: unpinned, note: "GitLab MCP dependencies only"}
@@ -171,8 +171,8 @@ source_builds:
     note: "UBI10-native pcre2 and pcre2-syntax RPMs; upstream tests, exported ABI comparison and runtime Git/grep/DNF checks. Remove carry when UBI10 supplies equivalent fixes."
   - name: archify
     source: https://github.com/tt-a1i/archify
-    version: "3.1.0"
-    commit: 1c2b42d660e4a7571813fb43839c79e3e9ca7720
+    version: "3.2.0"
+    commit: 208acba8d412335185b2056fedf54b3405df43fb
     note: Git commit is also in image.yaml and Dockerfile.
   - name: xdg-user-dir
     source: https://gitlab.freedesktop.org/xdg/xdg-user-dirs

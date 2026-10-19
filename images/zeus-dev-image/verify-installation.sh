@@ -136,7 +136,7 @@ for (const root of ["/opt/agentmemory", "/opt/agentmemory-mcp"]) {
 }
 '
 check "Cline CLI 3.0.73" 1 bash -o pipefail -c 'cline --version | grep -qwF 3.0.73'
-check "Claude Code CLI 2.1.302" 1 bash -o pipefail -c 'claude --version | grep -qwF 2.1.302'
+check "Claude Code CLI 2.1.303" 1 bash -o pipefail -c 'claude --version | grep -qwF 2.1.303'
 
 check "Xray fixed package versions" 1 python3 /usr/local/bin/verify-security.py
 check "node-forge CVE-2026-85393 backport" 1 node /usr/local/bin/patch-node-forge.cjs --check

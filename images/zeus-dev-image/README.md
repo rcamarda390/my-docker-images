@@ -25,13 +25,13 @@ Docker and does not prove a build has passed.
 - AWS CLI 1.46.1, boto3/botocore 1.43.106
 - AgentMemory CLI and MCP package 0.9.30, with OpenTelemetry 2.9.0 security overrides and the tested iii-sdk compatibility patch
 - Bifrost CLI 1.0.0, installed and built from the same pinned source using Go 1.27.2
-- Cline CLI 3.0.73 with undici 6.28.1, and Claude Code CLI 2.1.302
+- Cline CLI 3.0.73 with undici 6.28.1, and Claude Code CLI 2.1.303
 - SQLFluff 4.4.0 and the Python data/development packages in the Dockerfile, including security-pinned msgpack 1.2.3 and setuptools 84.0.0
 - Security pins: urllib3 2.8.0 (main Python and AWS CLI), PyJWT 2.15.1, Mako 1.4.3, Werkzeug 3.1.9
 - GitLab MCP SDK 1.32.1 and axios 1.20.0; Cline/AgentMemory overrides cover nested security dependencies; a narrow Cline import patch preserves compatibility with simple-git 4
 - pip 26.2.1 for developer package management and the AWS CLI virtual environment, with vendored urllib3 upgraded to 2.8.0 and pip compatibility patches retained
 - TypeScript 6.0.3 for the GitLab MCP dependencies
-- Archify 3.1.0 from pinned commit `1c2b42d660e4a7571813fb43839c79e3e9ca7720`
+- Archify 3.2.0 from pinned commit `208acba8d412335185b2056fedf54b3405df43fb`
 - GitLab MCP Node dependencies under `/opt/gitlab-mcp-server/node_modules`
 - OS utilities and optional convenience tools in the Dockerfile
 
