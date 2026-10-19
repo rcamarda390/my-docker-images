@@ -36,6 +36,11 @@ on:
         required: false
         default: ""
         type: string
+      # Data-only images have no executable; verify them from the runner host.
+      host_smoke_command:
+        required: false
+        default: ""
+        type: string
       # Override the image entrypoint for smoke commands that need a shell or another executable.
       smoke_entrypoint:
         required: false
@@ -417,6 +422,17 @@ jobs:
             network_args+=(--network none)
           fi
           timeout "$SMOKE_TIMEOUT" docker run --rm "${network_args[@]}" "${entrypoint_args[@]}" $SMOKE_ENV "$IMAGE" "${SMOKE_ARGS[@]}"
+
+      - name: Verify data-only image from host
+        if: inputs.run_smoke_test && inputs.host_smoke_command != ''
+        env:
+          IMAGE: mcp-smoke:${{ github.run_id }}
+          HOST_SMOKE_COMMAND: ${{ inputs.host_smoke_command }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          read -r -a command_args <<< "$HOST_SMOKE_COMMAND"
+          "${command_args[@]}" "$IMAGE"
 
       - name: Run health smoke test
         if: inputs.smoke_healthcheck

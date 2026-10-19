@@ -1,0 +1,7 @@
+name: gnosis-model-mdbr-leaf-ir
+upstream_version: 1.0.0
+revision: 1
+publish:
+  ghcr: false
+  dockerhub: true
+  latest: false
