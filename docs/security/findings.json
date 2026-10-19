@@ -26,6 +26,11 @@
       "date": "2026-10-18",
       "pr_url": "https://github.com/rcamarda390/my-docker-images/pull/87",
       "validation": "Source-version upgrade validation: all 40 previously pending tracker entries were rechecked (37 open, 3 upstream-review); no Debian fix or clearance was inferred. eBay candidate exposed four blocking npm findings; reuse fixed sibling pins with physical-copy assertions. Preserve and record Zeus's five advisory findings. All sibling source/runtime categories reviewed; unknown embedded copies remain explicitly unverified. Replacement eBay candidate run 39143618442 passes build, all physical-version assertions, MCP/health smoke and the blocking HIGH/CRITICAL Trivy gate."
+    },
+    {
+      "date": "2026-10-19",
+      "pr_url": null,
+      "validation": "AI CLI runner screenshot intake: three MEDIUM glibc rows. Vendor r8 fixes confirmed in Wolfi secdb and actual Chainguard APK index. Exact base-world r6 pins and matching libcrypt1 constraint established from published image. LiteLLM sibling requires same change. Fresh Debian tracker check reviewed 49 pending pairs; existing Debian treatments preserved. Candidate build/scan pending; no Xray clearance claimed."
     }
   ],
   "reports": [
@@ -2345,6 +2350,57 @@
       "commit": "3e88542c7d528979c870c9517c9f4b5dff2390ce",
       "observations": [],
       "note": "Existing blocking HIGH/CRITICAL Trivy gate passed. All three pinned dependencies were physically asserted in two pnpm runtime copies each. MCP initialization/tools-list (8 selected tools) and HTTP health passed. This candidate result is not a published-digest Xray clearance."
+    },
+    {
+      "id": "ai-cli-runner-xray-20261019",
+      "image": "ai-cli-runner",
+      "tag": "claude2.1.303-cline3.0.73-v1",
+      "digest": null,
+      "finding_count": 3,
+      "source": "User screenshot image(20261019-130754).png, supplied 2026-10-19. Scanned digest/vector not shown.",
+      "registry_observation": {
+        "date": "2026-10-19",
+        "digest": "sha256:83bddd39d51ed6753d80d05910999bea9384dcd965210aab4b21e9fda0b5f508",
+        "note": "Current public tag lookup; not proof of Xray scanned digest."
+      },
+      "observations": [
+        {
+          "cve": "CVE-2026-86805",
+          "component": "wolfi:ld-linux-2.44",
+          "cvss": "6.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "2.44-r6",
+          "fix_version": null
+        },
+        {
+          "cve": "CVE-2026-89092",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "cvss": "4.2",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-789"
+          ],
+          "installed_version": "2.44-r6",
+          "fix_version": null
+        },
+        {
+          "cve": "CVE-2026-8674",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "cvss": "5.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-617"
+          ],
+          "installed_version": "2.44-r6",
+          "fix_version": null
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -2352,7 +2408,18 @@
       "agentmemory": "2.41-12+deb13u4+rcamarda4",
       "headroom": "2.43-7+rcamarda1 (forky source rebuilt on trixie; candidate, unvalidated)",
       "gnosis": "2.41-12+deb13u4+rcamarda4",
-      "method": "Existing checksum-pinned backports plus checked-in resolver/loader patches and bounded regex backreference walks for CVE-2018-20796/CVE-2019-9192. Other legacy disputed findings remain open."
+      "method": "Existing checksum-pinned backports plus checked-in resolver/loader patches and bounded regex backreference walks for CVE-2018-20796/CVE-2019-9192. Other legacy disputed findings remain open.",
+      "wolfi": {
+        "fixed_version": "2.44-r8",
+        "images": [
+          "ai-cli-runner",
+          "litellm"
+        ],
+        "method": "Override concrete /etc/apk/world r6 pins for glibc-2.44, ld-linux-2.44, glibc-2.44-locale-posix and matching libcrypt1-2.44 using vendor packages. Build asserts installed versions.",
+        "evidence": [
+          "docs/security/WOLFI-GLIBC-20261019.md"
+        ]
+      }
     },
     "ncurses": {
       "agentmemory": "6.6+20260608-2+rcamarda1",
@@ -3484,7 +3551,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-19",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -3543,10 +3610,58 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "ai-cli-runner": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/ai-cli-runner/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "claude2.1.303-cline3.0.73-v1",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "ai-cli-runner-xray-20261019",
+          "scan_result": "still-reported"
+        },
+        "litellm": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/litellm/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending.",
-      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)"
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
+      "vendor_fixes": {
+        "wolfi": {
+          "source_package": "glibc-2.44",
+          "fixed_version": "2.44-r8",
+          "source": "https://packages.wolfi.dev/os/security.json",
+          "reviewed": "2026-10-19"
+        }
+      }
     },
     {
       "cve": "CVE-2026-54370",
@@ -4146,7 +4261,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-19",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -4205,10 +4320,58 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "ai-cli-runner": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/ai-cli-runner/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "claude2.1.303-cline3.0.73-v1",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "ai-cli-runner-xray-20261019",
+          "scan_result": "still-reported"
+        },
+        "litellm": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/litellm/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending.",
-      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)"
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
+      "vendor_fixes": {
+        "wolfi": {
+          "source_package": "glibc-2.44",
+          "fixed_version": "2.44-r8",
+          "source": "https://packages.wolfi.dev/os/security.json",
+          "reviewed": "2026-10-19"
+        }
+      }
     },
     {
       "cve": "CVE-2019-1010025",
@@ -4590,7 +4753,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-19",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -4649,10 +4812,58 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "ai-cli-runner": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/ai-cli-runner/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "claude2.1.303-cline3.0.73-v1",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "ai-cli-runner-xray-20261019",
+          "scan_result": "still-reported"
+        },
+        "litellm": {
+          "treatment": "vendor-upgrade-added-awaiting-build",
+          "suite": "wolfi",
+          "fixed_version": "2.44-r8",
+          "packages": [
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44"
+          ],
+          "evidence": [
+            "images/litellm/Dockerfile",
+            "docs/security/WOLFI-GLIBC-20261019.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md.",
-      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)"
+      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
+      "vendor_fixes": {
+        "wolfi": {
+          "source_package": "glibc-2.44",
+          "fixed_version": "2.44-r8",
+          "source": "https://packages.wolfi.dev/os/security.json",
+          "reviewed": "2026-10-19"
+        }
+      }
     },
     {
       "cve": "CVE-2026-102474",
