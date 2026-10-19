@@ -29,8 +29,8 @@
     },
     {
       "date": "2026-10-19",
-      "pr_url": null,
-      "validation": "AI CLI runner screenshot intake: three MEDIUM glibc rows. Vendor r8 fixes confirmed in Wolfi secdb and actual Chainguard APK index. Exact base-world r6 pins and matching libcrypt1 constraint established from published image. LiteLLM sibling requires same change. Fresh Debian tracker check reviewed 49 pending pairs; existing Debian treatments preserved. Candidate build/scan pending; no Xray clearance claimed."
+      "pr_url": "https://github.com/rcamarda390/my-docker-images/pull/95",
+      "validation": "AI CLI runner screenshot intake: three MEDIUM glibc rows. Vendor r8 fixes confirmed in Wolfi secdb and actual Chainguard APK index. Exact base-world r6 pins and matching libcrypt1 constraint established from published image. LiteLLM sibling requires same change. Fresh Debian tracker check reviewed 49 pending pairs; existing Debian treatments preserved. Both candidates built and assert all four actual packages at 2.44-r8. AI offline CLI smoke and LiteLLM health checks passed. Existing blocking HIGH/CRITICAL Trivy gates passed (runs 39258902768 and 39258902792). Publication pending manual workflow dispatch; no MEDIUM Xray clearance claimed."
     }
   ],
   "reports": [
@@ -3612,7 +3612,7 @@
           "scan_url": null
         },
         "ai-cli-runner": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -3630,10 +3630,25 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "ai-cli-runner-xray-20261019",
-          "scan_result": "still-reported"
+          "scan_result": "still-reported",
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902768",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "offline Claude/Cline/git smoke passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         },
         "litellm": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -3649,10 +3664,25 @@
           "scan_status": "pending",
           "scan_tag": null,
           "scan_digest": null,
-          "scan_url": null
+          "scan_url": null,
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902792",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "health/liveliness passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {
@@ -4322,7 +4352,7 @@
           "scan_url": null
         },
         "ai-cli-runner": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -4340,10 +4370,25 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "ai-cli-runner-xray-20261019",
-          "scan_result": "still-reported"
+          "scan_result": "still-reported",
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902768",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "offline Claude/Cline/git smoke passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         },
         "litellm": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -4359,10 +4404,25 @@
           "scan_status": "pending",
           "scan_tag": null,
           "scan_digest": null,
-          "scan_url": null
+          "scan_url": null,
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902792",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "health/liveliness passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {
@@ -4814,7 +4874,7 @@
           "scan_url": null
         },
         "ai-cli-runner": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -4832,10 +4892,25 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "ai-cli-runner-xray-20261019",
-          "scan_result": "still-reported"
+          "scan_result": "still-reported",
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902768",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "offline Claude/Cline/git smoke passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         },
         "litellm": {
-          "treatment": "vendor-upgrade-added-awaiting-build",
+          "treatment": "vendor-upgrade-built",
           "suite": "wolfi",
           "fixed_version": "2.44-r8",
           "packages": [
@@ -4851,10 +4926,25 @@
           "scan_status": "pending",
           "scan_tag": null,
           "scan_digest": null,
-          "scan_url": null
+          "scan_url": null,
+          "validation": {
+            "commit": "7ba970b1715a23ce213dd37eeb4385a67c7e439e",
+            "run_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/39258902792",
+            "installed_versions": {
+              "glibc-2.44": "2.44-r8",
+              "ld-linux-2.44": "2.44-r8",
+              "glibc-2.44-locale-posix": "2.44-r8",
+              "libcrypt1-2.44": "2.44-r8"
+            },
+            "build": "passed",
+            "runtime": "health/liveliness passed",
+            "trivy": "existing blocking HIGH/CRITICAL gate passed; not MEDIUM Xray clearance",
+            "published_tag": null,
+            "published_digest": null
+          }
         }
       },
-      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; builds and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {

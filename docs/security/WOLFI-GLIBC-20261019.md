@@ -51,7 +51,8 @@ gates remain unchanged. A passing Trivy gate does not clear these MEDIUM rows.
 | litellm | Same exact base; recent PR candidate run 39248408715 fetched the same repository and retained base glibc. Same normal package upgrade and assertions in final runtime. Builder-only r6 does not enter the final venv as an OS library. |
 | agentmemory-mcp, gnosis-mcp | Existing checksum-pinned glibc resolver/secure-loader backports; nscd absent. Retain Debian treatment and pending scan status. Wolfi package upgrades are not interchangeable with Debian fixes. |
 | headroom-mcp | Existing forky-source glibc 2.43-7 rebuild on trixie. Preserve it and pending Xray status. |
-| bifrost-mcp, ebay-mcp, docker-socket-proxy, sooperset-mcp-atlassian, sqz-mcp | Alpine/musl final runtime source recipes. No Wolfi package applicability established; embedded copies remain unknown without exact artifact inventory. |
+| bifrost-mcp, ebay-mcp, docker-socket-proxy, sooperset-mcp-atlassian | Alpine/musl final runtime source recipes. No Wolfi package applicability established; embedded copies remain unknown without exact artifact inventory. |
+| sqz-mcp | Scratch final image copies a Rust binary built on Alpine's musl target. No Wolfi package enters the recipe; exact binary linkage remains an artifact verification item. |
 | zeus-dev-image | UBI final runtime. Requires Red Hat-specific review; Wolfi r8 is not a compatible replacement. |
 | slim-archify, slim-agentmemory-mcp, slim-docker-vsix, slim-docker-vsix-upgrades, slim-docker-codeburn, gnosis-model-mdbr-leaf-ir | Scratch payloads; do not inherit builder glibc by base image alone. Embedded/native dependency coverage remains artifact-specific. Gnosis model contains only approved data files. |
 
@@ -75,9 +76,21 @@ This does not clear existing Debian findings or replace their carried fixes.
 
 ## Validation status
 
-Candidate builds, package-version assertions, existing runtime tests and
-scans pending. Revisions have floor 2 and publication chooses the next
-unused tag; preserve upstream CLI/LiteLLM versions. All three ledger rows
-remain pending until a fresh Xray report identifies the rebuilt digest.
+Both candidates passed on commit 7ba970b1715a23ce213dd37eeb4385a67c7e439e:
+
+- AI CLI runner run 39258902768: all four actual packages report 2.44-r8;
+  Claude 2.1.303, Cline 3.0.73 and git work with networking disabled; archive
+  checksums and the existing blocking HIGH/CRITICAL Trivy gate passed.
+- LiteLLM run 39258902792: all four actual packages report 2.44-r8;
+  health/liveliness and the existing blocking HIGH/CRITICAL Trivy gate passed.
+
+Publication remains pending manual workflow dispatch. Revisions have floor 2
+and publication chooses the next unused tag; upstream application versions
+are unchanged. All three ledger rows remain pending until a fresh Xray
+report identifies and clears the rebuilt digest.
+
+- https://github.com/rcamarda390/my-docker-images/pull/95
+- https://github.com/rcamarda390/my-docker-images/actions/runs/39258902768
+- https://github.com/rcamarda390/my-docker-images/actions/runs/39258902792
 
 Agent: OpenAI Codex /root. LLM: GPT-6.
