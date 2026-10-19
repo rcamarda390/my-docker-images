@@ -53,7 +53,7 @@ RUN apk upgrade --available --no-cache \
 # Same apk world pins as ai-cli-runner; libcrypt1 requires matching glibc.
 RUN set -eu; \
     for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
-        installed=$(apk info -v "$package" | sed -n "s/^${package}-//p"); \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
         test -n "$installed"; \
         test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
         printf '%s=%s\n' "$package" "$installed"; \

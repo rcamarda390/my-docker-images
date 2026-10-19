@@ -62,7 +62,7 @@ RUN apk info -v zlib | grep -qv '^zlib-1.3.2-r5$'
 # override them. Upgrade libcrypt1 too: it requires the matching glibc revision.
 RUN set -eu; \
     for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
-        installed=$(apk info -v "$package" | sed -n "s/^${package}-//p"); \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
         test -n "$installed"; \
         test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
         printf '%s=%s\n' "$package" "$installed"; \
