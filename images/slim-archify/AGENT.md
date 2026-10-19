@@ -4,7 +4,7 @@ Baked at `/slim/AGENT.md`. Read first.
 
 ## What
 
-- `archify` skill 3.1.0 (Node ESM scripts, MIT) + `node` binary. Copy-only. NO install step.
+- `archify` skill 3.2.0 (Node ESM scripts, MIT) + `node` binary. Copy-only. NO install step.
 - Trimmed: no `test/`, no example HTML (~3.7 MB). Kept: everything `doctor` requires.
 - Node kept in payload on purpose: internal Artifactory Node may be old. Payload node = known version.
 - Method: `copy` (see `manifest.json` → `method`).
@@ -21,7 +21,7 @@ Baked at `/slim/AGENT.md`. Read first.
 ## Use (build time, preferred)
 
 ```dockerfile
-COPY --from=docker.io/rcamarda390/slim-archify:3.1.0-v1@sha256:<digest> /slim/payload/ /opt/slim/
+COPY --from=docker.io/rcamarda390/slim-archify:3.2.0-v1@sha256:<digest> /slim/payload/ /opt/slim/
 RUN ln -s /opt/slim/node/bin/node /usr/bin/node
 # skill install for Claude Code:
 RUN mkdir -p /home/<user>/.claude/skills && cp -a /opt/slim/archify /home/<user>/.claude/skills/archify
@@ -34,7 +34,7 @@ Always pin by digest. Digest must be the one Xray scanned.
 Docker Engine 28+:
 
 ```bash
-docker run --mount type=image,source=docker.io/rcamarda390/slim-archify:3.1.0-v1@sha256:<digest>,target=/opt/slimroot,readonly ...
+docker run --mount type=image,source=docker.io/rcamarda390/slim-archify:3.2.0-v1@sha256:<digest>,target=/opt/slimroot,readonly ...
 # files at /opt/slimroot/slim/payload/...
 ```
 

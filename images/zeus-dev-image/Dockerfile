@@ -10,7 +10,7 @@
 # Archify CLI source -- fetch the exact commit without carrying Git metadata
 # into the final image.
 # ============================================================
-ARG ARCHIFY_COMMIT=1c2b42d660e4a7571813fb43839c79e3e9ca7720
+ARG ARCHIFY_COMMIT=208acba8d412335185b2056fedf54b3405df43fb
 ARG XDG_USER_DIRS_COMMIT=cd05b6d29da1abdb3cd253ef496ae7fd1593e4bb
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS archify-source
 ARG ARCHIFY_COMMIT
@@ -356,7 +356,7 @@ RUN set -eux; \
     node /tmp/patch-cline-simple-git.mjs; \
     node /usr/local/bin/patch-node-forge.cjs; \
     ln -sf /opt/cline/node_modules/cline/bin/cline /usr/local/bin/cline; \
-    npm install -g @anthropic-ai/claude-code@2.1.302; \
+    npm install -g @anthropic-ai/claude-code@2.1.303; \
     cline --version; \
     claude --version; \
     rm -f /tmp/patch-iii-otel2.mjs /tmp/patch-cline-simple-git.mjs
@@ -391,7 +391,7 @@ RUN ln -sf /opt/archify/bin/archify.mjs /usr/local/bin/archify \
     && archify --help >/dev/null \
     && archify_version="$(node -p "require('/opt/archify/package.json').version")" \
     && echo "Archify version: ${archify_version}" \
-    && test "${archify_version}" = "3.1.0"
+    && test "${archify_version}" = "3.2.0"
 
 # Remove inherited vi/Vim packages after the last installation. Keep unrelated
 # dependencies installed; the normal verification below checks remaining tools.
