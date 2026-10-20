@@ -1,0 +1,47 @@
+name: Build Headroom model cache
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - images/headroom-model-hf/**
+      - .github/workflows/build-headroom-model-hf.yml
+      - .github/workflows/build-image.yml
+  push:
+    branches: [main]
+    paths:
+      - images/headroom-model-hf/**
+      - .github/workflows/build-headroom-model-hf.yml
+      - .github/workflows/build-image.yml
+
+concurrency:
+  group: headroom-model-hf-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-image.yml
+    with:
+      image_name: headroom-model-hf
+      context: ./images/headroom-model-hf
+      dockerfile: ./images/headroom-model-hf/Dockerfile
+      config: images/headroom-model-hf/image.yaml
+      version_arg: MODEL_VERSION
+      revision_arg: MODEL_REVISION
+      platforms: linux/amd64
+      prepare_requirements: images/headroom-model-hf/requirements-prepare.txt
+      prepare_script: images/headroom-model-hf/prepare.py
+      build_log_path: headroom-model-hf-0.41.0-ext-v1-manifests/build.log
+      artifact_path: headroom-model-hf-0.41.0-ext-v1-manifests/
+      artifact_name: headroom-model-hf-0.41.0-ext-v1
+      run_smoke_test: true
+      host_smoke_command: python3 images/headroom-model-hf/verify.py
+      scan: true
+      publish: false
+      publish_ghcr: false
+      publish_dockerhub: false
