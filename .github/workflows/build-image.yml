@@ -41,6 +41,26 @@ on:
         required: false
         default: ""
         type: string
+      prepare_requirements:
+        required: false
+        default: ""
+        type: string
+      prepare_script:
+        required: false
+        default: ""
+        type: string
+      build_log_path:
+        required: false
+        default: ""
+        type: string
+      artifact_path:
+        required: false
+        default: ""
+        type: string
+      artifact_name:
+        required: false
+        default: ""
+        type: string
       # Override the image entrypoint for smoke commands that need a shell or another executable.
       smoke_entrypoint:
         required: false
@@ -384,12 +404,31 @@ jobs:
           puts "PUBLISH_TAGS"
           RUBY
 
+      - name: Set up Python for image preparation
+        if: inputs.prepare_script != ''
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Prepare build context
+        if: inputs.prepare_script != ''
+        env:
+          PREPARE_REQUIREMENTS: ${{ inputs.prepare_requirements }}
+          PREPARE_SCRIPT: ${{ inputs.prepare_script }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "$PREPARE_REQUIREMENTS" ]; then
+            python -m pip install --disable-pip-version-check -r "$PREPARE_REQUIREMENTS"
+          fi
+          python "$PREPARE_SCRIPT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
       - name: Build smoke-test image
         id: smoke_build
-        if: inputs.run_smoke_test || inputs.scan
+        if: (inputs.run_smoke_test || inputs.scan) && inputs.build_log_path == ''
         uses: docker/build-push-action@v7
         with:
           context: ${{ inputs.context }}
@@ -400,6 +439,27 @@ jobs:
             ${{ inputs.version_arg }}=${{ steps.meta.outputs.upstream_version }}
             ${{ steps.meta.outputs.build_args }}
           tags: mcp-smoke:${{ github.run_id }}
+
+      - name: Build network-disabled smoke-test image
+        id: logged_smoke_build
+        if: (inputs.run_smoke_test || inputs.scan) && inputs.build_log_path != ''
+        env:
+          CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          PLATFORMS: ${{ inputs.platforms }}
+          BUILD_LOG_PATH: ${{ inputs.build_log_path }}
+          VERSION_ARG: ${{ inputs.version_arg }}
+          UPSTREAM_VERSION: ${{ steps.meta.outputs.upstream_version }}
+          BUILD_ARGS: ${{ steps.meta.outputs.build_args }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$BUILD_LOG_PATH")"
+          args=(--network=none --platform "$PLATFORMS" --load --progress=plain --file "$DOCKERFILE" --tag "mcp-smoke:${{ github.run_id }}" --build-arg "$VERSION_ARG=$UPSTREAM_VERSION")
+          while IFS= read -r arg; do
+            [ -z "$arg" ] || args+=(--build-arg "$arg")
+          done <<< "$BUILD_ARGS"
+          docker buildx build "${args[@]}" "$CONTEXT" 2>&1 | tee "$BUILD_LOG_PATH"
 
       - name: Run smoke test
         if: inputs.run_smoke_test && inputs.smoke_command != ''
@@ -479,7 +539,7 @@ jobs:
       # build error under a misleading scanner failure.
       - name: Scan candidate image with Trivy
         id: scan
-        if: ${{ !cancelled() && inputs.scan && steps.smoke_build.outcome == 'success' }}
+        if: ${{ !cancelled() && inputs.scan && (steps.smoke_build.outcome == 'success' || steps.logged_smoke_build.outcome == 'success') }}
         continue-on-error: ${{ !inputs.block_on_scan_failure }}
         uses: aquasecurity/trivy-action@v0.36.0
         env:
@@ -492,6 +552,15 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: false
           exit-code: "1"
+
+      - name: Upload build artifacts
+        if: ${{ success() && inputs.artifact_path != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name != '' && inputs.artifact_name || inputs.image_name }}
+          path: ${{ inputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 30
 
       # Preserve blocking scan failures even when the action masks its own
       # non-zero result under continue-on-error.
