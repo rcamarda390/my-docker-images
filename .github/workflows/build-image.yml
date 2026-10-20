@@ -555,7 +555,7 @@ jobs:
 
       - name: Upload build artifacts
         if: ${{ success() && inputs.artifact_path != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name != '' && inputs.artifact_name || inputs.image_name }}
           path: ${{ inputs.artifact_path }}

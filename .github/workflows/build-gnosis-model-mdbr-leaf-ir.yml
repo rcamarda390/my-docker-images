@@ -65,7 +65,7 @@ jobs:
             echo 'Base: scratch. Data only; no ENTRYPOINT or CMD.'
             echo 'Xray clearance must be confirmed in Artifactory.'
           } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: gnosis-model-verification
           path: verification.txt
