@@ -109,7 +109,11 @@ def main() -> None:
     config = inspect["Config"]
     labels = config.get("Labels") or {}
     assert inspect["Os"] == "linux" and inspect["Architecture"] == "amd64"
-    assert not config.get("Env") and not config.get("Cmd") and not config.get("Entrypoint")
+    # Docker/BuildKit injects its standard PATH even for FROM scratch; reject
+    # any other environment setting as user-defined runtime configuration.
+    environment = config.get("Env") or []
+    assert len(environment) <= 1 and all(item.startswith("PATH=") for item in environment), environment
+    assert not config.get("Cmd") and not config.get("Entrypoint")
     assert not config.get("User")
     assert labels.get("headroom.kompress.revision") == "b1563631b35bfdcee37587ad530147497d820d4c"
     assert labels.get("headroom.modernbert.revision") == "8949b909ec900327062f0ebf497f51aef5e6f0c8"
