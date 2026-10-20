@@ -1,4 +1,4 @@
-name: Build Headroom model cache
+name: Build and publish slim headroom payload image
 
 on:
   workflow_dispatch:
