@@ -16,13 +16,16 @@ import tarfile
 import tempfile
 
 
-TAG = "0.41.0-ext-v1"
+TAG = "0.41.0-ext-v2"
 IMAGE = f"headroom-model-hf:{TAG}"
 CANDIDATE_IMAGE = sys.argv[1]
 ROOT = pathlib.Path(__file__).resolve().parent
 ARTIFACTS = ROOT.parents[1] / f"headroom-model-hf-{TAG}-manifests"
 VERIFIER_IMAGE = "python:3.12-slim"
-VERIFIER_VENV = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v1"
+VERIFIER_VENV = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v2"
+TIKTOKEN_URL = "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
+TIKTOKEN_SHA256 = "223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7"
+TIKTOKEN_CACHE_KEY = hashlib.sha1(TIKTOKEN_URL.encode("utf-8")).hexdigest()
 FORBIDDEN_SUFFIXES = (".bin", ".pt", ".pth", ".pkl", ".ckpt", ".pickle")
 
 
@@ -46,12 +49,14 @@ def offline_test(cache: pathlib.Path, pin_setting: str | None = None) -> str:
         "-e", "HF_HOME=/opt/headroom-cache/huggingface",
         "-e", "HF_HUB_OFFLINE=1",
         "-e", "TRANSFORMERS_OFFLINE=1",
+        "-e", "TIKTOKEN_CACHE_DIR=/opt/headroom-cache/tiktoken",
     ]
     if pin_setting is not None:
         command.extend(["-e", f"HEADROOM_HF_PIN={pin_setting}"])
     code = r'''
 from pathlib import Path
 import onnxruntime as ort
+import tiktoken
 from tokenizers import Tokenizer
 base = Path("/opt/headroom-cache/huggingface/hub")
 model = (base / "models--chopratejas--kompress-v2-base/snapshots/b1563631b35bfdcee37587ad530147497d820d4c/onnx/kompress-int8-wo.onnx").resolve()
@@ -63,6 +68,7 @@ tokenizer_path = (base / "models--answerdotai--ModernBERT-base/snapshots/8949b90
 tokenizer = Tokenizer.from_file(str(tokenizer_path))
 print("TOKENIZER_PATH", tokenizer_path)
 print("ENCODE_HELLO_WORLD", tokenizer.encode("hello world").ids)
+print("TIKTOKEN_HELLO_WORLD", tiktoken.get_encoding("cl100k_base").encode("hello world"))
 from headroom.onnx_runtime import hf_hub_download_local_first
 print("HEADROOM_LOADER_PATH", hf_hub_download_local_first("chopratejas/kompress-v2-base", "onnx/kompress-int8-wo.onnx", allow_network=False))
 '''
@@ -84,6 +90,15 @@ def main() -> None:
     report.append("V1: image integrity")
     checksum = subprocess.check_output(["sha256sum", "-c", "SHA256SUMS"], cwd=verify_dir, text=True)
     report.append(checksum.rstrip())
+    tiktoken_path = verify_dir / "tiktoken" / TIKTOKEN_CACHE_KEY
+    assert tiktoken_path.is_file() and sha256(tiktoken_path) == TIKTOKEN_SHA256
+    payload_manifest = json.loads((verify_dir / "manifest.json").read_text(encoding="utf-8"))
+    payload_sbom = json.loads((verify_dir / "sbom.cdx.json").read_text(encoding="utf-8"))
+    assert payload_manifest["image_tag"] == TAG
+    assert any(item["sha256"] == TIKTOKEN_SHA256 and item["image_path"] == f"/opt/headroom-cache/tiktoken/{TIKTOKEN_CACHE_KEY}" for item in payload_manifest["assets"])
+    assert payload_sbom["bomFormat"] == "CycloneDX" and payload_sbom["specVersion"] == "1.6"
+    assert any(item["name"] == "cl100k_base.tiktoken" for item in payload_sbom["components"])
+    report.append("Embedded asset manifest, CycloneDX SBOM, and tiktoken cache file: PASS")
     for path in verify_dir.rglob("*"):
         if path.is_symlink():
             continue
@@ -117,9 +132,11 @@ def main() -> None:
     assert not config.get("User")
     assert labels.get("headroom.kompress.revision") == "b1563631b35bfdcee37587ad530147497d820d4c"
     assert labels.get("headroom.modernbert.revision") == "8949b909ec900327062f0ebf497f51aef5e6f0c8"
-    assert len(inspect["RootFS"]["Layers"]) == 2, inspect["RootFS"]["Layers"]
+    assert labels.get("org.opencontainers.image.version") == TAG
+    assert labels.get("headroom.tiktoken.sha256") == TIKTOKEN_SHA256
+    assert len(inspect["RootFS"]["Layers"]) == 3, inspect["RootFS"]["Layers"]
     copy_rows = [line for line in history.splitlines() if "COPY " in line]
-    assert len(copy_rows) == 2, copy_rows
+    assert len(copy_rows) == 3, copy_rows
     report.extend([
         "V3: image hygiene",
         f"Image ID: {inspect['Id']}",
@@ -160,13 +177,13 @@ def main() -> None:
         assert "manifest.json" in members
         manifest = json.load(saved_archive.extractfile("manifest.json"))
         layers = manifest[0]["Layers"]
-        assert len(layers) == 2, layers
+        assert len(layers) == 3, layers
         assert all(layer in members for layer in layers), layers
     digest = sha256(archive)
     (ARTIFACTS / "image.tar.gz.sha256").write_text(f"{digest}  image.tar.gz\n", encoding="ascii")
     report.append(f"Docker archive: {archive.name}, {archive.stat().st_size} bytes, SHA-256 {digest}")
     report.append(f"Saved archive includes manifest.json and {len(layers)} image layers: PASS")
-    report.append("Registry publication: disabled")
+    report.append("Registry publication is handled by the main-branch build workflow.")
     (ARTIFACTS / "verification-output.txt").write_text("\n\n".join(report) + "\n", encoding="utf-8")
     print((ARTIFACTS / "verification-output.txt").read_text(encoding="utf-8"))
 
