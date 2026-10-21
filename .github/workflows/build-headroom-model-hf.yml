@@ -26,6 +26,7 @@ permissions:
 jobs:
   build:
     uses: ./.github/workflows/build-image.yml
+    secrets: inherit
     with:
       image_name: headroom-model-hf
       context: ./images/headroom-model-hf
@@ -44,4 +45,4 @@ jobs:
       scan: true
       publish: ${{ github.ref == 'refs/heads/main' }}
       publish_ghcr: true
-      publish_dockerhub: false
+      publish_dockerhub: true
