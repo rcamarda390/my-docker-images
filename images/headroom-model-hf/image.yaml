@@ -3,5 +3,5 @@ upstream_version: 0.41.0-ext
 revision: 2
 publish:
   ghcr: true
-  dockerhub: true
+  dockerhub: false
   latest: false
