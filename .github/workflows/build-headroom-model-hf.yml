@@ -44,4 +44,4 @@ jobs:
       scan: true
       publish: ${{ github.ref == 'refs/heads/main' }}
       publish_ghcr: true
-      publish_dockerhub: true
+      publish_dockerhub: false
