@@ -4,30 +4,51 @@ Data-only Hugging Face cache for `headroom-ai==0.41.0`. The final image is
 `FROM scratch`, targets `linux/amd64`, and has no executable, shell, entrypoint,
 or command. The PR workflow builds and scans a candidate without publishing it
 to a registry, then attaches an importable Docker archive and Xray support
-manifests to the workflow run.
+manifests to the workflow run. The main-branch build publishes
+`ghcr.io/rcamarda390/headroom-model-hf:0.41.0-ext-v2` and the matching Docker
+Hub tag.
 
 The build downloads only the pinned Kompress ONNX model and the required
-Kompress and ModernBERT tokenizer/configuration files. `prepare.py` checks the
-pins against the 0.41.0 wheel, records current `main` revisions, repo license
-and gated status, and generates the standard Hugging Face cache layout and
-checksums. `verify.py` checks the image contents, offline loading, metadata,
-and Docker archive.
+Kompress and ModernBERT tokenizer/configuration files. It also places the
+OpenAI `cl100k_base` vocabulary in tiktoken's URL-hash cache layout, so it can
+load offline when `TIKTOKEN_CACHE_DIR` points to `/opt/headroom-cache/tiktoken`.
+`prepare.py` checks the model pins against the 0.41.0 wheel, records current
+`main` revisions, repo license and gated status, and generates checksums, a
+file manifest, a CycloneDX SBOM, and source/Xray notes. The manifest and SBOM
+are included in the image. `verify.py` checks the image contents and actual
+offline loading of the ONNX model, ModernBERT tokenizer, and cl100k tokenizer.
 
 ## Import and use
 
-Download the `headroom-model-hf-0.41.0-ext-v1` artifact from the successful
-GitHub Actions run, extract the artifact ZIP, then load the image archive:
+On a connected host, pull the published image:
 
 ```sh
-gunzip -c image.tar.gz | docker load
-cid=$(docker create --network none headroom-model-hf:0.41.0-ext-v1 /nonexistent)
+docker pull ghcr.io/rcamarda390/headroom-model-hf:0.41.0-ext-v2
+```
+
+For an air-gapped host, download the `headroom-model-hf-0.41.0-ext-v2`
+workflow artifact, extract it, verify the archive, and load it:
+
+```sh
+sha256sum -c image.tar.gz.sha256
+gzip -dc image.tar.gz | docker load
+```
+
+Then copy the cache contents out of the image:
+
+```sh
+# This local tag is present after `docker load`; use the GHCR reference after `docker pull`.
+IMAGE=headroom-model-hf:0.41.0-ext-v2
+cid=$(docker create --network none "$IMAGE" /nonexistent)
 mkdir -p ./headroom-cache
 docker cp "$cid:/opt/headroom-cache/." ./headroom-cache/
 docker rm "$cid"
 ```
 
 The image itself has no command to run. Copy `/opt/headroom-cache` into the
-Headroom runtime's configured cache mount or volume. Verify it with:
+Headroom runtime image or configured cache volume. Set
+`TIKTOKEN_CACHE_DIR=/opt/headroom-cache/tiktoken` in that runtime so tiktoken
+uses the bundled vocabulary. Verify the assets with:
 
 ```sh
 (cd ./headroom-cache && sha256sum -c SHA256SUMS)
