@@ -16,13 +16,13 @@ import tarfile
 import tempfile
 
 
-TAG = "0.41.0-ext-v2"
+TAG = "0.41.0-ext-v3"
 IMAGE = f"headroom-model-hf:{TAG}"
 CANDIDATE_IMAGE = sys.argv[1]
 ROOT = pathlib.Path(__file__).resolve().parent
 ARTIFACTS = ROOT.parents[1] / f"headroom-model-hf-{TAG}-manifests"
 VERIFIER_IMAGE = "python:3.12-slim"
-VERIFIER_VENV = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v2"
+VERIFIER_VENV = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v3"
 TIKTOKEN_URL = "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
 TIKTOKEN_SHA256 = "223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7"
 TIKTOKEN_CACHE_KEY = hashlib.sha1(TIKTOKEN_URL.encode("utf-8")).hexdigest()
