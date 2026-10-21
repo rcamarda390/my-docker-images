@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 import zipfile
 
 from huggingface_hub import HfApi, __version__ as HF_HUB_VERSION, snapshot_download
@@ -20,10 +21,36 @@ from huggingface_hub import HfApi, __version__ as HF_HUB_VERSION, snapshot_downl
 
 ROOT = pathlib.Path(__file__).resolve().parent
 REPO_ROOT = ROOT.parents[1]
-TAG = "0.41.0-ext-v1"
+TAG = "0.41.0-ext-v2"
 ARTIFACTS = REPO_ROOT / f"headroom-model-hf-{TAG}-manifests"
 LICENSE = "Apache-2.0"
 LICENSE_URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+TIKTOKEN_URL = "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
+TIKTOKEN_SHA256 = "223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7"
+TIKTOKEN_SIZE = 1681126
+TIKTOKEN_CACHE_KEY = hashlib.sha1(TIKTOKEN_URL.encode("utf-8")).hexdigest()
+ATTACHED_ASSETS = {
+    ("chopratejas/kompress-v2-base", "onnx/kompress-int8-wo.onnx"): (
+        274049435,
+        "c47ddd764dec5cf91fd1f10cf69e5538dd2a49d913828da7f6a993931cc7904f",
+    ),
+    ("answerdotai/ModernBERT-base", "config.json"): (
+        1193,
+        "1609d59e627c33eaed524b4f01e546d42e84190a079a5a5ded84b212c41c324f",
+    ),
+    ("answerdotai/ModernBERT-base", "special_tokens_map.json"): (
+        694,
+        "ea97ecdbcc73713039d8d64dbb05e3689495c96657fbd9a18f5bed381be81049",
+    ),
+    ("answerdotai/ModernBERT-base", "tokenizer.json"): (
+        2132967,
+        "9fd55248d51d33976b324fc11592e28071da7d41e0e9401dfb7082e30574b7b1",
+    ),
+    ("answerdotai/ModernBERT-base", "tokenizer_config.json"): (
+        20810,
+        "3cd2017ff46d0a527e5d39cae39272eccfa1f19bb9f89b05d166aab2e38354e2",
+    ),
+}
 MODELS = {
     "chopratejas/kompress-v2-base": {
         "revision": "b1563631b35bfdcee37587ad530147497d820d4c",
@@ -96,7 +123,7 @@ def remove_extra_cache_metadata(hub: pathlib.Path) -> None:
 def prepare_verification_venv() -> tuple[str, str]:
     """Install test packages online into a Python 3.12 venv for later offline use."""
     image = "python:3.12-slim"
-    venv = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v1"
+    venv = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v2"
     if venv.exists():
         shutil.rmtree(venv)
     venv.mkdir(parents=True)
@@ -131,6 +158,10 @@ def main() -> None:
     if hub.exists():
         shutil.rmtree(hub)
     hub.mkdir(parents=True)
+    tiktoken_cache = ROOT / "tiktoken"
+    if tiktoken_cache.exists():
+        shutil.rmtree(tiktoken_cache)
+    tiktoken_cache.mkdir(parents=True)
     if ARTIFACTS.exists():
         shutil.rmtree(ARTIFACTS)
     ARTIFACTS.mkdir(parents=True)
@@ -182,10 +213,17 @@ def main() -> None:
                 raise RuntimeError(f"Forbidden pickle-based file present: {repo}/{name}")
             size = path.stat().st_size
             digest = sha256(path)
+            expected_asset = ATTACHED_ASSETS.get((repo, name))
+            if expected_asset and (size, digest) != expected_asset:
+                raise RuntimeError(
+                    f"Attached asset mismatch for {repo}/{name}: "
+                    f"got {size} bytes, {digest}; expected {expected_asset[0]} bytes, {expected_asset[1]}"
+                )
             if name == info["primary_file"]:
                 source_records[repo]["primary_sha256"] = digest
             inventory.append({
                 "path": path.relative_to(ROOT).as_posix(),
+                "image_path": "/opt/headroom-cache/" + path.relative_to(ROOT).as_posix(),
                 "size_bytes": size,
                 "sha256": digest,
                 "source_repo": repo,
@@ -193,6 +231,27 @@ def main() -> None:
                 "source_url": f"https://huggingface.co/{repo}/resolve/{info['revision']}/{name}",
                 "license": LICENSE,
             })
+
+    tiktoken_path = tiktoken_cache / TIKTOKEN_CACHE_KEY
+    with urllib.request.urlopen(TIKTOKEN_URL, timeout=60) as response:
+        tiktoken_data = response.read()
+    if len(tiktoken_data) != TIKTOKEN_SIZE:
+        raise RuntimeError(f"Unexpected cl100k_base size: {len(tiktoken_data)}; expected {TIKTOKEN_SIZE}")
+    tiktoken_path.write_bytes(tiktoken_data)
+    tiktoken_path.chmod(0o644)
+    tiktoken_digest = sha256(tiktoken_path)
+    if tiktoken_digest != TIKTOKEN_SHA256:
+        raise RuntimeError(f"Unexpected cl100k_base SHA-256: {tiktoken_digest}")
+    inventory.append({
+        "path": tiktoken_path.relative_to(ROOT).as_posix(),
+        "image_path": "/opt/headroom-cache/tiktoken/" + TIKTOKEN_CACHE_KEY,
+        "size_bytes": TIKTOKEN_SIZE,
+        "sha256": TIKTOKEN_SHA256,
+        "source_repo": "openai/tiktoken",
+        "source_revision": "sha256:" + TIKTOKEN_SHA256,
+        "source_url": TIKTOKEN_URL,
+        "license": "Not separately declared for this vocabulary file",
+    })
 
     remove_extra_cache_metadata(hub)
     for path in hub.rglob("*"):
@@ -205,15 +264,9 @@ def main() -> None:
         for name in info["files"]:
             (snapshot / name).chmod(0o644)
 
-    subprocess.run(
-        ["bash", "-euo", "pipefail", "-c", "find huggingface \\( -type f -o -type l \\) -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS"],
-        cwd=ROOT,
-        check=True,
-    )
     shutil.copy2(ROOT / "Dockerfile", ARTIFACTS / "Dockerfile")
-    shutil.copy2(ROOT / "SHA256SUMS", ARTIFACTS / "SHA256SUMS")
     with (ARTIFACTS / "file-inventory.csv").open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=["path", "size_bytes", "sha256", "source_repo", "source_revision", "source_url", "license"])
+        writer = csv.DictWriter(stream, fieldnames=["path", "image_path", "size_bytes", "sha256", "source_repo", "source_revision", "source_url", "license"])
         writer.writeheader()
         writer.writerows(inventory)
 
@@ -234,7 +287,29 @@ def main() -> None:
             f"- Main/pin difference: {'main is newer/different; pinned commit was used' if record['revision'] != record['main_sha'] else 'pin matches main'}",
             "",
         ])
-    (ARTIFACTS / "sources.md").write_text("\n".join(lines), encoding="utf-8")
+    lines.extend([
+        "## OpenAI cl100k tokenizer vocabulary",
+        f"- Source: {TIKTOKEN_URL}",
+        f"- Cache filename (tiktoken URL SHA-1): `{TIKTOKEN_CACHE_KEY}`",
+        f"- Size: {TIKTOKEN_SIZE} bytes",
+        f"- SHA-256: `{TIKTOKEN_SHA256}`",
+        "- License: the source does not separately state a license for this vocabulary file",
+        "",
+    ])
+    sources_text = "\n".join(lines)
+    (ARTIFACTS / "sources.md").write_text(sources_text, encoding="utf-8")
+
+    manifest = {
+        "schema_version": 1,
+        "image": "headroom-model-hf",
+        "headroom_version": "0.41.0",
+        "image_tag": TAG,
+        "created_utc": download_date,
+        "assets": inventory,
+    }
+    manifest_text = json.dumps(manifest, indent=2) + "\n"
+    (ROOT / "manifest.json").write_text(manifest_text, encoding="utf-8")
+    (ARTIFACTS / "manifest.json").write_text(manifest_text, encoding="utf-8")
 
     timestamp = download_date.replace("+00:00", "Z")
     model_components = []
@@ -255,17 +330,50 @@ def main() -> None:
             ],
         }
         model_components.append(component)
-    (ARTIFACTS / "sbom.cdx.json").write_text(json.dumps({
+    model_components.append({
+        "type": "data",
+        "bom-ref": "cl100k_base.tiktoken",
+        "name": "cl100k_base.tiktoken",
+        "version": TIKTOKEN_SHA256,
+        "hashes": [{"alg": "SHA-256", "content": TIKTOKEN_SHA256}],
+        "externalReferences": [{"type": "distribution", "url": TIKTOKEN_URL}],
+        "properties": [
+            {"name": "image.path", "value": "/opt/headroom-cache/tiktoken/" + TIKTOKEN_CACHE_KEY},
+            {"name": "file.size_bytes", "value": str(TIKTOKEN_SIZE)},
+        ],
+    })
+    sbom_text = json.dumps({
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",
         "version": 1,
         "metadata": {"timestamp": timestamp, "component": {"type": "container", "name": "headroom-model-hf", "version": TAG}},
         "components": model_components,
-    }, indent=2) + "\n", encoding="utf-8")
-    (ARTIFACTS / "XRAY-NOTES.md").write_text(
-        "The image is `FROM scratch`; Xray should find no OS packages. It contains only the pinned ONNX model and tokenizer/configuration data; no executable code or pickle files are included. Both model cards declare Apache-2.0, which permits internal redistribution subject to the license terms. The large Kompress ONNX file is expected data and may be reported as a binary blob. Xray clearance must be established by scanning the imported image digest.\n",
-        encoding="utf-8",
+    }, indent=2) + "\n"
+    (ROOT / "sbom.cdx.json").write_text(sbom_text, encoding="utf-8")
+    (ARTIFACTS / "sbom.cdx.json").write_text(sbom_text, encoding="utf-8")
+    xray_notes = (
+        "This is a FROM scratch data image. It contains pinned ONNX, tokenizer, configuration, and "
+        "tiktoken vocabulary assets; no executable code or pickle files are included. The image "
+        "contains `sbom.cdx.json` (CycloneDX 1.6) so Xray can aggregate its declared components "
+        "into the image scan when SBOM import is enabled. The SBOM documents source and hashes; "
+        "it does not classify these data files as software packages. Scan the imported image digest "
+        "in Artifactory Xray to determine the actual findings.\n"
     )
+    (ROOT / "XRAY-NOTES.md").write_text(xray_notes, encoding="utf-8")
+    (ARTIFACTS / "XRAY-NOTES.md").write_text(xray_notes, encoding="utf-8")
+    (ROOT / "sources.md").write_text(sources_text, encoding="utf-8")
+    with (ROOT / "SHA256SUMS").open("w", encoding="utf-8") as checksums:
+        subprocess.run(
+            [
+                "bash", "-euo", "pipefail", "-c",
+                "find huggingface tiktoken -type f -print0 | sort -z | xargs -0 sha256sum; "
+                "sha256sum manifest.json sbom.cdx.json sources.md XRAY-NOTES.md",
+            ],
+            cwd=ROOT,
+            check=True,
+            stdout=checksums,
+        )
+    shutil.copy2(ROOT / "SHA256SUMS", ARTIFACTS / "SHA256SUMS")
     verifier, versions = prepare_verification_venv()
     tool_versions = [
         f"python: {subprocess.check_output(['python3', '--version'], text=True).strip()}",
@@ -276,7 +384,7 @@ def main() -> None:
         f"verification venv: {verifier}",
     ]
     (ARTIFACTS / "tool-versions.txt").write_text("\n".join(tool_versions) + "\n", encoding="utf-8")
-    print(f"Prepared {len(inventory)} pinned model files in {ROOT}")
+    print(f"Prepared {len(inventory)} pinned assets in {ROOT}")
     print(f"Manifest directory: {ARTIFACTS}")
 
 

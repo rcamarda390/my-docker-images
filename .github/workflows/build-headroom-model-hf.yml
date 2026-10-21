@@ -36,12 +36,12 @@ jobs:
       platforms: linux/amd64
       prepare_requirements: images/headroom-model-hf/requirements-prepare.txt
       prepare_script: images/headroom-model-hf/prepare.py
-      build_log_path: headroom-model-hf-0.41.0-ext-v1-manifests/build.log
-      artifact_path: headroom-model-hf-0.41.0-ext-v1-manifests/
-      artifact_name: headroom-model-hf-0.41.0-ext-v1
+      build_log_path: headroom-model-hf-0.41.0-ext-v2-manifests/build.log
+      artifact_path: headroom-model-hf-0.41.0-ext-v2-manifests/
+      artifact_name: headroom-model-hf-0.41.0-ext-v2
       run_smoke_test: true
       host_smoke_command: python3 images/headroom-model-hf/verify.py
       scan: true
-      publish: false
-      publish_ghcr: false
-      publish_dockerhub: false
+      publish: ${{ github.ref == 'refs/heads/main' }}
+      publish_ghcr: true
+      publish_dockerhub: true
