@@ -3,10 +3,8 @@
 Data-only Hugging Face cache for `headroom-ai==0.41.0`. The final image is
 `FROM scratch`, targets `linux/amd64`, and has no executable, shell, entrypoint,
 or command. The PR workflow builds and scans a candidate without publishing it
-to a registry, then attaches an importable Docker archive and Xray support
-manifests to the workflow run. The main-branch build publishes
-`ghcr.io/rcamarda390/headroom-model-hf:0.41.0-ext-v2` and the matching Docker
-Hub tag.
+to GHCR on the main branch. PR builds remain unpublished and attach an
+importable Docker archive and Xray support manifests to the workflow run.
 
 The build downloads only the pinned Kompress ONNX model and the required
 Kompress and ModernBERT tokenizer/configuration files. It also places the
