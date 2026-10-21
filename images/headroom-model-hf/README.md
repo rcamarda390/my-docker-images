@@ -21,10 +21,12 @@ offline loading of the ONNX model, ModernBERT tokenizer, and cl100k tokenizer.
 On a connected host, pull the published image:
 
 ```sh
-docker pull ghcr.io/rcamarda390/headroom-model-hf:0.41.0-ext-v2
+docker pull docker.io/rcamarda390/headroom-model-hf:0.41.0-ext-v3
+# GHCR mirror
+docker pull ghcr.io/rcamarda390/headroom-model-hf:0.41.0-ext-v3
 ```
 
-For an air-gapped host, download the `headroom-model-hf-0.41.0-ext-v2`
+For an air-gapped host, download the `headroom-model-hf-0.41.0-ext-v3`
 workflow artifact, extract it, verify the archive, and load it:
 
 ```sh
@@ -35,8 +37,8 @@ gzip -dc image.tar.gz | docker load
 Then copy the cache contents out of the image:
 
 ```sh
-# This local tag is present after `docker load`; use the GHCR reference after `docker pull`.
-IMAGE=headroom-model-hf:0.41.0-ext-v2
+# This local tag is present after `docker load` or `docker pull`.
+IMAGE=headroom-model-hf:0.41.0-ext-v3
 cid=$(docker create --network none "$IMAGE" /nonexistent)
 mkdir -p ./headroom-cache
 docker cp "$cid:/opt/headroom-cache/." ./headroom-cache/
