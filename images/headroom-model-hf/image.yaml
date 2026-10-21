@@ -1,7 +1,7 @@
 name: headroom-model-hf
 upstream_version: 0.41.0-ext
-revision: 1
+revision: 2
 publish:
-  ghcr: false
-  dockerhub: false
+  ghcr: true
+  dockerhub: true
   latest: false
