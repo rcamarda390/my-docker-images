@@ -21,7 +21,7 @@ from huggingface_hub import HfApi, __version__ as HF_HUB_VERSION, snapshot_downl
 
 ROOT = pathlib.Path(__file__).resolve().parent
 REPO_ROOT = ROOT.parents[1]
-TAG = "0.41.0-ext-v2"
+TAG = "0.41.0-ext-v3"
 ARTIFACTS = REPO_ROOT / f"headroom-model-hf-{TAG}-manifests"
 LICENSE = "Apache-2.0"
 LICENSE_URL = "https://www.apache.org/licenses/LICENSE-2.0.txt"
@@ -123,7 +123,7 @@ def remove_extra_cache_metadata(hub: pathlib.Path) -> None:
 def prepare_verification_venv() -> tuple[str, str]:
     """Install test packages online into a Python 3.12 venv for later offline use."""
     image = "python:3.12-slim"
-    venv = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v2"
+    venv = pathlib.Path(tempfile.gettempdir()) / "headroom-model-verifier-0.41.0-ext-v3"
     if venv.exists():
         shutil.rmtree(venv)
     venv.mkdir(parents=True)
