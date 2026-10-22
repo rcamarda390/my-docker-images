@@ -1,4 +1,4 @@
-# fib_docker Agent Instructions
+# my-docker-images Agent Instructions
 
 > [!IMPORTANT]
 > This is the authoritative repository-wide AI agent instruction document.
@@ -6,7 +6,7 @@
 > `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` are discovery/adaptor files only.
 > Do not duplicate repository policy in agent-specific files. Update this document instead.
 
-Repository: `https://github.com/rcamarda390/fib_docker`
+Repository: `https://github.com/rcamarda390/my-docker-images`
 
 ## Purpose
 
@@ -37,12 +37,12 @@ Do not assume all images use identical build, scan, smoke-test, or revision beha
 
 ## GitHub access
 
-For work in `github.com/rcamarda390`, use the configured ChatGPT Work **GitHub plugin** as the primary repository interface.
+For work in `github.com/rcamarda390`, use the GitHub integration configured for the active agent session as the primary repository interface.
 
 - Use it to inspect repositories, files, branches, pull requests, Actions, issues, and reviews.
 - Use its branch, file-update, commit, pull-request, and workflow controls for repository changes and builds.
-- Do not substitute unauthenticated Git CLI access or browser editing when the plugin is available.
-- If the plugin is unavailable, disconnected, or lacks a required capability, report that specific blocker before using another access method.
+- Do not substitute unauthenticated Git CLI access or browser editing when the integration is available.
+- If the integration is unavailable, disconnected, or lacks a required capability, report that specific blocker before using another access method.
 
 ## Branch and pull request rules
 
@@ -535,7 +535,7 @@ Include clickable GitHub links for the PR and workflow run when available.
 
 ## Governing principle
 
-For `fib_docker`, the correct fix is reproducible, reviewable, security-verifiable, and suitable for rebuilding from scratch.
+For this repository, the correct fix is reproducible, reviewable, security-verifiable, and suitable for rebuilding from scratch.
 
 Diagnose in a running container if useful.
 
