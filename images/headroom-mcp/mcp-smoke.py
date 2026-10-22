@@ -27,6 +27,22 @@ try:
 except ImportError:
     print("⚠ awscrt not available (fallback to older auth methods)")
 
+# Headroom 0.41.0 defaults its anonymous upload beacon ON. The image sets
+# HEADROOM_BEACON=off and DO_NOT_TRACK=1; prove the gate is closed with them.
+from headroom.telemetry.beacon import is_beacon_enabled
+assert os.environ.get("DO_NOT_TRACK") == "1", "image must set DO_NOT_TRACK=1"
+assert os.environ.get("HEADROOM_BEACON") == "off", "image must set HEADROOM_BEACON=off"
+assert is_beacon_enabled() is False, "anonymous beacon is enabled with the image environment"
+# Negative control: with both switches removed the same gate must be open. This
+# proves the assertion above is meaningful rather than a constant.
+_beacon_probe_env = {k: v for k, v in os.environ.items() if k not in ("DO_NOT_TRACK", "HEADROOM_BEACON")}
+_beacon_probe = subprocess.run(
+    [sys.executable, "-c", "from headroom.telemetry.beacon import is_beacon_enabled; print(is_beacon_enabled())"],
+    capture_output=True, text=True, env=_beacon_probe_env, timeout=60, check=True,
+)
+assert _beacon_probe.stdout.strip() == "True", _beacon_probe.stdout
+print("✓ anonymous beacon disabled by image environment (negative control: enabled without it)")
+
 # Start proxy server with offline mode enabled to verify cached models work
 print("\nStarting Headroom proxy with offline mode...")
 env = os.environ.copy()

@@ -428,7 +428,9 @@ ENV HEADROOM_HOST=0.0.0.0 \
     TRANSFORMERS_OFFLINE=1 \
     HF_HUB_DISABLE_TELEMETRY=1 \
     LITELLM_LOCAL_MODEL_COST_MAP=True \
-    HEADROOM_UPDATE_CHECK=off
+    HEADROOM_UPDATE_CHECK=off \
+    HEADROOM_BEACON=off \
+    DO_NOT_TRACK=1
 
 # Skip only Headroom's external upstream readiness probe. The air-gapped
 # GovCloud runtime intentionally cannot reach the Anthropic HTTP endpoint;
@@ -691,6 +693,9 @@ COPY --from=runtime_rootfs / /
 ARG HEADROOM_VERSION
 ARG HEADROOM_COMMIT
 
+# Headroom 0.41.0 defaults its anonymous upload beacon ON. Disable it with
+# HEADROOM_BEACON=off plus DO_NOT_TRACK=1 (both checked by is_beacon_enabled).
+# HEADROOM_OFFLINE is deliberately not used: it would also disable local /stats.
 ENV HEADROOM_HOST=0.0.0.0 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -701,6 +706,8 @@ ENV HEADROOM_HOST=0.0.0.0 \
     HF_HUB_DISABLE_TELEMETRY=1 \
     LITELLM_LOCAL_MODEL_COST_MAP=True \
     HEADROOM_UPDATE_CHECK=off \
+    HEADROOM_BEACON=off \
+    DO_NOT_TRACK=1 \
     HEADROOM_SKIP_UPSTREAM_CHECK=1 \
     HEADROOM_OUTPUT_SHAPER=1
 
