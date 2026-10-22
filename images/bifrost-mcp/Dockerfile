@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:1.7
 
-ARG BIFROST_VERSION=2.3.0
-ARG BIFROST_COMMIT=9237ec06672406e437b3cb33fc793ffd0403b3ae
+ARG BIFROST_VERSION=2.3.2
+ARG BIFROST_COMMIT=a05ea20e68bf116a35e9f05b1a3d749624b3935e
 
-# Bifrost v2.3.0 declares Go 1.27.0; Xray's supplied Go findings require
-# Go 1.27.2 (or 1.26.9). Stay on the upstream Go 1.27 release line.
+# Bifrost v2.3.2 uses Go 1.27.3 for CVE-2026-111943.
+# Verify the compiler version in the final binary.
 # Xray also reads the compiler version from the binary's build info, so keep
 # the toolchain pinned and verified as part of the image supply chain.
-ARG GO_VERSION=1.27.2
+ARG GO_VERSION=1.27.3
 
-# Keep downstream Go pins only where upstream v2.3.0 still resolves below the
+# Keep downstream Go pins only where upstream v2.3.2 still resolves below the
 # verified Xray fix:
 #   mcp-go v0.43.2          CVE-2026-81092; fixed in v0.56.0
 #   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0;
@@ -24,7 +24,7 @@ ARG GO_VERSION=1.27.2
 #     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
 #   go-jose/v4 v4.1.4       XRAY-1110429 (7.5, CWE-407); fixed in v4.1.6
 #                           (indirect upstream)
-# Upstream v2.3.0 already requires x/text v0.41.0,
+# Upstream v2.3.2 already requires x/text v0.41.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
 # Drop a pin once upstream's own go.mod requires that version or newer.
@@ -62,7 +62,8 @@ RUN npm ci
 COPY --from=source /src/ui/ ./
 RUN npm run build-enterprise
 
-FROM golang:1.27.2-alpine3.24@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS builder
+# The new 1.27.3 tag digest must be pinned after resolution in CI.
+FROM golang:1.27.3-alpine3.24 AS builder
 ARG GO_VERSION
 WORKDIR /app
 # The digest is what actually selects the image, so confirm it still carries the

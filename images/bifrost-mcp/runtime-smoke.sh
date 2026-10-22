@@ -24,7 +24,7 @@ for attempt in $(seq 1 60); do
     sleep 1
 done
 test "$ready" = true
-wget -q -O - http://127.0.0.1:8080/api/version | grep -F '2.3.0'
+wget -q -O - http://127.0.0.1:8080/api/version | grep -F '2.3.2'
 if wget -S -O /dev/null http://127.0.0.1:8080/api/config 2> "$APP_DIR/unauthorized.log"; then
     echo "Management API accepted an unauthenticated request" >&2
     exit 1
