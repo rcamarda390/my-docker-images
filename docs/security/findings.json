@@ -36,6 +36,11 @@
       "date": "2026-10-26",
       "pr_url": null,
       "validation": "Gnosis 0.17.5-v15 Xray: certifi, filelock, setuptools bumped via constrained uv lock regeneration (only those three packages changed, hashes verified). Lock installed with --require-hashes on Python 3.13; gnosis_mcp, huggingface_hub, filelock imports checked. Debian tracker check blocked by proxy (403): libc6 and other Debian pending pairs NOT reviewed. Pending: docker build and post-build scan."
+    },
+    {
+      "date": "2026-10-26",
+      "pr_url": "https://github.com/rcamarda390/my-docker-images/pull/111",
+      "validation": "Debian tracker check via TinyFish (direct tools/check-debian-security.py blocked by proxy 403). Partial: glibc source summary plus 10 pending glibc CVEs (CVE-2019-1010022/23/24/25, CVE-2010-4756, CVE-2026-89092, CVE-2026-97399, CVE-2026-19499, CVE-2026-5435, CVE-2026-6238). Trixie: CVE-2019-1010023 and -1010025 vulnerable with no fix in trixie, forky or sid (unimportant, upstream not a security issue); CVE-2026-5435 trixie 2.41-12+deb13u3 vulnerable, no-dsa, fixed in forky 2.43-3 and sid 2.43-4 (our rcamarda backport still carries it); CVE-2026-19499, -97399, -6238, -89092 and CVE-2010-4756 tracker pages gave no fixed-version table in this fetch. Remaining pending glibc, gcc-14, ncurses, zlib, acl, attr, coreutils, dash and tokenizers pairs NOT rechecked."
     }
   ],
   "reports": [
