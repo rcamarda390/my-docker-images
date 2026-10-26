@@ -1,6 +1,6 @@
 name: zeus-dev-image
 upstream_version: 2.1.0
-revision: 3
+revision: 2
 build_args:
   BIFROST_CLI_COMMIT: 555e0ea5863f8e80f0735967657f889d7b5b8ba0
   ARCHIFY_COMMIT: 208acba8d412335185b2056fedf54b3405df43fb

@@ -316,10 +316,10 @@ RUN set -eux; \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
-    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.2.1 \
+    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
         urllib3==2.8.0 PyJWT==2.15.1 Mako==1.4.3 Werkzeug==3.1.9 \
         asyncssh==2.24.1 multidict==6.9.1; \
-    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (84, 1)"; \
+    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
     python3 /tmp/upgrade-pip-urllib3.py; \
     /opt/aws-cli/bin/python /tmp/upgrade-pip-urllib3.py; \
     MSGPACK_DIR="$(python3 -c 'import msgpack,pathlib;print(pathlib.Path(msgpack.__file__).parent)')"; \
@@ -340,7 +340,7 @@ COPY patch-cline-simple-git.mjs /tmp/patch-cline-simple-git.mjs
 COPY patch-node-forge.cjs /usr/local/bin/patch-node-forge.cjs
 RUN set -eux; \
     mkdir -p /opt/agentmemory /opt/agentmemory-mcp; \
-    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.22.1","@iii-dev/helpers":"0.22.1","@agentmemory/agentmemory":"0.9.30","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.1","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
+    printf '%s\n' '{"name":"zeus-agentmemory","version":"1.0.0","private":true,"overrides":{"iii-sdk":"0.22.1","@opentelemetry/api-logs":"0.200.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/instrumentation":"0.200.0","@opentelemetry/otlp-transformer":"0.200.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-logs":"0.200.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","axios":"1.20.0","simple-git":"4.0.1","@simple-git/argv-parser":"2.0.1","@modelcontextprotocol/sdk":"1.32.1","@hono/node-server":"2.1.3","@ai-sdk/provider-utils@3":"3.0.41","@ai-sdk/provider-utils@4":"4.0.57","@ai-sdk/provider-utils@5":"5.0.53"}}' > /opt/agentmemory/package.json; \
     cp /opt/agentmemory/package.json /opt/agentmemory-mcp/package.json; \
     npm install --prefix /opt/agentmemory @agentmemory/agentmemory@0.9.30; \
     npm install --prefix /opt/agentmemory-mcp --omit=dev @agentmemory/mcp@0.9.30; \

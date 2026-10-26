@@ -60,7 +60,7 @@ python_packages:
     - {name: PyJWT, version: "2.15.1"}
     - {name: Mako, version: "1.4.3"}
     - {name: Werkzeug, version: "3.1.9"}
-    - {name: setuptools, version: "84.2.1", note: "security fix (XRAY-1139535, fix 84.1.0); explicitly upgraded after providers"}
+    - {name: setuptools, version: "84.0.0", note: "security fix; explicitly upgraded after providers"}
     - {name: pip, version: "26.2.1", note: "vendored urllib3 upgraded to 2.8.0 and msgpack to 1.2.3, bundled pkg_resources (setuptools 70.3.0) removed; SBOM and installation record kept consistent"}
     - {name: numpy, version: "2.5.4"}
     - {name: pandas, version: "3.0.6"}
