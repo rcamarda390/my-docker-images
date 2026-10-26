@@ -31,6 +31,11 @@
       "date": "2026-10-19",
       "pr_url": "https://github.com/rcamarda390/my-docker-images/pull/95",
       "validation": "AI CLI runner screenshot intake: three MEDIUM glibc rows. Vendor r8 fixes confirmed in Wolfi secdb and actual Chainguard APK index. Exact base-world r6 pins and matching libcrypt1 constraint established from published image. LiteLLM sibling requires same change. Fresh Debian tracker check reviewed 49 pending pairs; existing Debian treatments preserved. Both candidates built and assert all four actual packages at 2.44-r8. AI offline CLI smoke and LiteLLM health checks passed. Existing blocking HIGH/CRITICAL Trivy gates passed (runs 39258902768 and 39258902792). Publication pending manual workflow dispatch; no MEDIUM Xray clearance claimed."
+    },
+    {
+      "date": "2026-10-26",
+      "pr_url": null,
+      "validation": "Gnosis 0.17.5-v15 Xray: certifi, filelock, setuptools bumped via constrained uv lock regeneration (only those three packages changed, hashes verified). Lock installed with --require-hashes on Python 3.13; gnosis_mcp, huggingface_hub, filelock imports checked. Debian tracker check blocked by proxy (403): libc6 and other Debian pending pairs NOT reviewed. Pending: docker build and post-build scan."
     }
   ],
   "reports": [
@@ -2481,6 +2486,184 @@
           ],
           "installed_version": "3.1.9",
           "fix_version": "3.1.13"
+        }
+      ]
+    },
+    {
+      "id": "gnosis-mcp-xray-20261026",
+      "image": "gnosis-mcp",
+      "tag": "0.17.5-v15",
+      "digest": null,
+      "finding_count": 14,
+      "source": "User screenshot image.png supplied 2026-10-26 in project thread. Scanned digest not shown. Xray also lists debian:trixie:libc6 2.41-12+deb13u4+rcamarda4 as most-vulnerable component (21 findings), not in the 14-row list; not reviewed (Debian tracker blocked).",
+      "observations": [
+        {
+          "cve": "XRAY-1139995",
+          "component": "certifi",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-295"
+          ],
+          "installed_version": "2026.7.22",
+          "fix_version": "2026.10.19"
+        },
+        {
+          "cve": "XRAY-1139535",
+          "component": "setuptools",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "84.0.0",
+          "fix_version": "84.1.0"
+        },
+        {
+          "cve": "CVE-2026-112940",
+          "component": "filelock",
+          "cvss": "7.1",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-363"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112911",
+          "component": "filelock",
+          "cvss": "6.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-283"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112939",
+          "component": "filelock",
+          "cvss": "4.7",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-345"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112938",
+          "component": "filelock",
+          "cvss": "5.8",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-363"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112936",
+          "component": "filelock",
+          "cvss": "6.1",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-59"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.0.9"
+        },
+        {
+          "cve": "CVE-2026-112935",
+          "component": "filelock",
+          "cvss": "4.7",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112915",
+          "component": "filelock",
+          "cvss": "5.5",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112908",
+          "component": "filelock",
+          "cvss": "5.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-732"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112910",
+          "component": "filelock",
+          "cvss": "5.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-732"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112909",
+          "component": "filelock",
+          "cvss": "6.1",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-706"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112913",
+          "component": "filelock",
+          "cvss": "3.3",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
+        },
+        {
+          "cve": "CVE-2026-112907",
+          "component": "filelock",
+          "cvss": "2.5",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-667"
+          ],
+          "installed_version": "3.32.2",
+          "fix_version": "4.2.1"
         }
       ]
     }
@@ -6295,6 +6478,468 @@
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1139995",
+      "source_package": "certifi",
+      "suite": null,
+      "reported_packages": [
+        "certifi"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-295"
+      ],
+      "reported_fix_version": "2026.10.19",
+      "reported_installed_version": "2026.7.22",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "2026.10.19",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked certifi==2026.10.23 with floor certifi>=2026.10.19. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "XRAY-1139535",
+      "source_package": "setuptools",
+      "suite": null,
+      "reported_packages": [
+        "setuptools"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-22"
+      ],
+      "reported_fix_version": "84.1.0",
+      "reported_installed_version": "84.0.0",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "84.1.0",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked setuptools==84.2.1 with floor setuptools>=84.1.0. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112940",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 7.1,
+      "reported_cwe": [
+        "CWE-363"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112911",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 6.3,
+      "reported_cwe": [
+        "CWE-283"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112939",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 4.7,
+      "reported_cwe": [
+        "CWE-345"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112938",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 5.8,
+      "reported_cwe": [
+        "CWE-363"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112936",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 6.1,
+      "reported_cwe": [
+        "CWE-59"
+      ],
+      "reported_fix_version": "4.0.9",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.0.9",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112935",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 4.7,
+      "reported_cwe": [
+        "CWE-367"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112915",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 5.5,
+      "reported_cwe": [
+        "CWE-400"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112908",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 5.3,
+      "reported_cwe": [
+        "CWE-732"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112910",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 5.3,
+      "reported_cwe": [
+        "CWE-732"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112909",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 6.1,
+      "reported_cwe": [
+        "CWE-706"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112913",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 3.3,
+      "reported_cwe": [
+        "CWE-367"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-112907",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 2.5,
+      "reported_cwe": [
+        "CWE-667"
+      ],
+      "reported_fix_version": "4.2.1",
+      "reported_installed_version": "3.32.2",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "4.2.1",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
     }
   ]
 }
