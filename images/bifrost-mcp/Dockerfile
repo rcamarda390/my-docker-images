@@ -24,6 +24,10 @@ ARG GO_VERSION=1.27.3
 #     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
 #   go-jose/v4 v4.1.4       XRAY-1110429 (7.5, CWE-407); fixed in v4.1.6
 #                           (indirect upstream)
+#   pion/dtls/v3 v3.1.9     XRAY-1147061/1147051/1147049/1147063/1147062/
+#                           1147064 (9.1 CWE-347, 9.1/7.4 CWE-287, N/A
+#                           CWE-400/770); fixed in v3.1.13 and v3.1.14
+#                           (indirect via pion/webrtc)
 # Upstream v2.3.2 already requires x/text v0.41.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
@@ -37,6 +41,7 @@ ARG GO_OPENAPI_VALIDATE_VERSION=v0.26.1
 # fixed in v0.56.0.
 ARG GO_MCP_GO_VERSION=v0.56.0
 ARG GO_JOSE_VERSION=v4.1.6
+ARG GO_DTLS_VERSION=v3.1.14
 # CVE-2026-108859: mcp-go (all releases through v1.3.0) reads POST bodies
 # without a cap. rcamarda390/mcp-go is upstream v0.56.0 plus the unreleased
 # upstream fix, https://github.com/mark3labs/mcp-go/pull/1092. Drop this
@@ -92,6 +97,7 @@ ARG GO_OPENAPI_SWAG_VERSION
 ARG GO_OPENAPI_VALIDATE_VERSION
 ARG GO_MCP_GO_VERSION
 ARG GO_JOSE_VERSION
+ARG GO_DTLS_VERSION
 RUN set -eu; \
     GOFLAGS=-mod=mod go get \
       "github.com/mark3labs/mcp-go@${GO_MCP_GO_VERSION}" \
@@ -99,6 +105,7 @@ RUN set -eu; \
       "golang.org/x/crypto@${GO_CRYPTO_VERSION}" \
       "golang.org/x/net@${GO_NET_VERSION}" \
       "github.com/go-jose/go-jose/v4@${GO_JOSE_VERSION}" \
+      "github.com/pion/dtls/v3@${GO_DTLS_VERSION}" \
       "github.com/go-openapi/spec@${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils@${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils@${GO_OPENAPI_SWAG_VERSION}" \
@@ -107,6 +114,7 @@ RUN set -eu; \
       "golang.org/x/crypto=${GO_CRYPTO_VERSION}" \
       "golang.org/x/net=${GO_NET_VERSION}" \
       "github.com/go-jose/go-jose/v4=${GO_JOSE_VERSION}" \
+      "github.com/pion/dtls/v3=${GO_DTLS_VERSION}" \
       "github.com/go-openapi/spec=${GO_OPENAPI_SPEC_VERSION}" \
       "github.com/go-openapi/swag/jsonutils=${GO_OPENAPI_SWAG_VERSION}" \
       "github.com/go-openapi/swag/yamlutils=${GO_OPENAPI_SWAG_VERSION}" \
@@ -158,6 +166,9 @@ RUN set -eu; \
       /tmp/binary-build-info; \
     awk -v expected="$GO_MCP_GO_VERSION" \
       '$1 == "dep" && $2 == "github.com/mark3labs/mcp-go" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info; \
+    awk -v expected="$GO_DTLS_VERSION" \
+      '$1 == "dep" && $2 == "github.com/pion/dtls/v3" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
     awk -v expected="$MCP_GO_FORK_VERSION" \
       '$1 == "=>" && $2 == "github.com/rcamarda390/mcp-go" { found = ($3 == expected) } END { exit !found }' \

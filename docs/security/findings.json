@@ -2401,6 +2401,88 @@
           "fix_version": null
         }
       ]
+    },
+    {
+      "id": "bifrost-mcp-xray-20261026",
+      "image": "bifrost-mcp",
+      "tag": "2.3.2-v2",
+      "digest": null,
+      "finding_count": 6,
+      "source": "User screenshot image.png supplied 2026-10-26 in project thread. Scanned digest not shown.",
+      "observations": [
+        {
+          "cve": "XRAY-1147061",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": "9.1",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-347"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.13"
+        },
+        {
+          "cve": "XRAY-1147051",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": "9.1",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-287"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.14"
+        },
+        {
+          "cve": "XRAY-1147049",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": "7.4",
+          "cvss_version": "3",
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-287"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.14"
+        },
+        {
+          "cve": "XRAY-1147063",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.13"
+        },
+        {
+          "cve": "XRAY-1147062",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-770"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.13"
+        },
+        {
+          "cve": "XRAY-1147064",
+          "component": "github.com/pion/dtls/v3",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "3.1.9",
+          "fix_version": "3.1.13"
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -6015,6 +6097,204 @@
         }
       },
       "remaining": "Zeus advisory remains open. No Xray clearance or fixed published artifact established."
+    },
+    {
+      "cve": "XRAY-1147061",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": "9.1",
+      "reported_cwe": [
+        "CWE-347"
+      ],
+      "reported_fix_version": "3.1.13",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.13",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1147051",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": "9.1",
+      "reported_cwe": [
+        "CWE-287"
+      ],
+      "reported_fix_version": "3.1.14",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.14",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1147049",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": "7.4",
+      "reported_cwe": [
+        "CWE-287"
+      ],
+      "reported_fix_version": "3.1.14",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.14",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1147063",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-400"
+      ],
+      "reported_fix_version": "3.1.13",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.13",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1147062",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-770"
+      ],
+      "reported_fix_version": "3.1.13",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.13",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
+    },
+    {
+      "cve": "XRAY-1147064",
+      "source_package": "github.com/pion/dtls/v3",
+      "suite": null,
+      "reported_packages": [
+        "github.com/pion/dtls/v3"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-400"
+      ],
+      "reported_fix_version": "3.1.13",
+      "reported_installed_version": "3.1.9",
+      "last_reviewed": "2026-10-26",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.13",
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile",
+            "images/bifrost-mcp/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "bifrost-mcp:2.3.2-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "latest_report_id": "bifrost-mcp-xray-20261026"
+        }
+      },
+      "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
     }
   ]
 }
