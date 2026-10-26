@@ -7,7 +7,12 @@ gnosis-mcp[embeddings]==0.17.5
 # CVE-2026-23949: setuptools 70.3.0 → 80.10.0
 # CVE-2025-47273: setuptools 70.3.0 → 78.1.1+
 # CVE-2026-57585: msgpack 1.1.2 → 1.2.1
-setuptools>=80.10.0
+# Xray fixes: certifi 2026.7.22 -> 2026.10.19 (XRAY-1139995);
+# filelock 3.32.2 -> 4.2.1 (CVE-2026-112907..112940); CVE-2026-112936 needs 4.0.9;
+# setuptools 84.0.0 -> 84.1.0 (XRAY-1139535).
+certifi>=2026.10.19
+filelock>=4.2.1
+setuptools>=84.1.0
 msgpack>=1.2.1
 # PyJWT 2.13.0 -> 2.14.0 for these Xray advisories:
 # XRAY-1076251 (CVSS 9.1, CWE-347)

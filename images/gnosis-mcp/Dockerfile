@@ -383,7 +383,7 @@ RUN ! command -v pip \
     && /usr/local/bin/verify-glibc-regex C \
     && test "$(dpkg-query -W -f='${Version}' libc6)" = "${GLIBC_BACKPORT_VERSION}" \
     && python -c "import sqlite3, sqlite_vec; assert sqlite3.sqlite_version == '${SQLITE_VERSION}'; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute(\"insert into docs values ('security fixed')\"); assert db.execute(\"select count(*) from docs where docs match 'fixed'\").fetchone()[0] == 1; db.enable_load_extension(True); db.load_extension(sqlite_vec.loadable_path()); db.execute('create virtual table vectors using vec0(embedding float[2])')" \
-    && python -c "from importlib.metadata import version; from packaging.version import Version; assert Version(version('setuptools')) >= Version('80.10.0'); assert Version(version('msgpack')) >= Version('1.2.1'); assert Version('2.15.0') <= Version(version('PyJWT')) < Version('3'); assert Version('1.30.0') <= Version(version('mcp')) < Version('2')" \
+    && python -c "from importlib.metadata import version; from packaging.version import Version; assert Version(version('setuptools')) >= Version('84.1.0'); assert Version(version('certifi')) >= Version('2026.10.19'); assert Version(version('filelock')) >= Version('4.2.1'); assert Version(version('msgpack')) >= Version('1.2.1'); assert Version('2.15.0') <= Version(version('PyJWT')) < Version('3'); assert Version('1.30.0') <= Version(version('mcp')) < Version('2')" \
     && python -c "import gnosis_mcp; print('Verification: gnosis-mcp OK')"
 
 # Publish one root filesystem layer so Xray inspects the same minimized final
