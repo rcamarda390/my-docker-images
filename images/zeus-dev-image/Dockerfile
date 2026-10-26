@@ -316,10 +316,10 @@ RUN set -eux; \
         || echo "WARNING: ruff not available in repository, continuing build"; \
     pip3 install --no-input --no-cache-dir pyfiglet \
         || echo "WARNING: pyfiglet not available in repository, continuing build"; \
-    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.0.0 \
+    pip3 install --no-input --no-cache-dir --upgrade msgpack==1.2.3 setuptools==84.2.1 \
         urllib3==2.8.0 PyJWT==2.15.1 Mako==1.4.3 Werkzeug==3.1.9 \
         asyncssh==2.24.1 multidict==6.9.1; \
-    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (80, 10)"; \
+    python3 -c "import msgpack, setuptools; assert msgpack.__version__ == '1.2.3'; assert tuple(map(int, setuptools.__version__.split('.')[:2])) >= (84, 1)"; \
     python3 /tmp/upgrade-pip-urllib3.py; \
     /opt/aws-cli/bin/python /tmp/upgrade-pip-urllib3.py; \
     MSGPACK_DIR="$(python3 -c 'import msgpack,pathlib;print(pathlib.Path(msgpack.__file__).parent)')"; \

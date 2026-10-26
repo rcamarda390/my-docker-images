@@ -6508,9 +6508,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked certifi==2026.10.23 with floor certifi>=2026.10.19. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked certifi==2026.10.23 with floor certifi>=2026.10.19. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "XRAY-1139535",
@@ -6541,9 +6551,20 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "zeus-dev-image": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/zeus-dev-image/Dockerfile",
+            "images/zeus-dev-image/software.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked setuptools==84.2.1 with floor setuptools>=84.1.0. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26). Locked setuptools==84.2.1 with floor setuptools>=84.1.0. Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: Dockerfile setuptools pin 84.2.1 with assertion >= 84.1; software.yaml updated. Pending build and scan of zeus image."
     },
     {
       "cve": "CVE-2026-112940",
@@ -6574,9 +6595,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112911",
@@ -6607,9 +6638,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112939",
@@ -6640,9 +6681,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112938",
@@ -6673,9 +6724,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112936",
@@ -6706,9 +6767,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112935",
@@ -6739,9 +6810,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112915",
@@ -6772,9 +6853,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112908",
@@ -6805,9 +6896,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112910",
@@ -6838,9 +6939,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112909",
@@ -6871,9 +6982,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112913",
@@ -6904,9 +7025,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     },
     {
       "cve": "CVE-2026-112907",
@@ -6937,9 +7068,19 @@
           "scan_tag": null,
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/sooperset-mcp-atlassian/uv.lock"
+          ],
+          "scan_status": "pending",
+          "scan_tag": null,
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest. Sibling: uv.lock certifi 2026.10.23 and filelock 4.2.4 (virtualenv 21.14.13, python-discovery 1.6.4 upgraded to allow it). Pending build and scan of sooperset image."
     }
   ]
 }
