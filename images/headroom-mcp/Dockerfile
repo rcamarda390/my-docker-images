@@ -713,7 +713,8 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
 # Baseline runtime (BASELINE=true): stock Debian packages, stock upstream
 # Python dependencies, the Bedrock/Cline functionality patch from the builder,
 # and only the removals in removals.yaml. No glibc/dash/zlib/SQLite rebuilds.
-# The tools context is the repository's tools/ directory (build_contexts input).
+# image_removals.py is copied from tools/ into this context by prepare.py
+# (the caller workflow's prepare_script); run it before a local docker build.
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs_true
 ARG HEADROOM_VERSION
 ARG LITELLM_VERSION
@@ -747,7 +748,7 @@ COPY entrypoint.sh /usr/local/bin/headroom-entrypoint
 RUN chmod +x /usr/local/bin/headroom-entrypoint \
     && chown -R headroom:headroom /opt/headroom-cache
 COPY removals.yaml /tmp/removals.yaml
-COPY --from=tools image_removals.py /tmp/image_removals.py
+COPY image_removals.py /tmp/image_removals.py
 RUN /opt/venv/bin/python /tmp/image_removals.py apply --manifest /tmp/removals.yaml --mode baseline \
     && /opt/venv/bin/python /tmp/image_removals.py verify \
     && /opt/venv/bin/python -c "import os; [os.unlink(p) for p in ('/tmp/image_removals.py', '/tmp/removals.yaml')]"

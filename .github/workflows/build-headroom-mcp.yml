@@ -40,8 +40,7 @@ jobs:
       # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
       # action builds and publishes the complete deployable image.
       dockerfile: ./images/headroom-mcp/Dockerfile
-      build_contexts: |
-        tools=./tools
+      prepare_script: images/headroom-mcp/prepare.py
       config: images/headroom-mcp/image.yaml
       version_arg: HEADROOM_VERSION
       platforms: linux/amd64

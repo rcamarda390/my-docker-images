@@ -159,8 +159,9 @@ reduce the blast radius of future findings.
   unsatisfied dependency is not allowed; do not use `dpkg --force-depends`.
 - The tool writes `/etc/image-removals.json` into the image from the real final
   package database. `tools/image_removals.py verify` re-checks it.
-- The tool reaches the Docker build as the named context `tools`
-  (`build_contexts: tools=./tools` in the caller workflow).
+- The tool reaches an image's build context through that image's `prepare.py`
+  (the caller workflow's `prepare_script`), which copies `tools/image_removals.py`
+  in. No shared workflow is edited, so other images do not rebuild.
 - `dlopen()`ed libraries are invisible to the ELF check. The image's runtime
   smoke tests are the proof for those.
 
