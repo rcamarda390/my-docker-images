@@ -47,10 +47,9 @@ packages:
     reason: Headroom compresses diffs in Python/Rust and never invokes diff, diff3 or cmp.
     evidence: [images/headroom-mcp/SECURITY-20261005.md]
     cves: [CVE-2026-53910]
-  - name: openssl
-    category: unused-runtime
-    reason: The CLI is unused; Python ssl uses the retained libssl3t64 runtime package.
-    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+  # openssl is NOT removed: ca-certificates depends on it, and the system CA
+  # bundle is needed for TLS. Baseline build 0.42.0-v1 showed that the old
+  # `dpkg --purge openssl` left ca-certificates with an unsatisfied dependency.
   - name: perl-base
     category: no-fix
     reason: Nothing invokes perl; every perl-base CVE is published with no fixed version.
@@ -73,6 +72,27 @@ packages:
     evidence: [images/headroom-mcp/SECURITY-20261005.md]
     cves: [CVE-2026-78408, CVE-2026-78409, CVE-2026-78410]
   - {name: login.defs, category: unused-runtime, reason: Configuration of login and passwd., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  # --- dependents the closure check found (baseline build 0.42.0-v1) --------
+  - name: dpkg
+    category: unused-runtime
+    reason: Package manager; no package operation runs after the build. Its dependency tar is removed. The status database stays for scanners.
+    evidence: [images/headroom-mcp/entrypoint.sh, tools/image_removals.py]
+  - name: bash
+    category: unused-runtime
+    reason: Entrypoint and subprocess shell are /bin/sh (dash). The current image already ships bash with libtinfo6 purged, i.e. unusable.
+    evidence: [images/headroom-mcp/entrypoint.sh, images/headroom-mcp/Dockerfile]
+  - name: sed
+    category: unused-runtime
+    reason: Not invoked by the entrypoint or the service; depends on libacl1, which is removed.
+    evidence: [images/headroom-mcp/entrypoint.sh]
+  - name: adduser
+    category: unused-runtime
+    reason: Perl script for account management; perl-base and passwd are removed and the service account is created with useradd before removal.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - name: libreadline8t64
+    category: unused-runtime
+    reason: Only the optional Python readline extension (REPL history) links it; that extension is removed below.
+    evidence: [images/headroom-mcp/removals.yaml]
   # --- libraries only the removed tools used ---------------------------------
   - name: ncurses-bin
     category: unused-runtime
@@ -100,11 +120,6 @@ packages:
   - {name: libpam-modules, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
   - {name: libpam-modules-bin, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
   - {name: libpam-runtime, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
-  - name: libtasn1-6
-    category: unused-runtime
-    reason: X.509 parsing only; Python ssl uses system certificates through libssl.
-    evidence: [images/headroom-mcp/SECURITY-20261005.md]
-    cves: [CVE-2025-13151]
   - name: libudev1
     category: unused-runtime
     reason: No udev daemon and Headroom never queries device metadata.
@@ -149,6 +164,10 @@ paths:
     category: unused-runtime
     reason: No terminal UI; removing it lets libncursesw6 go.
     evidence: [images/headroom-mcp/SECURITY-20261005.md]
+  - path: /usr/local/lib/python3.13/lib-dynload/readline*.so
+    category: unused-runtime
+    reason: Optional REPL line editing; it links libreadline8t64 and libtinfo6 and nothing in the service imports it.
+    evidence: [images/headroom-mcp/entrypoint.sh]
   - path: /usr/local/lib/python3.13/lib-dynload/_uuid*.so
     category: unused-runtime
     reason: Optional; uuid falls back to os.urandom, which lets libuuid1 go.
