@@ -750,7 +750,7 @@ COPY removals.yaml /tmp/removals.yaml
 COPY --from=tools image_removals.py /tmp/image_removals.py
 RUN /opt/venv/bin/python /tmp/image_removals.py apply --manifest /tmp/removals.yaml --mode baseline \
     && /opt/venv/bin/python /tmp/image_removals.py verify \
-    && rm -f /tmp/image_removals.py /tmp/removals.yaml
+    && /opt/venv/bin/python -c "import os; [os.unlink(p) for p in ('/tmp/image_removals.py', '/tmp/removals.yaml')]"
 # Falsifiable functionality check after the removals: if a purge took something
 # the service needs, the build fails here and not at MCP startup.
 RUN /opt/venv/bin/python -c \

@@ -103,6 +103,24 @@ class ClosureTests(unittest.TestCase):
         self.assertEqual(report['kept_for_baseline'][0]['name'], 'pager')
         self.assertTrue(Path(self.root, 'usr/bin/pager').exists())
 
+    def test_removal_needs_no_external_commands_and_removes_directories(self):
+        manifest = write_manifest(self.root, [('coreutils', []), ('base-tool', [])],
+                                  paths=['/usr/share/dir-to-drop'])
+        directory = Path(self.root, 'usr/share/dir-to-drop/nested')
+        directory.mkdir(parents=True)
+        (directory / 'file').write_text('x')
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError(f'external command used during removal: {args}')
+
+        original = module.subprocess.run
+        module.subprocess.run = forbidden
+        try:
+            module.apply(manifest, self.root, '/etc/image-removals.json', 'full', False, check_elf=False)
+        finally:
+            module.subprocess.run = original
+        self.assertFalse(Path(self.root, 'usr/share/dir-to-drop').exists())
+
     def test_runtime_library_in_closure_blocks_removal(self):
         manifest = write_manifest(self.root, [('coreutils', []), ('base-tool', [])])
         elf = Path(self.root, 'opt/venv/lib/native.so')

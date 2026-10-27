@@ -24,6 +24,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -179,9 +180,21 @@ def elf_files(root, roots, extra):
     return sorted(found)
 
 
+def find_loader():
+    """The dynamic loader ldd drives; calling it directly needs no shell script
+    and no helper command that the removal closure might delete."""
+    for pattern in ("/lib64/ld-linux*.so*", "/lib/ld-linux*.so*", "/lib/*-linux-gnu/ld-linux*.so*"):
+        found = sorted(glob.glob(pattern))
+        if found:
+            return found[0]
+    return None
+
+
 def run_ldd(path):
     """Resolved library paths and unresolved names for one ELF."""
-    result = subprocess.run(["/bin/sh", "/usr/bin/ldd", path], capture_output=True, text=True)
+    loader = find_loader()
+    command = [loader, "--list", path] if loader else ["/bin/sh", "/usr/bin/ldd", path]
+    result = subprocess.run(command, capture_output=True, text=True)
     output = result.stdout + result.stderr
     resolved = set(re.findall(r"=>\s+(/\S+)", output)) | set(re.findall(r"^\s*(/\S+)\s+\(0x", output, re.M))
     missing = re.findall(r"^\s*(\S+)\s+=>\s+not found", output, re.M)
@@ -387,8 +400,9 @@ def apply(manifest_path, root, output, mode, dry_run, ldd=run_ldd, check_elf=Tru
     rewrite_status(root, stanzas, doomed)
     for item in path_items:
         for matched in planned_paths[item["path"]]:
+            # Python-native: coreutils (rm) may already be in the removed closure.
             if os.path.isdir(matched) and not os.path.islink(matched):
-                subprocess.run(["rm", "-rf", "--", matched], check=True)
+                shutil.rmtree(matched)
             elif os.path.lexists(matched):
                 os.unlink(matched)
 
