@@ -1,8 +1,12 @@
 name: headroom-mcp
-upstream_version: 0.41.0
-revision: 2
+upstream_version: 0.42.0
+revision: 1
 build_args:
-  HEADROOM_COMMIT: 76133cff59b71284399bf760c5578dc373c97231
+  # First build of a new upstream release: stock upstream + functionality +
+  # removals.yaml, no CVE carries. Set back to "false" in the PR that evaluates
+  # the scan of this build.
+  BASELINE: "true"
+  HEADROOM_COMMIT: 17d38e5699b7d7c69ac6addcd762f39e42dd7f00
   LITELLM_VERSION: 1.101.3
   GLIBC_SOURCE_SUITE: forky
   GLIBC_DEBIAN_VERSION: 2.43-7

@@ -49,6 +49,13 @@ on:
         required: false
         default: ""
         type: string
+      # Newline-separated name=path pairs passed to Docker as named build
+      # contexts, so a Dockerfile can COPY --from=<name> shared repository
+      # files such as tools/ without widening the image's own context.
+      build_contexts:
+        required: false
+        default: ""
+        type: string
       build_log_path:
         required: false
         default: ""
@@ -435,6 +442,7 @@ jobs:
           file: ${{ inputs.dockerfile }}
           platforms: linux/amd64
           load: true
+          build-contexts: ${{ inputs.build_contexts }}
           build-args: |
             ${{ inputs.version_arg }}=${{ steps.meta.outputs.upstream_version }}
             ${{ steps.meta.outputs.build_args }}
@@ -451,6 +459,7 @@ jobs:
           VERSION_ARG: ${{ inputs.version_arg }}
           UPSTREAM_VERSION: ${{ steps.meta.outputs.upstream_version }}
           BUILD_ARGS: ${{ steps.meta.outputs.build_args }}
+          BUILD_CONTEXTS: ${{ inputs.build_contexts }}
         shell: bash
         run: |
           set -euo pipefail
@@ -459,6 +468,9 @@ jobs:
           while IFS= read -r arg; do
             [ -z "$arg" ] || args+=(--build-arg "$arg")
           done <<< "$BUILD_ARGS"
+          while IFS= read -r named_context; do
+            [ -z "$named_context" ] || args+=(--build-context "$named_context")
+          done <<< "$BUILD_CONTEXTS"
           docker buildx build "${args[@]}" "$CONTEXT" 2>&1 | tee "$BUILD_LOG_PATH"
 
       - name: Run smoke test
@@ -602,6 +614,7 @@ jobs:
           platforms: ${{ inputs.platforms }}
           push: true
           provenance: false
+          build-contexts: ${{ inputs.build_contexts }}
           build-args: |
             ${{ inputs.version_arg }}=${{ steps.meta.outputs.upstream_version }}
             ${{ steps.meta.outputs.build_args }}

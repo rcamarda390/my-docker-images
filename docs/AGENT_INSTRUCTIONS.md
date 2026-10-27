@@ -120,6 +120,50 @@ When asked to build a new upstream version:
 
 Do not carry old patches, pins, or workarounds forward blindly.
 
+### Baseline build for a new upstream release
+
+Images that support it (currently `headroom-mcp`) build the first image of a new
+upstream release as a **baseline**: stock upstream, plus the additions the
+application needs to function, plus the package removals in `removals.yaml`,
+with every CVE carry omitted. The scan of that image shows what the release
+itself ships, so old CVE decisions are re-derived instead of assumed.
+
+- Set `BASELINE: "true"` in `image.yaml` `build_args` in the same change that
+  bumps `upstream_version` and resets `revision` to 1. The baseline publishes
+  under the normal tag (`<version>-v1`) and carries the image label
+  `io.github.rcamarda390.baseline="true"`. It is a scan candidate, not a
+  deployable build.
+- Functionality additions (for Headroom, the Bedrock/Cline patch and the
+  LiteLLM pin) stay. CVE carries (OS rebuilds, dependency pins, security source
+  patches) are omitted. Classify a patch from its code and comments before
+  dropping it.
+- When the user supplies the scan of the baseline, evaluate each finding, set
+  `BASELINE: "false"`, and apply only the carries the findings still justify.
+  That build is `v2`.
+
+### Removal manifest
+
+Software that the application does not need is removed from the final image to
+reduce the blast radius of future findings.
+
+- Each image that removes software declares it in `images/<name>/removals.yaml`
+  (schema in `tools/image_removals.py`): package or path, `category`
+  (`unused-runtime`, `build-only`, `no-fix`, `replaced`), `reason`, `evidence`,
+  optional `cves`, and `requires_carry` for a stock package that exists only
+  because a carry replaces it.
+- The build runs `tools/image_removals.py apply`. It removes a package only
+  together with its whole installed dependent closure, requires every member of
+  the closure to be declared in the manifest, and fails if any ELF under the
+  runtime roots, any entrypoint or any script interpreter needs something the
+  closure deletes. A removal that would leave a retained package with an
+  unsatisfied dependency is not allowed; do not use `dpkg --force-depends`.
+- The tool writes `/etc/image-removals.json` into the image from the real final
+  package database. `tools/image_removals.py verify` re-checks it.
+- The tool reaches the Docker build as the named context `tools`
+  (`build_contexts: tools=./tools` in the caller workflow).
+- `dlopen()`ed libraries are invisible to the ELF check. The image's runtime
+  smoke tests are the proof for those.
+
 ## Permanent fix rule
 
 A successful interactive edit inside a running container is not the finished solution.

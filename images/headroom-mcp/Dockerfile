@@ -1,7 +1,14 @@
 # syntax=docker/dockerfile:1.7
 
-ARG HEADROOM_VERSION=0.41.0
-ARG HEADROOM_COMMIT=76133cff59b71284399bf760c5578dc373c97231
+ARG HEADROOM_VERSION=0.42.0
+ARG HEADROOM_COMMIT=17d38e5699b7d7c69ac6addcd762f39e42dd7f00
+# BASELINE=true builds the first image of a new upstream release: stock
+# upstream + functionality additions (Bedrock/Cline patch, LiteLLM pin) + the
+# package removals in removals.yaml, with every CVE carry omitted, so the scan
+# shows what the release itself ships. image.yaml sets it together with the
+# revision reset to 1; the post-scan evaluation PR sets it back to false.
+# Only "true" and "false" are valid: the value selects a stage name below.
+ARG BASELINE=false
 ARG LITELLM_VERSION=1.101.3
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
@@ -132,6 +139,7 @@ ARG SQLITE_SHA3
 ARG ZLIB_VERSION
 ARG ZLIB_SHA256
 ARG ZLIB_CVE_PATCH_SHA256
+ARG BASELINE
 
 ENV CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup \
@@ -156,6 +164,7 @@ RUN python -m pip install --no-cache-dir \
 # SHA3-256, and retain FTS5 rather than avoiding the vulnerable code by
 # disabling application functionality.
 RUN set -eux; \
+    [ "${BASELINE}" != true ] || exit 0; \
     curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
       "https://sqlite.org/2026/sqlite-autoconf-${SQLITE_AUTOCONF}.tar.gz" \
       --output /tmp/sqlite.tar.gz; \
@@ -183,6 +192,7 @@ RUN set -eux; \
 # ABI-compatible shared library, and remove the older Debian package only
 # after every apt operation is complete.
 RUN set -eux; \
+    [ "${BASELINE}" != true ] || exit 0; \
     curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
       "https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz" \
       --output /tmp/zlib.tar.gz; \
@@ -239,23 +249,27 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
       "import importlib.metadata; assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'"
 # Xray requires aiohttp >=3.14.4; the upstream lock still has 3.14.3.
 # Keep the fixed HTTP client/parser in both builder and final runtime.
-RUN uv pip install --python /opt/venv/bin/python --upgrade-package aiohttp \
-      "aiohttp==${AIOHTTP_VERSION}" \
+RUN if [ "${BASELINE}" != true ]; then \
+      uv pip install --python /opt/venv/bin/python --upgrade-package aiohttp \
+        "aiohttp==${AIOHTTP_VERSION}"; \
+    fi \
     && uv pip check --python /opt/venv/bin/python
 # Keep the Transformers/tokenizer API range, then source-patch their unfixed
 # load paths below. PyJWT 2.15.0 fixes CVE-2026-102275 and CVE-2026-101918.
-RUN uv pip install --python /opt/venv/bin/python \
-      --upgrade-package PyJWT \
-      --upgrade-package tokenizers \
-      --upgrade-package transformers \
-      "PyJWT==${PYJWT_VERSION}" \
-      "tokenizers==${TOKENIZERS_VERSION}" \
-      "transformers==${TRANSFORMERS_VERSION}" \
-    && PATH="/opt/venv/bin:${PATH}" python -c \
-      "import importlib.metadata, jwt, tokenizers, transformers; \
-       assert importlib.metadata.version('PyJWT') == '${PYJWT_VERSION}'; \
-       assert tokenizers.__version__ == '${TOKENIZERS_VERSION}'; \
-       assert transformers.__version__ == '${TRANSFORMERS_VERSION}'" \
+RUN if [ "${BASELINE}" != true ]; then \
+      uv pip install --python /opt/venv/bin/python \
+        --upgrade-package PyJWT \
+        --upgrade-package tokenizers \
+        --upgrade-package transformers \
+        "PyJWT==${PYJWT_VERSION}" \
+        "tokenizers==${TOKENIZERS_VERSION}" \
+        "transformers==${TRANSFORMERS_VERSION}" \
+      && PATH="/opt/venv/bin:${PATH}" python -c \
+        "import importlib.metadata, jwt, tokenizers, transformers; \
+         assert importlib.metadata.version('PyJWT') == '${PYJWT_VERSION}'; \
+         assert tokenizers.__version__ == '${TOKENIZERS_VERSION}'; \
+         assert transformers.__version__ == '${TRANSFORMERS_VERSION}'"; \
+    fi \
     && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
 # The 2026-09-18 Xray scan reports XRAY-1079914 (CWE-295/440) and XRAY-1079919
 # (CWE-835) against the upstream lock's urllib3 2.7.0 with no fixed version
@@ -267,20 +281,27 @@ RUN uv pip install --python /opt/venv/bin/python \
 # declared range; the assertion below proves boto3/botocore still import
 # cleanly against the bumped version.
 # Upstream 0.41.0 already locks urllib3 2.8.0; verify without overriding it.
-RUN PATH="/opt/venv/bin:${PATH}" python -c \
-      "import importlib.metadata, boto3, botocore; \
-       assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'" \
+RUN if [ "${BASELINE}" != true ]; then \
+      PATH="/opt/venv/bin:${PATH}" python -c \
+        "import importlib.metadata, boto3, botocore; \
+         assert importlib.metadata.version('urllib3') == '${URLLIB3_VERSION}'"; \
+    else \
+      PATH="/opt/venv/bin:${PATH}" python -c "import boto3, botocore"; \
+    fi \
     && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
 # MCP stays on the supported 1.x API. Upstream 0.41.0 already locks
 # the fixed fsspec and multidict releases, verified by security-regression.py.
-RUN uv pip install --python /opt/venv/bin/python \
-      --upgrade-package mcp "mcp==${MCP_VERSION}" \
+RUN if [ "${BASELINE}" != true ]; then \
+      uv pip install --python /opt/venv/bin/python \
+        --upgrade-package mcp "mcp==${MCP_VERSION}"; \
+    fi \
     && uv pip check --python /opt/venv/bin/python
 
 # 0.23.2 still contains CVE-2026-85670. Reuse the Gnosis bounds-check patch
 # against this source release instead of downgrading to its patched 0.23.1.
 COPY patches/tokenizers/ /tmp/tokenizers-patches/
 RUN set -eux; \
+    [ "${BASELINE}" != true ] || exit 0; \
     curl -fsSL https://files.pythonhosted.org/packages/18/1e/bc6587c5ab643b2e17776cace9070a2ae73549c86bffac9934a600bf3c31/tokenizers-0.23.2.tar.gz -o /tmp/tokenizers.tar.gz; \
     echo "${TOKENIZERS_SOURCE_SHA256}  /tmp/tokenizers.tar.gz" | sha256sum -c -; \
     tar -xzf /tmp/tokenizers.tar.gz -C /tmp; \
@@ -295,9 +316,11 @@ RUN set -eux; \
 
 # Transformers 5.17.0 still trusts local checkpoint weight_map paths.
 COPY patch-transformers-shards.py patch-litellm-jwt-email.py security-regression.py /tmp/
-RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py \
-    && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
-    && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py packages
+RUN if [ "${BASELINE}" != true ]; then \
+      PATH="/opt/venv/bin:${PATH}" python /tmp/patch-litellm-jwt-email.py /opt/venv/lib/python*/site-packages/litellm/proxy/auth/handle_jwt.py \
+      && PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
+      && PATH="/opt/venv/bin:${PATH}" python /tmp/security-regression.py packages; \
+    fi
 
 # The setuptools/msgpack upgrades that used to live here targeted packages
 # that Headroom does not install: neither appears in the proxy+bedrock
@@ -398,7 +421,11 @@ HFCACHE
 EOF
 
 
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs
+# Patched runtime (BASELINE=false). Built only when BASELINE is not "true".
+# ponytail: still removes packages with dpkg --force-depends; the baseline stage
+# below uses the closure-aware tool. Collapse the two after the first baseline
+# scan has been evaluated and the tool is proven in CI.
+FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs_false
 ARG HEADROOM_VERSION
 ARG HEADROOM_COMMIT
 ARG LITELLM_VERSION
@@ -683,6 +710,67 @@ RUN PATH="/opt/venv/bin:${PATH}" python -c \
  && ! PATH="/opt/venv/bin:${PATH}" python -c "import pip" 2>/dev/null
 
 
+# Baseline runtime (BASELINE=true): stock Debian packages, stock upstream
+# Python dependencies, the Bedrock/Cline functionality patch from the builder,
+# and only the removals in removals.yaml. No glibc/dash/zlib/SQLite rebuilds.
+# The tools context is the repository's tools/ directory (build_contexts input).
+FROM python:${PYTHON_VERSION}-slim-${DEBIAN_SUITE} AS runtime_rootfs_true
+ARG HEADROOM_VERSION
+ARG LITELLM_VERSION
+
+ENV HEADROOM_HOST=0.0.0.0 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH=/opt/venv/bin:${PATH} \
+    HF_HOME=/opt/headroom-cache/huggingface \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    HF_HUB_DISABLE_TELEMETRY=1 \
+    LITELLM_LOCAL_MODEL_COST_MAP=True \
+    HEADROOM_UPDATE_CHECK=off \
+    HEADROOM_BEACON=off \
+    DO_NOT_TRACK=1 \
+    HEADROOM_SKIP_UPSTREAM_CHECK=1 \
+    HEADROOM_OUTPUT_SHAPER=1
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --create-home --home-dir /home/headroom \
+      --shell /bin/false headroom \
+    && mkdir -p /home/headroom/.headroom \
+    && chown -R headroom:headroom /home/headroom
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/headroom-cache /opt/headroom-cache
+COPY mcp-smoke.py /usr/local/bin/mcp-smoke.py
+COPY entrypoint.sh /usr/local/bin/headroom-entrypoint
+RUN chmod +x /usr/local/bin/headroom-entrypoint \
+    && chown -R headroom:headroom /opt/headroom-cache
+COPY removals.yaml /tmp/removals.yaml
+COPY --from=tools image_removals.py /tmp/image_removals.py
+RUN /opt/venv/bin/python /tmp/image_removals.py apply --manifest /tmp/removals.yaml --mode baseline \
+    && /opt/venv/bin/python /tmp/image_removals.py verify \
+    && rm -f /tmp/image_removals.py /tmp/removals.yaml
+# Falsifiable functionality check after the removals: if a purge took something
+# the service needs, the build fails here and not at MCP startup.
+RUN /opt/venv/bin/python -c \
+    "import importlib.metadata, importlib.util, ssl, sqlite3, zlib, bz2, lzma, hashlib, ctypes, socket, boto3, litellm; \
+     assert importlib.metadata.version('headroom-ai') == '${HEADROOM_VERSION}'; \
+     assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'; \
+     assert importlib.util.find_spec('_curses') is None; \
+     ssl.create_default_context(); \
+     db = sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); \
+     db.execute('insert into docs values (\"headroom\")'); \
+     assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',); \
+     print('Baseline runtime OK: SQLite', sqlite3.sqlite_version, 'zlib', zlib.ZLIB_RUNTIME_VERSION)" \
+    && /bin/sh -c "echo 'entrypoint shell OK'" \
+    && getent passwd headroom >/dev/null \
+    && ! command -v pip \
+    && test -s /etc/image-removals.json
+
+# BuildKit builds only the selected rootfs stage.
+FROM runtime_rootfs_${BASELINE} AS runtime_rootfs
+
 # Xray reports packages/files from superseded base-image layers even after the
 # runtime stage upgrades or removes them. Copy the fully verified effective
 # root filesystem into a fresh final stage so scanners see exactly what runs.
@@ -692,6 +780,7 @@ COPY --from=runtime_rootfs / /
 
 ARG HEADROOM_VERSION
 ARG HEADROOM_COMMIT
+ARG BASELINE
 
 # Headroom 0.41.0 defaults its anonymous upload beacon ON. Disable it with
 # HEADROOM_BEACON=off plus DO_NOT_TRACK=1 (both checked by is_beacon_enabled).
@@ -720,6 +809,7 @@ LABEL org.opencontainers.image.title="headroom-mcp" \
       org.opencontainers.image.source="https://github.com/headroomlabs-ai/headroom" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.version="${HEADROOM_VERSION}" \
-      org.opencontainers.image.revision="${HEADROOM_COMMIT}"
+      org.opencontainers.image.revision="${HEADROOM_COMMIT}" \
+      io.github.rcamarda390.baseline="${BASELINE}"
 
 ENTRYPOINT ["/usr/local/bin/headroom-entrypoint"]
