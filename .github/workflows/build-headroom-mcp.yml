@@ -5,11 +5,12 @@ on:
   pull_request:
     paths:
       - 'images/headroom-mcp/**'
+      - 'tools/image_removals.py'
       - '.github/workflows/build-headroom-mcp.yml'
       - '.github/workflows/build-image.yml'
   push:
     branches: [main]
-    paths: ['images/headroom-mcp/**', '.github/workflows/build-headroom-mcp.yml']
+    paths: ['images/headroom-mcp/**', 'tools/image_removals.py', '.github/workflows/build-headroom-mcp.yml']
 
 # Serialize publications so two pushes cannot calculate the same next tag.
 concurrency:
@@ -39,6 +40,7 @@ jobs:
       # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
       # action builds and publishes the complete deployable image.
       dockerfile: ./images/headroom-mcp/Dockerfile
+      prepare_script: images/headroom-mcp/prepare.py
       config: images/headroom-mcp/image.yaml
       version_arg: HEADROOM_VERSION
       platforms: linux/amd64

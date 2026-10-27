@@ -1,0 +1,174 @@
+# Declared intent for software removed from the final headroom-mcp image.
+# tools/image_removals.py applies this in the build, computes the installed
+# reverse-dependency closure of `packages`, and fails if the closure contains a
+# package not listed here or if anything under runtime_roots, runtime_executables
+# or entrypoints needs something the closure deletes. It writes the result to
+# /etc/image-removals.json inside the image.
+#
+# Evidence below was gathered against 0.41.0. Every build re-runs the ELF,
+# entrypoint and dependency checks against the version being built, so a new
+# release re-proves "unused" instead of inheriting it.
+schema_version: 1
+image: headroom-mcp
+verified_against:
+  upstream_version: "0.41.0"
+runtime_roots: [/usr/local, /opt/venv]
+runtime_executables: [/bin/dash]
+entrypoints: [/usr/local/bin/headroom-entrypoint]
+
+packages:
+  # --- command suites nothing in the service invokes -------------------------
+  - name: coreutils
+    category: unused-runtime
+    reason: Entrypoint is dash exec'ing Python; no service path shells out to coreutils.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-56391, CVE-2026-56392, CVE-2025-5278, CVE-2017-18018]
+  - name: util-linux
+    category: unused-runtime
+    reason: Headroom uses fcntl.flock and Python UUIDs, not util-linux commands.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md, images/headroom-mcp/verify-runtime-unused.py]
+  - {name: mount, category: unused-runtime, reason: Closure of util-linux removal., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - {name: bsdutils, category: unused-runtime, reason: Closure of util-linux removal., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - {name: libmount1, category: unused-runtime, reason: Only util-linux tools link it., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - {name: libblkid1, category: unused-runtime, reason: Only util-linux tools link it., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - {name: libsmartcols1, category: unused-runtime, reason: Only util-linux tools link it., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - {name: libuuid1, category: unused-runtime, reason: Python _uuid extension removed; uuid falls back to os.urandom., evidence: [images/headroom-mcp/verify-runtime-unused.py]}
+  - name: gzip
+    category: unused-runtime
+    reason: Nothing shells out to gzip; Python keeps its linked zlib module.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+  - name: tar
+    category: unused-runtime
+    reason: Headroom never shells out to tar; build-time HF downloads are single files.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-5704, CVE-2026-18477, CVE-2026-18508, CVE-2005-2541]
+  - name: diffutils
+    category: unused-runtime
+    reason: Headroom compresses diffs in Python/Rust and never invokes diff, diff3 or cmp.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-53910]
+  # openssl is NOT removed: ca-certificates depends on it, and the system CA
+  # bundle is needed for TLS. Baseline build 0.42.0-v1 showed that the old
+  # `dpkg --purge openssl` left ca-certificates with an unsatisfied dependency.
+  - name: perl-base
+    category: no-fix
+    reason: Nothing invokes perl; every perl-base CVE is published with no fixed version.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+  # --- package management and account tooling --------------------------------
+  - name: apt
+    category: build-only
+    reason: Package management is build-only; the air-gapped runtime never runs apt.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2011-3374]
+  - {name: libapt-pkg7.0, category: build-only, reason: Library of apt., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - name: login
+    category: unused-runtime
+    reason: Interactive login tooling; Docker starts the entrypoint as the existing headroom account.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-3184, CVE-2026-76642, CVE-2024-56433, CVE-2007-5686]
+  - name: passwd
+    category: unused-runtime
+    reason: Account administration; the service account is created before this step.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-78408, CVE-2026-78409, CVE-2026-78410]
+  - {name: login.defs, category: unused-runtime, reason: Configuration of login and passwd., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  # --- dependents the closure check found (baseline build 0.42.0-v1) --------
+  - name: dpkg
+    category: unused-runtime
+    reason: Package manager; no package operation runs after the build. Its dependency tar is removed. The status database stays for scanners.
+    evidence: [images/headroom-mcp/entrypoint.sh, tools/image_removals.py]
+  - name: bash
+    category: unused-runtime
+    reason: Entrypoint and subprocess shell are /bin/sh (dash). The current image already ships bash with libtinfo6 purged, i.e. unusable.
+    evidence: [images/headroom-mcp/entrypoint.sh, images/headroom-mcp/Dockerfile]
+  - name: sed
+    category: unused-runtime
+    reason: Not invoked by the entrypoint or the service; depends on libacl1, which is removed.
+    evidence: [images/headroom-mcp/entrypoint.sh]
+  - name: adduser
+    category: unused-runtime
+    reason: Perl script for account management; perl-base and passwd are removed and the service account is created with useradd before removal.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - name: libreadline8t64
+    category: unused-runtime
+    reason: Only the optional Python readline extension (REPL history) links it; that extension is removed below.
+    evidence: [images/headroom-mcp/removals.yaml]
+  # --- libraries only the removed tools used ---------------------------------
+  - name: ncurses-bin
+    category: unused-runtime
+    reason: No terminal UI; infocmp and tput are unused.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2025-69720]
+  - {name: ncurses-base, category: unused-runtime, reason: Terminfo data for the removed terminal tools., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - {name: libtinfo6, category: unused-runtime, reason: Python _curses extension removed., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - {name: libncursesw6, category: unused-runtime, reason: Python _curses extension removed., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - name: libacl1
+    category: unused-runtime
+    reason: Only cp, mv, install and tar link it; Headroom uses neither.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-54369]
+  - name: libattr1
+    category: unused-runtime
+    reason: Only cp, mv, install and tar link it; Headroom uses neither.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-54371]
+  - name: libpam0g
+    category: unused-runtime
+    reason: Headroom does not authenticate through PAM; user lookup uses glibc NSS.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2025-8941]
+  - {name: libpam-modules, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - {name: libpam-modules-bin, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - {name: libpam-runtime, category: unused-runtime, reason: PAM is unused., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  - name: libudev1
+    category: unused-runtime
+    reason: No udev daemon and Headroom never queries device metadata.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2026-40228, CVE-2026-15059, CVE-2023-31439, CVE-2023-31438]
+  - name: libsystemd0
+    category: unused-runtime
+    reason: No systemd integration (no sd_notify, no journal logging).
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+    cves: [CVE-2013-4392, CVE-2026-16742, CVE-2023-31437]
+  - {name: liblastlog2-2, category: unused-runtime, reason: Login history for PAM; PAM is gone., evidence: [images/headroom-mcp/SECURITY-20261005.md]}
+  # --- stock libraries that the patched build replaces with source builds ----
+  - name: libsqlite3-0
+    category: replaced
+    requires_carry: true
+    reason: Replaced by the SHA3-verified upstream 3.53.4 build in /usr/local/lib.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - name: zlib1g
+    category: replaced
+    requires_carry: true
+    reason: Replaced by the checksum-pinned zlib 1.3.2 build in /usr/local/lib.
+    evidence: [images/headroom-mcp/Dockerfile]
+
+paths:
+  - path: /usr/local/lib/python3.13/site-packages/pip
+    category: unused-runtime
+    reason: Nothing runs pip at runtime; its vendored setuptools and msgpack carry CVE-2026-23949, CVE-2025-47273, CVE-2026-57585.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - path: /usr/local/lib/python3.13/site-packages/pip-*.dist-info
+    category: unused-runtime
+    reason: Metadata of the removed pip.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - path: /usr/local/lib/python3.13/ensurepip/_bundled
+    category: unused-runtime
+    reason: Bundled pip wheel carries the same vendored tree.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - path: /usr/local/bin/pip*
+    category: unused-runtime
+    reason: Launchers of the removed pip.
+    evidence: [images/headroom-mcp/Dockerfile]
+  - path: /usr/local/lib/python3.13/lib-dynload/_curses*.so
+    category: unused-runtime
+    reason: No terminal UI; removing it lets libncursesw6 go.
+    evidence: [images/headroom-mcp/SECURITY-20261005.md]
+  - path: /usr/local/lib/python3.13/lib-dynload/readline*.so
+    category: unused-runtime
+    reason: Optional REPL line editing; it links libreadline8t64 and libtinfo6 and nothing in the service imports it.
+    evidence: [images/headroom-mcp/entrypoint.sh]
+  - path: /usr/local/lib/python3.13/lib-dynload/_uuid*.so
+    category: unused-runtime
+    reason: Optional; uuid falls back to os.urandom, which lets libuuid1 go.
+    evidence: [images/headroom-mcp/verify-runtime-unused.py]
