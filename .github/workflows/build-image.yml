@@ -602,6 +602,23 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Suffixed (side-line) tags use the configured revision, so a repeated
+      # dispatch would otherwise overwrite the published immutable tag.
+      - name: Refuse to overwrite an existing suffixed tag
+        if: inputs.publish && inputs.tag_suffix != '' && (inputs.publish_ghcr || inputs.publish_dockerhub)
+        env:
+          PUBLISH_TAGS: ${{ steps.meta.outputs.publish_tags }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            if docker buildx imagetools inspect "$tag" >/dev/null 2>&1; then
+              echo "::error::$tag already exists; bump revision instead of overwriting an immutable image"
+              exit 1
+            fi
+          done <<< "$PUBLISH_TAGS"
+
       - name: Build and push selected registry tags
         id: publish
         if: inputs.publish && (inputs.publish_ghcr || inputs.publish_dockerhub)
