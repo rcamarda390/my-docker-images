@@ -9,7 +9,7 @@ ARG HEADROOM_COMMIT=17d38e5699b7d7c69ac6addcd762f39e42dd7f00
 # revision reset to 1; the post-scan evaluation PR sets it back to false.
 # Only "true" and "false" are valid: the value selects a stage name below.
 ARG BASELINE=false
-ARG LITELLM_VERSION=1.101.3
+ARG LITELLM_VERSION=1.103.10
 ARG PYTHON_VERSION=3.13.15
 ARG PYTHON_ABI=3.13
 ARG DEBIAN_SUITE=trixie
@@ -241,7 +241,11 @@ COPY --from=source /src/headroom/ headroom/
 # LiteLLM backends. The bedrock extra adds boto3 and botocore for AWS SDK
 # support required to reach AWS Bedrock from an air-gapped GovCloud environment.
 RUN uv sync --frozen --extra proxy --extra bedrock --no-dev --no-editable
-# LiteLLM 1.101.3 fixes GHSA-7hp6-4w63-5g45 in the existing 1.101 line.
+# LiteLLM 1.103.10 is the lowest scanner fix line for the 0.42.0 CVSS 10.0
+# finding (fix versions 1.103.10/1.104.8/1.105.6/1.106.5). Its requirements do
+# not cap filelock, which headroom-ai 0.42.0 needs at >=4.2.1; the 1.104+ lines
+# require filelock<4. The unverified-email JWT fallback that CVE-2026-93355
+# names is still present, so the patch-litellm-jwt-email.py carry stays.
 # The Bedrock regression below must still verify native cache-point conversion.
 RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
       "litellm==${LITELLM_VERSION}" \
