@@ -36,7 +36,7 @@ COPY --chmod=0755 verify-runtime-dependencies.mjs /tmp/verify-runtime-dependenci
 COPY --chmod=0644 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
 COPY --chmod=0644 verify-otel-runtime.mjs /opt/agentmemory/verify-otel-runtime.mjs
 COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
-RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.8","brace-expansion":"5.0.9","ip-address":"10.7.4","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","@opentelemetry/api-logs":"0.220.0","@opentelemetry/instrumentation":"0.220.0","@opentelemetry/otlp-transformer":"0.220.0","@opentelemetry/sdk-logs":"0.220.0"}}\n' "${III_SDK_VERSION}" > package.json \
+RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.9","brace-expansion":"5.0.9","ip-address":"10.7.4","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","@opentelemetry/api-logs":"0.220.0","@opentelemetry/instrumentation":"0.220.0","@opentelemetry/otlp-transformer":"0.220.0","@opentelemetry/sdk-logs":"0.220.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/iii-sdk/package.json').version")" = "${III_SDK_VERSION}" \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
@@ -47,6 +47,14 @@ RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overr
  && node /tmp/patch-zod-output-limits.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime import OK')" \
  && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs /tmp/patch-iii-otel2.mjs
+
+# Xray: fast-uri 3.1.8 (CVE-2026-110180, -110306, -110095, -110725) is fixed in
+# 3.1.9. Every installed copy in the npm tree must be at the fixed version.
+RUN set -eu; \
+    test "$(node -p "require('./node_modules/fast-uri/package.json').version")" = 3.1.9; \
+    for manifest in $(find node_modules -path '*/fast-uri/package.json'); do \
+      node -e "const v = require('./${manifest}').version; if (v !== '3.1.9') { console.error('${manifest} ' + v); process.exit(1) }"; \
+    done
 
 # Pinned model, checksum-verified, fetched only in this connected build stage.
 RUN set -eux; \
@@ -90,12 +98,34 @@ LABEL org.opencontainers.image.title="agentmemory-mcp" \
 
 # Runtime needs sh, node, openssl, tini, gosu (entrypoint) and CA certificates.
 # npm is a build-time tool only; it is removed and its absence asserted below.
+# The Wolfi base carries glibc CVEs that 2.44-r8 fixes (CVE-2026-86805,
+# CVE-2026-89092, CVE-2026-8674) and zlib CVE-2026-85091 fixed in
+# 1.3.2.1_rc20260601-r0. The version constraints fail the build if the repo
+# cannot supply them; the checks below prove what landed.
 RUN apk upgrade --available --no-cache \
+    && apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
+        'zlib>=1.3.2.1_rc20260601-r0' \
     && apk add --no-cache ca-certificates-bundle nodejs-26 openssl tini gosu \
     && ! command -v npm \
     && ! command -v npx \
     && addgroup -g 1000 node \
     && adduser -D -u 1000 -G node -h /home/node node
+
+RUN set -eu; \
+    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+    done
+RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "zlib" {print $2}' /lib/apk/db/installed) \
+    && test -n "$installed" \
+    && test "$(apk version -t "$installed" 1.3.2.1_rc20260601-r0)" != '<' \
+    && printf 'zlib=%s\n' "$installed"
 
 COPY --from=builder /opt/agentmemory /opt/agentmemory
 COPY --from=iii-image /app/iii /usr/local/bin/iii

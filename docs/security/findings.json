@@ -3380,7 +3380,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-28",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -3432,9 +3432,21 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "agentmemory-mcp-wolfi": {
+          "treatment": "downstream-fixed",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi",
+            "images/agentmemory-server/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only."
+      "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending."
     },
     {
       "cve": "CVE-2026-5435",
@@ -3821,7 +3833,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-19",
+      "last_reviewed": "2026-10-28",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -3950,9 +3962,21 @@
             "published_tag": null,
             "published_digest": null
           }
+        },
+        "agentmemory-mcp-wolfi": {
+          "treatment": "downstream-fixed",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi",
+            "images/agentmemory-server/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {
@@ -4561,7 +4585,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-19",
+      "last_reviewed": "2026-10-28",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -4690,9 +4714,21 @@
             "published_tag": null,
             "published_digest": null
           }
+        },
+        "agentmemory-mcp-wolfi": {
+          "treatment": "downstream-fixed",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi",
+            "images/agentmemory-server/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {
@@ -5083,7 +5119,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-19",
+      "last_reviewed": "2026-10-28",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -5212,9 +5248,21 @@
             "published_tag": null,
             "published_digest": null
           }
+        },
+        "agentmemory-mcp-wolfi": {
+          "treatment": "downstream-fixed",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi",
+            "images/agentmemory-server/image.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved.",
+      "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending.",
       "official_fixed_version": "Fixed in Debian forky/sid; Headroom candidate builds 2.43-7 (trixie: vulnerable, no DSA)",
       "vendor_fixes": {
         "wolfi": {
@@ -6945,6 +6993,130 @@
         }
       },
       "remaining": "Supplied in gnosis-mcp:0.17.5-v15 Xray scan (2026-10-26).  Pinned in images/gnosis-mcp/requirements.lock with build-time assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "CVE-2026-110180",
+      "source_package": "fast-uri",
+      "suite": null,
+      "reported_packages": [
+        "fast-uri"
+      ],
+      "reported_score": null,
+      "reported_severity": null,
+      "reported_cwe": [],
+      "reported_fix_version": "2.4.8, 3.1.9, 4.2.3",
+      "reported_installed_version": "3.1.8",
+      "last_reviewed": "2026-10-28",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.9",
+      "patch_sha256": null,
+      "images": {
+        "agentmemory-mcp-wolfi": {
+          "treatment": "dependency-pin-built",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "agentmemory-mcp Wolfi 0.9.30-wolfi-v2: npm override fast-uri 3.1.9 with a build-time check over every installed copy. Scan of the published digest pending."
+    },
+    {
+      "cve": "CVE-2026-110306",
+      "source_package": "fast-uri",
+      "suite": null,
+      "reported_packages": [
+        "fast-uri"
+      ],
+      "reported_score": null,
+      "reported_severity": null,
+      "reported_cwe": [],
+      "reported_fix_version": "2.4.8, 3.1.9, 4.2.3",
+      "reported_installed_version": "3.1.8",
+      "last_reviewed": "2026-10-28",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.9",
+      "patch_sha256": null,
+      "images": {
+        "agentmemory-mcp-wolfi": {
+          "treatment": "dependency-pin-built",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "agentmemory-mcp Wolfi 0.9.30-wolfi-v2: npm override fast-uri 3.1.9 with a build-time check over every installed copy. Scan of the published digest pending."
+    },
+    {
+      "cve": "CVE-2026-110095",
+      "source_package": "fast-uri",
+      "suite": null,
+      "reported_packages": [
+        "fast-uri"
+      ],
+      "reported_score": null,
+      "reported_severity": null,
+      "reported_cwe": [],
+      "reported_fix_version": "2.4.8, 3.1.9, 4.2.3",
+      "reported_installed_version": "3.1.8",
+      "last_reviewed": "2026-10-28",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.9",
+      "patch_sha256": null,
+      "images": {
+        "agentmemory-mcp-wolfi": {
+          "treatment": "dependency-pin-built",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "agentmemory-mcp Wolfi 0.9.30-wolfi-v2: npm override fast-uri 3.1.9 with a build-time check over every installed copy. Scan of the published digest pending."
+    },
+    {
+      "cve": "CVE-2026-110725",
+      "source_package": "fast-uri",
+      "suite": null,
+      "reported_packages": [
+        "fast-uri"
+      ],
+      "reported_score": null,
+      "reported_severity": null,
+      "reported_cwe": [],
+      "reported_fix_version": "2.4.8, 3.1.9, 4.2.3",
+      "reported_installed_version": "3.1.8",
+      "last_reviewed": "2026-10-28",
+      "tracker_url": null,
+      "official_fixed_version": "3.1.9",
+      "patch_sha256": null,
+      "images": {
+        "agentmemory-mcp-wolfi": {
+          "treatment": "dependency-pin-built",
+          "fixed_version": null,
+          "evidence": [
+            "images/agentmemory-server/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.9.30-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "agentmemory-mcp Wolfi 0.9.30-wolfi-v2: npm override fast-uri 3.1.9 with a build-time check over every installed copy. Scan of the published digest pending."
     }
   ]
 }
