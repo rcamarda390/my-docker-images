@@ -123,7 +123,9 @@ ENV AGENTMEMORY_III_VERSION=${III_VERSION} \
     TINI_SUBREAPER=1
 
 # Build-time proof: the iii SDK imports, the bundled engine runs, and the staged
-# model is sufficient with the network disabled.
+# model is sufficient with the network disabled. The SDK resolves from the
+# working directory, so run from the AgentMemory install prefix.
+WORKDIR /opt/agentmemory
 RUN --network=none node /opt/agentmemory/offline-embedding-smoke.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime OK')"
 
