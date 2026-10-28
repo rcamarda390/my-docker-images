@@ -409,8 +409,8 @@ jobs:
           end
           puts "BUILD_ARGS"
           puts "publish_tags<<PUBLISH_TAGS"
-          puts "ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{version}-v#{revision}" if publish_ghcr
-          puts "docker.io/#{dockerhub}/#{name}:#{version}-v#{revision}" if publish_dockerhub
+          puts "ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{tag}" if publish_ghcr
+          puts "docker.io/#{dockerhub}/#{name}:#{tag}" if publish_dockerhub
           puts "PUBLISH_TAGS"
           RUBY
 
