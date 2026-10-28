@@ -5866,7 +5866,8 @@
           "scan_tag": "0.42.0-wolfi-v2",
           "scan_digest": null,
           "scan_url": null,
-          "published_digest": null
+          "published_digest": null,
+          "remaining_note": "Wolfi moves transformers 5.13.1 -> 5.17.0 (required by tokenizers 0.23.3)."
         }
       },
       "remaining": "Existing carry/applicability checks retained; exact-digest scan required. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi 0.42.0-wolfi-v2: No upstream fix (all versions). Wolfi builder applies the checkpoint shard path guard via patch-transformers-shards.py, asserted at build. Reachability of the guard for remote-hub loads not analysed; the guard applies to local model directories only. Exact-digest Xray rescan of wolfi-v2 pending."
@@ -5991,7 +5992,7 @@
           "published_digest": null
         }
       },
-      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 (PyPI, upstream fix release) with version assert and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi."
+      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 and transformers==5.17.0 (the transformers release that accepts 0.23.1+; 5.13.1 caps tokenizers at 0.23.0) with version asserts and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi."
     },
     {
       "cve": "CVE-2026-104850",

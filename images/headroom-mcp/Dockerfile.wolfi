@@ -82,12 +82,14 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
     && uv pip check --python /opt/venv/bin/python \
     && ! /opt/venv/bin/python -c "import pip" 2>/dev/null
 
-# CVE-2026-85670 (tokenizers <=0.23.2) is fixed in 0.23.3. uv.lock resolves
-# 0.22.2, so pin the fixed release explicitly.
-RUN uv pip install --python /opt/venv/bin/python --upgrade-package tokenizers \
-      "tokenizers==0.23.3" \
+# CVE-2026-85670 (tokenizers <=0.23.2) is fixed in 0.23.3. transformers 5.13.1
+# (uv.lock) caps tokenizers at 0.23.0, so move to transformers 5.17.0, which
+# accepts 0.23.1+ and matches the Debian line. Both pins are asserted.
+RUN uv pip install --python /opt/venv/bin/python \
+      --upgrade-package tokenizers --upgrade-package transformers \
+      "tokenizers==0.23.3" "transformers==5.17.0" \
     && /opt/venv/bin/python -c \
-      "import importlib.metadata; assert importlib.metadata.version('tokenizers') == '0.23.3'" \
+      "import importlib.metadata as m; assert m.version('tokenizers') == '0.23.3'; assert m.version('transformers') == '5.17.0'" \
     && uv pip check --python /opt/venv/bin/python
 
 # CVE-2026-75104 (transformers, all versions): no upstream fix exists, so carry
