@@ -3393,7 +3393,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-28",
       "debian_tracker_review": {
         "date": "2026-10-16",
         "trixie": {
@@ -3445,9 +3445,22 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "headroom-mcp-wolfi": {
+          "treatment": "vendor-fix-pinned",
+          "suite": "wolfi",
+          "fixed_version": "1.3.2.1_rc20260601-r0",
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.42.0-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "published_digest": null
         }
       },
-      "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only."
+      "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Runtime apk pin zlib>=1.3.2.1_rc20260601-r0 with build-time version assert. Exact-digest Xray rescan of wolfi-v2 pending."
     },
     {
       "cve": "CVE-2026-5435",
@@ -5827,7 +5840,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-28",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -5840,9 +5853,23 @@
           "scan_url": null,
           "latest_report_id": "headroom-mcp-xray-20261016",
           "scan_result": "still-reported"
+        },
+        "headroom-mcp-wolfi": {
+          "treatment": "downstream-fixed",
+          "suite": "wolfi",
+          "fixed_version": null,
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/patch-transformers-shards.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.42.0-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "published_digest": null
         }
       },
-      "remaining": "Existing carry/applicability checks retained; exact-digest scan required. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md."
+      "remaining": "Existing carry/applicability checks retained; exact-digest scan required. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi 0.42.0-wolfi-v2: No upstream fix (all versions). Wolfi builder applies the checkpoint shard path guard via patch-transformers-shards.py, asserted at build. Reachability of the guard for remote-hub loads not analysed; the guard applies to local model directories only. Exact-digest Xray rescan of wolfi-v2 pending."
     },
     {
       "cve": "CVE-2026-42250",
@@ -5925,7 +5952,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-16",
+      "last_reviewed": "2026-10-28",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -5949,9 +5976,22 @@
           "scan_status": "pending",
           "scan_digest": null,
           "scan_url": null
+        },
+        "headroom-mcp-wolfi": {
+          "treatment": "version-pinned",
+          "suite": "wolfi",
+          "fixed_version": "0.23.3",
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.42.0-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null,
+          "published_digest": null
         }
       },
-      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only."
+      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 (PyPI, upstream fix release) with version assert and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi."
     },
     {
       "cve": "CVE-2026-104850",
