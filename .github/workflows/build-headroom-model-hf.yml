@@ -6,13 +6,11 @@ on:
     paths:
       - images/headroom-model-hf/**
       - .github/workflows/build-headroom-model-hf.yml
-      - .github/workflows/build-image.yml
   push:
     branches: [main]
     paths:
       - images/headroom-model-hf/**
       - .github/workflows/build-headroom-model-hf.yml
-      - .github/workflows/build-image.yml
 
 concurrency:
   group: headroom-model-hf-${{ github.ref }}

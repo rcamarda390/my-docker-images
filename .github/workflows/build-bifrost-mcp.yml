@@ -6,7 +6,6 @@ on:
     paths:
       - "images/bifrost-mcp/**"
       - ".github/workflows/build-bifrost-mcp.yml"
-      - ".github/workflows/build-image.yml"
   push:
     branches: [main]
     paths:
