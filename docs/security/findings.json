@@ -3453,11 +3453,13 @@
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi"
           ],
-          "scan_status": "pending",
+          "scan_status": "cleared",
           "scan_tag": "0.42.0-wolfi-v2",
-          "scan_digest": null,
+          "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
           "scan_url": null,
-          "published_digest": null
+          "published_digest": null,
+          "scan_result": "absent-from-report",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261028"
         }
       },
       "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Runtime apk pin zlib>=1.3.2.1_rc20260601-r0 with build-time version assert. Exact-digest Xray rescan of wolfi-v2 pending."
@@ -5855,22 +5857,33 @@
           "scan_result": "still-reported"
         },
         "headroom-mcp-wolfi": {
-          "treatment": "downstream-fixed",
+          "treatment": "no-fix-mitigated",
           "suite": "wolfi",
           "fixed_version": null,
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/patch-transformers-shards.py"
           ],
-          "scan_status": "pending",
+          "scan_status": "still-reported",
           "scan_tag": "0.42.0-wolfi-v2",
-          "scan_digest": null,
+          "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
           "scan_url": null,
           "published_digest": null,
-          "remaining_note": "Wolfi moves transformers 5.13.1 -> 5.17.0 (required by tokenizers 0.23.3)."
+          "scan_result": "still-reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261028",
+          "checked_upstream": {
+            "date": "2026-10-28",
+            "releases_checked": [
+              "5.17.0",
+              "5.20.2",
+              "5.21.0"
+            ],
+            "result": "no shard-path validation in any release; no advisory fixed_version found"
+          },
+          "mitigation": "Build-time guard in patch-transformers-shards.py rejects absolute/.. shard names and escaping local model paths; anchor and marker asserted at build."
         }
       },
-      "remaining": "Existing carry/applicability checks retained; exact-digest scan required. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi 0.42.0-wolfi-v2: No upstream fix (all versions). Wolfi builder applies the checkpoint shard path guard via patch-transformers-shards.py, asserted at build. Reachability of the guard for remote-hub loads not analysed; the guard applies to local model directories only. Exact-digest Xray rescan of wolfi-v2 pending."
+      "remaining": "No upstream fix in transformers 5.17.0, 5.20.2 or 5.21.0 (latest on PyPI 2026-10-28). Xray reports by version and still lists transformers 5.17.0 on 0.42.0-wolfi-v2 (digest sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20). Treatment: no-fix, mitigated by downstream guard. Reachability: the guard covers checkpoint shard filenames from index.json; loading from the Hub uses the same code path but is not separately analysed. Suggested Xray exception for this image only, pending Rob approval."
     },
     {
       "cve": "CVE-2026-42250",
@@ -5985,11 +5998,13 @@
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi"
           ],
-          "scan_status": "pending",
+          "scan_status": "cleared",
           "scan_tag": "0.42.0-wolfi-v2",
-          "scan_digest": null,
+          "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
           "scan_url": null,
-          "published_digest": null
+          "published_digest": null,
+          "scan_result": "absent-from-report",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261028"
         }
       },
       "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 and transformers==5.17.0 (the transformers release that accepts 0.23.1+; 5.13.1 caps tokenizers at 0.23.0) with version asserts and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi."
