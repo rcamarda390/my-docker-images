@@ -59,5 +59,7 @@ jobs:
       scan: true
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision or open a bump PR.
-      revision_from_published_tag_count: true
+      # Test tag: configured revision (image.yaml) is used; the published-count
+      # mode reads only the Debian tags and would not see wolfi publications.
+      tag_suffix: wolfi
       publish: ${{ github.event_name != 'pull_request' }}
