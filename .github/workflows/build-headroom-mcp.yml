@@ -39,7 +39,7 @@ jobs:
       context: ./images/headroom-mcp
       # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
       # action builds and publishes the complete deployable image.
-      dockerfile: ./images/headroom-mcp/Dockerfile
+      dockerfile: ./images/headroom-mcp/Dockerfile.wolfi
       prepare_script: images/headroom-mcp/prepare.py
       config: images/headroom-mcp/image.yaml
       version_arg: HEADROOM_VERSION

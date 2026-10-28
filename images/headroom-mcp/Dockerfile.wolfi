@@ -1,0 +1,250 @@
+# syntax=docker/dockerfile:1.7
+
+# Wolfi test baseline for headroom-mcp (BASELINE=true). Stock upstream plus the
+# functionality the service needs: the Cline/Bedrock downstream patch, the
+# LiteLLM pin, and the baked Kompress model cache. No CVE carries (no glibc
+# rebuild, zlib/sqlite/tokenizers/transformers/aiohttp/mcp/urllib3 pins, regex
+# or dash patches) and no package removals, so the scan of this image shows
+# what the Wolfi base ships with the release. Not a deployable build.
+# Diagnostic record: docs/security/findings.json (review entry, headroom-mcp).
+
+ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
+ARG UV_IMAGE=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a
+ARG HEADROOM_VERSION=0.42.0
+ARG HEADROOM_COMMIT=17d38e5699b7d7c69ac6addcd762f39e42dd7f00
+ARG LITELLM_VERSION=1.103.10
+ARG PYTHON_VERSION=3.13
+ARG RUSTUP_VERSION=1.28.2
+ARG BASELINE=true
+
+FROM ${UV_IMAGE} AS uvbin
+
+FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS source
+ARG HEADROOM_VERSION
+ARG HEADROOM_COMMIT
+RUN apk add --no-cache ca-certificates git \
+    && git clone --depth 1 --branch "v${HEADROOM_VERSION}" \
+       https://github.com/headroomlabs-ai/headroom.git /src \
+    && test "$(git -C /src rev-parse HEAD)" = "$HEADROOM_COMMIT"
+
+FROM ${WOLFI_IMAGE} AS builder
+ARG HEADROOM_VERSION
+ARG LITELLM_VERSION
+ARG PYTHON_VERSION
+ARG RUSTUP_VERSION
+
+ENV CARGO_HOME=/usr/local/cargo \
+    RUSTUP_HOME=/usr/local/rustup \
+    PATH=/usr/local/cargo/bin:/usr/local/bin:/usr/bin:/bin \
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_PYTHON=/usr/bin/python3.13 \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_NO_MANAGED_PYTHON=1 \
+    HF_HOME=/opt/headroom-cache/huggingface
+
+# python-3.13 keeps the venv on the same minor version as the Debian build.
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache ca-certificates curl build-base python-3.13 \
+    && /usr/bin/python3.13 -c "import sys; assert sys.version_info[:2] == (3, 13), sys.version"
+
+COPY --from=uvbin /uv /usr/local/bin/uv
+
+# Checksums come from the matching rustup-init.sha256 file in the Rust release
+# archive. Same installer and toolchain as the Debian build.
+RUN set -eux; \
+    rust_sha=20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c; \
+    curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+      "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
+      --output /tmp/rustup-init; \
+    echo "${rust_sha}  /tmp/rustup-init" | sha256sum --check --status; \
+    chmod +x /tmp/rustup-init; \
+    /tmp/rustup-init -y --no-modify-path --profile minimal \
+      -c rustfmt -c clippy --default-toolchain 1.95.0; \
+    rm /tmp/rustup-init
+
+WORKDIR /build
+COPY --from=source /src/pyproject.toml /src/uv.lock /src/README.md ./
+COPY --from=source /src/Cargo.toml /src/Cargo.lock /src/rust-toolchain.toml ./
+COPY --from=source /src/crates/ crates/
+COPY --from=source /src/headroom/ headroom/
+
+# Checked-in upstream resolution, unchanged. The proxy extra provides the MCP
+# server, compression, and LiteLLM backends; the bedrock extra provides boto3
+# and botocore for AWS Bedrock.
+RUN uv sync --frozen --extra proxy --extra bedrock --no-dev --no-editable
+
+# Functionality pin, not a CVE carry: LiteLLM 1.103.10 is the version that
+# resolves cleanly with the filelock floor in upstream pyproject.
+RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
+      "litellm==${LITELLM_VERSION}" \
+    && /opt/venv/bin/python -c \
+      "import importlib.metadata; assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'" \
+    && uv pip check --python /opt/venv/bin/python \
+    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null
+
+# ---------------------------------------------------------------------------
+# Downstream carry: Cline's OpenAI-compatible transport to AWS Bedrock.
+# Functionality, kept in the baseline. See CLINE_BEDROCK.md.
+COPY patch-headroom-bedrock-openai.py bedrock-openai-regression.py /tmp/
+RUN set -eu; \
+    export PATH="/opt/venv/bin:${PATH}"; \
+    cd /tmp; \
+    target="$(python -c 'import headroom.backends.litellm as m; print(m.__file__)')"; \
+    python /tmp/patch-headroom-bedrock-openai.py "$target"; \
+    python -m py_compile "$target"; \
+    python /tmp/bedrock-openai-regression.py
+# ---------------------------------------------------------------------------
+
+RUN cd /tmp && PATH="/opt/venv/bin:${PATH}" python -c \
+    "from headroom._core import DiffCompressor, SmartCrusher; \
+     print(f'Headroom Rust core OK: {DiffCompressor.__name__}, {SmartCrusher.__name__}')"
+RUN test "$(PATH="/opt/venv/bin:${PATH}" python -c 'import importlib.metadata; print(importlib.metadata.version("headroom-ai"))')" = "$HEADROOM_VERSION"
+RUN PATH="/opt/venv/bin:${PATH}" python -c \
+    "import boto3, botocore; \
+     print(f'Bedrock dependencies OK: boto3 {boto3.__version__}, botocore {botocore.__version__}')"
+
+# Pre-cache Hugging Face models needed for Kompress compression in the air-gapped runtime.
+# When HF_HUB_OFFLINE=1 and TRANSFORMERS_OFFLINE=1 are set at runtime, these models
+# must already be present in the image cache. Kompress uses:
+#   - chopratejas/kompress-v2-base: ONNX model for text importance scoring
+#   - answerdotai/ModernBERT-base: Tokenizer (shared with Kompress model)
+# Only the required ONNX artifacts and tokenizer are downloaded, not full weights.
+# Timeout/retry handling: HF downloads can timeout; skip this step if network fails.
+ENV HF_HOME=/opt/headroom-cache/huggingface
+RUN mkdir -p /opt/headroom-cache/huggingface || true
+RUN <<EOF
+#!/bin/sh
+set -eu
+export PATH="/opt/venv/bin:${PATH}"
+python << 'HFCACHE'
+import os
+import sys
+from huggingface_hub import hf_hub_download
+from transformers import AutoTokenizer
+
+hf_home = '/opt/headroom-cache/huggingface'
+os.environ['HF_HOME'] = hf_home
+
+# Download Kompress model artifacts: prefer int8-wo (weight-only quantized),
+# fallback to fp32 and older int8 for compatibility
+kompress_model = 'chopratejas/kompress-v2-base'
+kompress_onnx_files = [
+    'onnx/kompress-int8-wo.onnx',
+    'onnx/kompress-fp32.onnx',
+    'onnx/kompress-int8.onnx',
+]
+
+onnx_success = False
+for onnx_file in kompress_onnx_files:
+    try:
+        hf_hub_download(
+            repo_id=kompress_model,
+            filename=onnx_file,
+            repo_type="model",
+            resume_download=True,
+            force_download=False,
+        )
+        print(f"✓ Downloaded {kompress_model}/{onnx_file}")
+        onnx_success = True
+        break  # Use first successfully downloaded artifact
+    except Exception as e:
+        print(f"⚠ Could not download {onnx_file}: {e}")
+
+if not onnx_success:
+    print("⚠ Warning: Could not download Kompress ONNX artifact, models will be downloaded at runtime")
+else:
+    # Download tokenizer from ModernBERT-base (Kompress reuses this exact tokenizer)
+    tokenizer_model = "answerdotai/ModernBERT-base"
+    try:
+        AutoTokenizer.from_pretrained(
+            tokenizer_model,
+            trust_remote_code=True,
+        )
+        print(f"✓ Downloaded tokenizer from {tokenizer_model}")
+    except Exception as e:
+        print(f"⚠ Warning: Could not download tokenizer from {tokenizer_model}: {e}")
+
+print("✓ Hugging Face model cache population completed (may be partial)")
+HFCACHE
+EOF
+
+FROM ${WOLFI_IMAGE} AS runtime
+ARG HEADROOM_VERSION
+ARG HEADROOM_COMMIT
+ARG LITELLM_VERSION
+ARG PYTHON_VERSION
+ARG BASELINE
+
+ENV HEADROOM_HOST=0.0.0.0 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH=/opt/venv/bin:/usr/local/bin:/usr/bin:/bin \
+    HF_HOME=/opt/headroom-cache/huggingface \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    HF_HUB_DISABLE_TELEMETRY=1 \
+    LITELLM_LOCAL_MODEL_COST_MAP=True \
+    HEADROOM_UPDATE_CHECK=off \
+    HEADROOM_BEACON=off \
+    DO_NOT_TRACK=1 \
+    HEADROOM_SKIP_UPSTREAM_CHECK=1 \
+    HEADROOM_OUTPUT_SHAPER=1
+
+# Same apk world pins as litellm: the Wolfi base is r6 and carries the three
+# glibc CVEs that r8 fixes. The version check fails the build below r8.
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
+    && apk add --no-cache ca-certificates-bundle python-3.13 \
+    && adduser -D -u 10001 headroom \
+    && mkdir -p /home/headroom/.headroom \
+    && chown -R headroom:headroom /home/headroom
+
+RUN set -eu; \
+    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+    done
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/headroom-cache /opt/headroom-cache
+COPY mcp-smoke.py /usr/local/bin/mcp-smoke.py
+COPY entrypoint.sh /usr/local/bin/headroom-entrypoint
+RUN chmod +x /usr/local/bin/headroom-entrypoint \
+    && chown -R headroom:headroom /opt/headroom-cache
+
+# Falsifiable runtime checks. Nothing is removed in this baseline; these prove
+# the final stage has the right interpreter, versions, TLS, SQLite FTS5 and
+# Bedrock dependencies.
+RUN /opt/venv/bin/python -c \
+    "import importlib.metadata, ssl, sqlite3, sys, zlib, boto3, litellm; \
+     assert importlib.metadata.version('headroom-ai') == '${HEADROOM_VERSION}'; \
+     assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'; \
+     assert '.'.join(map(str, sys.version_info[:2])) == '${PYTHON_VERSION}'; \
+     ssl.create_default_context(); \
+     db = sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); \
+     db.execute('insert into docs values (\"headroom\")'); \
+     assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',); \
+     print('Wolfi runtime OK: SQLite', sqlite3.sqlite_version, 'zlib', zlib.ZLIB_RUNTIME_VERSION)" \
+    && getent passwd headroom >/dev/null \
+    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null \
+    && test -x /opt/venv/bin/headroom
+
+USER headroom
+WORKDIR /home/headroom
+VOLUME ["/home/headroom/.headroom"]
+
+LABEL org.opencontainers.image.title="headroom-mcp" \
+      org.opencontainers.image.description="Headroom MCP server for context optimization" \
+      org.opencontainers.image.source="https://github.com/headroomlabs-ai/headroom" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.version="${HEADROOM_VERSION}" \
+      org.opencontainers.image.revision="${HEADROOM_COMMIT}" \
+      io.github.rcamarda390.baseline="${BASELINE}"
+
+ENTRYPOINT ["/usr/local/bin/headroom-entrypoint"]
