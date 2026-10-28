@@ -1,0 +1,135 @@
+# syntax=docker/dockerfile:1.7
+
+# Wolfi pilot for gnosis-mcp (0.17.5). Stock Wolfi base with the same locked
+# Python wheels, offline embedding model and runtime checks as the Debian line.
+# No glibc, dash, SQLite, zlib or tokenizers rebuilds and no package removals,
+# so the scan shows what the Wolfi base and locked wheels ship with the release.
+# Not a deployable build until its scan is reviewed.
+
+ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
+ARG PYTHON_VERSION=3.13
+
+FROM ${WOLFI_IMAGE} AS builder
+ARG PYTHON_VERSION
+ARG GNOSIS_VERSION=0.17.5
+ARG EXTRAS="embeddings"
+ARG EMBED_MODEL="MongoDB/mdbr-leaf-ir"
+
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache ca-certificates-bundle curl "python-${PYTHON_VERSION}" "py${PYTHON_VERSION}-pip"
+
+WORKDIR /build
+COPY requirements.lock /build/requirements.lock
+# gnosis-mcp is locked to its PyPI release, so the extras are resolved away.
+# sqlite-vec is pulled in by the embeddings extra alone, so it stands in as the
+# marker that the lock really was compiled with that extra. The venv path is
+# identical in the runtime stage, so its script shebangs stay valid.
+RUN test "$EXTRAS" = "embeddings" \
+    && grep -qE "^gnosis-mcp==${GNOSIS_VERSION}( |$)" /build/requirements.lock \
+    && grep -qE "^sqlite-vec==" /build/requirements.lock \
+    && "python${PYTHON_VERSION}" -m venv /opt/venv \
+    && /opt/venv/bin/pip install --disable-pip-version-check --no-cache-dir --require-hashes -r /build/requirements.lock \
+    && test "$(/opt/venv/bin/python -c 'import importlib.metadata; print(importlib.metadata.version("gnosis-mcp"))')" = "$GNOSIS_VERSION"
+
+# Download exactly the files local_embed.py needs.
+ENV XDG_DATA_HOME=/gnosis-model-cache
+RUN set -e; \
+    BASE="https://huggingface.co/${EMBED_MODEL}/resolve/main"; \
+    DIR="/gnosis-model-cache/gnosis-mcp/models/MongoDB--mdbr-leaf-ir"; \
+    mkdir -p "${DIR}/onnx"; \
+    curl -fsSL "${BASE}/tokenizer.json"           -o "${DIR}/tokenizer.json"; \
+    curl -fsSL "${BASE}/tokenizer_config.json"    -o "${DIR}/tokenizer_config.json"; \
+    curl -fsSL "${BASE}/special_tokens_map.json"  -o "${DIR}/special_tokens_map.json"; \
+    if curl -fsSL "${BASE}/onnx/model_quantized.onnx" -o "${DIR}/onnx/model_quantized.onnx"; then \
+        echo "Downloaded model_quantized.onnx"; \
+        curl -fsSL "${BASE}/onnx/model_quantized.onnx_data" -o "${DIR}/onnx/model_quantized.onnx_data" 2>/dev/null || echo "No onnx_data sidecar (ok)"; \
+    else \
+        curl -fsSL "${BASE}/onnx/model.onnx" -o "${DIR}/onnx/model.onnx"; \
+        curl -fsSL "${BASE}/onnx/model.onnx_data" -o "${DIR}/onnx/model.onnx_data" 2>/dev/null || echo "No onnx_data sidecar (ok)"; \
+        echo "Downloaded model.onnx (fallback)"; \
+    fi; \
+    find /gnosis-model-cache -type f -ls
+
+FROM ${WOLFI_IMAGE} AS runtime
+ARG PYTHON_VERSION
+ARG GNOSIS_VERSION=0.17.5
+ARG EMBED_MODEL="MongoDB/mdbr-leaf-ir"
+# Supplied by the reusable workflow as the revision in the immutable image tag.
+ARG GNOSIS_IMAGE_VERSION
+
+# The Wolfi base carries glibc CVEs that 2.44-r8 fixes (CVE-2026-86805,
+# CVE-2026-89092, CVE-2026-8674) and zlib CVE-2026-85091 fixed in
+# 1.3.2.1_rc20260601-r0. The constraints fail the build if the repo cannot
+# supply them; the checks below prove what landed.
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
+        'zlib>=1.3.2.1_rc20260601-r0' \
+    && apk add --no-cache ca-certificates-bundle "python-${PYTHON_VERSION}" libstdc++ openssl \
+    && adduser -D -h /home/gnosis -s /sbin/nologin gnosis
+
+RUN set -eu; \
+    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+    done; \
+    installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "zlib" {print $2}' /lib/apk/db/installed); \
+    test -n "$installed"; \
+    test "$(apk version -t "$installed" 1.3.2.1_rc20260601-r0)" != '<'; \
+    printf 'zlib=%s\n' "$installed"
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /gnosis-model-cache /gnosis-model-cache
+
+ENV PATH=/opt/venv/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    GNOSIS_MCP_HOST=0.0.0.0 \
+    GNOSIS_MCP_PORT=8000 \
+    GNOSIS_MCP_DATABASE_URL=sqlite:////data/docs.db \
+    GNOSIS_MCP_EMBED_PROVIDER=local \
+    GNOSIS_MCP_ACCESS_LOG=true \
+    GNOSIS_MCP_WRITABLE=false \
+    XDG_DATA_HOME=/gnosis-model-cache
+
+COPY runtime-smoke.py /usr/local/share/gnosis/runtime-smoke.py
+
+# pip is a build-time tool only. Remove it from the venv and assert its absence.
+RUN mkdir -p /data /docs \
+    && /opt/venv/bin/python -m pip uninstall -y pip \
+    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null \
+    && chown -R gnosis:gnosis /data /home/gnosis /gnosis-model-cache
+
+# Build-time proof: native wheels load on this libc, FTS5 and sqlite-vec work,
+# lock-driven security floors hold, and gnosis-mcp imports. Offline behavior is
+# exercised by the workflow's network-disabled runtime smoke test.
+RUN python -c "import sqlite3, sqlite_vec; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute(\"insert into docs values ('security fixed')\"); assert db.execute(\"select count(*) from docs where docs match 'fixed'\").fetchone()[0] == 1; db.enable_load_extension(True); db.load_extension(sqlite_vec.loadable_path()); db.execute('create virtual table vectors using vec0(embedding float[2])')" \
+    && python -c "import onnxruntime, ssl, tokenizers; assert onnxruntime.get_device() in {'CPU', 'GPU'}; assert ssl.OPENSSL_VERSION.startswith('OpenSSL 3.'); print('tokenizers', tokenizers.__version__)" \
+    && python -c "from importlib.metadata import version; from packaging.version import Version; assert Version(version('setuptools')) >= Version('84.1.0'); assert Version(version('certifi')) >= Version('2026.10.19'); assert Version(version('filelock')) >= Version('4.2.1'); assert Version(version('msgpack')) >= Version('1.2.1'); assert Version('2.15.0') <= Version(version('PyJWT')) < Version('3'); assert Version('1.30.0') <= Version(version('mcp')) < Version('2'); assert version('gnosis-mcp') == '${GNOSIS_VERSION}'" \
+    && python -c "import gnosis_mcp; print('Verification: gnosis-mcp OK')"
+
+USER gnosis
+WORKDIR /home/gnosis
+
+EXPOSE 8000
+VOLUME ["/data"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/health' % __import__('os').environ['GNOSIS_MCP_PORT'])" || exit 1
+
+LABEL org.opencontainers.image.title="gnosis-mcp" \
+      org.opencontainers.image.description="Self-hosted MCP docs server — air-gap variant, ONNX model pre-bundled (Wolfi base)." \
+      org.opencontainers.image.source="https://github.com/nicholasglazer/gnosis-mcp" \
+      org.opencontainers.image.licenses="MIT" \
+      gnosis.airgap="true" \
+      gnosis.embed-model="${EMBED_MODEL}" \
+      gnosis.gnosis-version="${GNOSIS_VERSION}" \
+      gnosis.image-version="${GNOSIS_IMAGE_VERSION}"
+
+ENTRYPOINT ["gnosis-mcp"]
+CMD ["serve", "--transport", "streamable-http", "--rest"]
