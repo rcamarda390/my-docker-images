@@ -2671,6 +2671,15 @@
           "fix_version": "4.2.1"
         }
       ]
+    },
+    {
+      "id": "headroom-xray-20261028-v1",
+      "image": "headroom-mcp",
+      "tag": "0.42.0-v1",
+      "digest": null,
+      "finding_count": null,
+      "observations": [],
+      "source": "User Xray table 2026-10-28 for headroom-mcp 0.42.0-v1 (baseline, no CVE carries). Digest not supplied. Remediation in v2 PR: LiteLLM 1.106.5, carries reapplied."
     }
   ],
   "component_treatments": {
@@ -5771,7 +5780,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-18",
+      "last_reviewed": "2026-10-28",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -5799,7 +5808,7 @@
           "scan_tag": "mcp-smoke:39133220938"
         }
       },
-      "remaining": "Downstream carry built into 0.41.0-v3 (run 38927566443) with verification; Xray rescan still reports it. No verified official fixed release; v1.105.1 still lacks guard. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Standalone LiteLLM 1.106.0 carry and import/health/blocking Trivy validation passed in PR 88; production Xray digest remains pending."
+      "remaining": "1.106.5 still contains the unverified email fallback (verified: patch-litellm-jwt-email.py applies). Carry retained; no upstream fixed version found. Scan pending."
     },
     {
       "cve": "CVE-2026-75104",

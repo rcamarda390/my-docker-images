@@ -2,12 +2,11 @@ name: headroom-mcp
 upstream_version: 0.42.0
 revision: 1
 build_args:
-  # First build of a new upstream release: stock upstream + functionality +
-  # removals.yaml, no CVE carries. Set back to "false" in the PR that evaluates
-  # the scan of this build.
-  BASELINE: "true"
+  # Baseline v1 was scanned; set to "false" so the next build carries the
+  # Xray remediations.
+  BASELINE: "false"
   HEADROOM_COMMIT: 17d38e5699b7d7c69ac6addcd762f39e42dd7f00
-  LITELLM_VERSION: 1.101.3
+  LITELLM_VERSION: 1.106.5
   GLIBC_SOURCE_SUITE: forky
   GLIBC_DEBIAN_VERSION: 2.43-7
   GLIBC_BACKPORT_VERSION: 2.43-7+rcamarda1
