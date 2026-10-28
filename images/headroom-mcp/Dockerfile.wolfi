@@ -231,7 +231,7 @@ RUN /opt/venv/bin/python -c \
      db.execute('insert into docs values (\"headroom\")'); \
      assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',); \
      print('Wolfi runtime OK: SQLite', sqlite3.sqlite_version, 'zlib', zlib.ZLIB_RUNTIME_VERSION)" \
-    && getent passwd headroom >/dev/null \
+    && grep -q "^headroom:" /etc/passwd \
     && ! /opt/venv/bin/python -c "import pip" 2>/dev/null \
     && test -x /opt/venv/bin/headroom
 
