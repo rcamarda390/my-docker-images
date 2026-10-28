@@ -198,7 +198,8 @@ RUN apk upgrade --available --no-cache \
         'ld-linux-2.44>=2.44-r8' \
         'glibc-2.44-locale-posix>=2.44-r8' \
         'libcrypt1-2.44>=2.44-r8' \
-    && apk add --no-cache ca-certificates-bundle python-3.13 \
+        'ca-certificates-bundle>=20260909-r3' \
+    && apk add --no-cache python-3.13 \
     && adduser -D -u 10001 headroom \
     && mkdir -p /home/headroom/.headroom \
     && chown -R headroom:headroom /home/headroom
@@ -210,6 +211,11 @@ RUN set -eu; \
         test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
         printf '%s=%s\n' "$package" "$installed"; \
     done
+# Trivy HIGH CVE-2026-111943 is fixed in 20260909-r3; fail the build below it.
+RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "ca-certificates-bundle" {print $2}' /lib/apk/db/installed) \
+    && test -n "$installed" \
+    && test "$(apk version -t "$installed" 20260909-r3)" != '<' \
+    && printf 'ca-certificates-bundle=%s\n' "$installed"
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /opt/headroom-cache /opt/headroom-cache
