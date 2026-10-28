@@ -22,6 +22,12 @@ on:
         required: false
         default: ""
         type: string
+      # Optional tag infix for test or side-line builds, e.g. "wolfi" yields
+      # <version>-wolfi-v<revision>. Empty (default) keeps <version>-v<revision>.
+      tag_suffix:
+        required: false
+        default: ""
+        type: string
       # All published images target the air-gapped RHEL EC2 deployment.
       # Override only with explicit approval for a documented exception.
       platforms:
@@ -360,6 +366,7 @@ jobs:
           INPUT_IMAGE_NAME: ${{ inputs.image_name }}
           VERSION_ARG: ${{ inputs.version_arg }}
           REVISION_ARG: ${{ inputs.revision_arg }}
+          TAG_SUFFIX: ${{ inputs.tag_suffix }}
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           PUBLISH: ${{ inputs.publish }}
           PUBLISH_GHCR: ${{ inputs.publish_ghcr }}
@@ -376,6 +383,9 @@ jobs:
           version = config.fetch("upstream_version").to_s
           revision = config.fetch("revision").to_s
           abort "revision must be an integer" unless revision.match?(/\A[0-9]+\z/)
+          suffix = ENV.fetch("TAG_SUFFIX")
+          abort "tag_suffix must be lowercase alphanumeric" unless suffix.match?(/\A[a-z0-9]*\z/)
+          tag = suffix.empty? ? "#{version}-v#{revision}" : "#{version}-#{suffix}-v#{revision}"
           publish = config.fetch("publish")
           abort "latest must be false for MCP images" if publish.fetch("latest", false)
           publish_ghcr = ENV.fetch("PUBLISH_GHCR") == "true"
@@ -385,9 +395,9 @@ jobs:
           dockerhub = ARGV[3]
           abort "DOCKERHUB_USERNAME is not configured" if dockerhub.empty? && ENV.fetch("PUBLISH") == "true" && publish_dockerhub
           dockerhub = "validation" if dockerhub.empty?
-          puts "image_tag=#{version}-v#{revision}"
-          puts "ghcr_image=ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{version}-v#{revision}"
-          puts "dockerhub_image=docker.io/#{dockerhub}/#{name}:#{version}-v#{revision}"
+          puts "image_tag=#{tag}"
+          puts "ghcr_image=ghcr.io/#{ENV.fetch("GITHUB_REPOSITORY_OWNER").downcase}/#{name}:#{tag}"
+          puts "dockerhub_image=docker.io/#{dockerhub}/#{name}:#{tag}"
           puts "upstream_version=#{version}"
           puts "revision=#{revision}"
           puts "build_args<<BUILD_ARGS"
