@@ -48,7 +48,7 @@ RUN set -e; \
         curl -fsSL "${BASE}/onnx/model.onnx_data" -o "${DIR}/onnx/model.onnx_data" 2>/dev/null || echo "No onnx_data sidecar (ok)"; \
         echo "Downloaded model.onnx (fallback)"; \
     fi; \
-    find /gnosis-model-cache -type f -ls
+    find /gnosis-model-cache -type f
 
 FROM ${WOLFI_IMAGE} AS runtime
 ARG PYTHON_VERSION
