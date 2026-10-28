@@ -7,7 +7,6 @@ on:
     paths:
       - "images/gnosis-mcp/**"
       - ".github/workflows/build-gnosis-mcp.yml"
-      - ".github/workflows/build-image.yml"
   push:
     branches: [main]
     paths: ['images/gnosis-mcp/**']

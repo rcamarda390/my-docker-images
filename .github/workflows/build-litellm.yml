@@ -6,7 +6,6 @@ on:
     paths:
       - 'images/litellm/**'
       - '.github/workflows/build-litellm.yml'
-      - '.github/workflows/build-image.yml'
 
 concurrency:
   group: litellm-publish
