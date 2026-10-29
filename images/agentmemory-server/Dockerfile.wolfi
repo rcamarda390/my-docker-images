@@ -114,9 +114,10 @@ LABEL org.opencontainers.image.title="agentmemory-mcp" \
 # Runtime needs sh, node, openssl, tini, gosu (entrypoint) and CA certificates.
 # npm is a build-time tool only; it is removed and its absence asserted below.
 # The Wolfi base carries glibc CVEs that 2.44-r8 fixes (CVE-2026-86805,
-# CVE-2026-89092, CVE-2026-8674) and zlib CVE-2026-85091 fixed in
-# 1.3.2.1_rc20260601-r0. The version constraints fail the build if the repo
-# cannot supply them; the checks below prove what landed.
+# CVE-2026-89092, CVE-2026-8674), zlib CVE-2026-85091 fixed in
+# 1.3.2.1_rc20260601-r0, and ca-certificates-bundle CVE-2026-111943 fixed in
+# 20260909-r3. The version constraints fail the build if the repo cannot
+# supply them; the checks below prove what landed.
 RUN apk upgrade --available --no-cache \
     && apk add --no-cache --upgrade \
         'glibc-2.44>=2.44-r8' \
@@ -124,6 +125,7 @@ RUN apk upgrade --available --no-cache \
         'glibc-2.44-locale-posix>=2.44-r8' \
         'libcrypt1-2.44>=2.44-r8' \
         'zlib>=1.3.2.1_rc20260601-r0' \
+        'ca-certificates-bundle>=20260909-r3' \
     && apk add --no-cache ca-certificates-bundle nodejs-26 openssl tini gosu \
     && ! command -v npm \
     && ! command -v npx \
@@ -141,6 +143,10 @@ RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "zlib" {print $2}' /
     && test -n "$installed" \
     && test "$(apk version -t "$installed" 1.3.2.1_rc20260601-r0)" != '<' \
     && printf 'zlib=%s\n' "$installed"
+RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "ca-certificates-bundle" {print $2}' /lib/apk/db/installed) \
+    && test -n "$installed" \
+    && test "$(apk version -t "$installed" 20260909-r3)" != '<' \
+    && printf 'ca-certificates-bundle=%s\n' "$installed"
 
 COPY --from=builder /opt/agentmemory /opt/agentmemory
 COPY --from=iii-image /app/iii /usr/local/bin/iii
