@@ -58,6 +58,21 @@ processor APIs are adapted for the coordinated 2.9.0 / 0.220.0 security pins.
 The generated-output array bound remains necessary and is regression-tested
 against both 0.9.30 entry bundles.
 
+## Worker environment and restarts (0.9.31)
+
+AgentMemory 0.9.31 launches its worker through Worker Compose, which forwards only an
+allowlisted environment. The image `NODE_OPTIONS`/`TRANSFORMERS_*` therefore do not reach the
+worker; `patch-worker-offline-embeddings.mjs` adds `--import /opt/agentmemory/transformers-offline.mjs`
+to the generated worker command so local embeddings use the baked model offline (without it they
+fail with `fetch failed`). `patch-vector-state-ready.mjs` waits for the state worker before the
+vector checkpoint is read; without it a start-up race reports the checkpoint unavailable and
+pauses vector recovery until restart. Both fail the build if upstream changes the patched code.
+
+The 0.9.31 graph index needs a one-time, explicit migration on an existing store:
+`POST /agentmemory/graph/index/migrate` with `{"allowLegacyScan":true}` (or
+`agentmemory graph-index migrate --allow-legacy-scan`). Back up `/data` first. Recreate the
+container with `docker stop -t 60` before `docker rm`, not `docker rm -f`.
+
 ## Combined runtime
 
 The image contains one AgentMemory process and its compatible iii engine. Do not add a separate `iii-engine` container or process. The existing MCP client shim remains outside this image at:

@@ -58,6 +58,25 @@ async function waitForHealth() {
   throw new Error("agentmemory did not become healthy within 90 seconds");
 }
 
+async function status(secret) {
+  const response = await fetch(`${baseUrl}/agentmemory/status`, { headers: { Authorization: `Bearer ${secret}` } });
+  assert.equal(response.status, 200, "status must be readable with the bearer");
+  return response.json();
+}
+
+// The compose-launched worker only gets an allowlisted environment, so this proves the
+// offline model loader reaches it and the vector checkpoint loads (no fetch or state race).
+async function waitForVectors(secret, minimum) {
+  const deadline = Date.now() + 60_000;
+  let last;
+  while (Date.now() < deadline) {
+    last = await status(secret);
+    if ((last.index?.vectorDocuments ?? 0) >= minimum && !last.indexPersistence?.vector?.lastError) return last;
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  }
+  throw new Error(`worker did not embed offline: vectorDocuments=${last?.index?.vectorDocuments} lastError=${last?.indexPersistence?.vector?.lastError}`);
+}
+
 async function call(path, secret, body) {
   const response = await fetch(`${baseUrl}${path}`, {
     method: "POST",
@@ -102,6 +121,7 @@ try {
     format: "compact",
   });
   assert.ok(results.includes(marker), "saved memory must be returned by search");
+  await waitForVectors(secret, 1);
   // File stores flush every 2000ms; allow a full interval plus scheduling margin.
   await new Promise((resolve) => setTimeout(resolve, 4_000));
   await stopServer();
@@ -114,6 +134,8 @@ try {
     format: "compact",
   });
   assert.ok(persisted.includes(marker), "saved memory must survive a server restart");
+  // The vector checkpoint is saved on an interval; the pending log must restore the vector after restart.
+  await waitForVectors(secret, 1);
   console.log("AgentMemory runtime, health, auth, offline embeddings, and restart persistence smoke OK");
 } finally {
   await stopServer().catch(() => {});
