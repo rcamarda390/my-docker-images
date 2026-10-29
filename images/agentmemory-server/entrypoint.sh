@@ -55,8 +55,12 @@ fi
 
 gosu "$RUN_AS" agentmemory "$@"
 
-# agentmemory 0.9.31 detaches the iii Compose daemon and exits 0. Hold PID 1
-# open so the container stays up, and stop AgentMemory cleanly on SIGTERM.
+# Subcommands (for example `stop`) return here. A bare start hands off to
+# agentmemory 0.9.31, which detaches the iii Compose daemon and exits 0. Hold
+# PID 1 open so the container stays up, and stop AgentMemory cleanly on SIGTERM.
+if [ "$#" -gt 0 ]; then
+  exit 0
+fi
 # ponytail: a dead Compose daemon leaves the container running. Upgrade path:
 # loop on a /agentmemory/livez probe and exit when it fails.
 trap 'gosu "$RUN_AS" agentmemory stop; exit 0' TERM INT
