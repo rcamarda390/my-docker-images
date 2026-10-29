@@ -42,6 +42,8 @@ WORKDIR /opt/agentmemory
 COPY --chmod=0755 verify-runtime-dependencies.mjs /tmp/verify-runtime-dependencies.mjs
 COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
 COPY --chmod=0644 patch-compose-http-bind.mjs /tmp/patch-compose-http-bind.mjs
+COPY --chmod=0644 patch-worker-offline-embeddings.mjs /tmp/patch-worker-offline-embeddings.mjs
+COPY --chmod=0644 patch-vector-state-ready.mjs /tmp/patch-vector-state-ready.mjs
 COPY --chmod=0644 verify-otel-runtime.mjs /opt/agentmemory/verify-otel-runtime.mjs
 RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.9","brace-expansion":"5.0.9","ip-address":"10.7.4","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","@opentelemetry/api-logs":"0.220.0","@opentelemetry/instrumentation":"0.220.0","@opentelemetry/otlp-transformer":"0.220.0","@opentelemetry/sdk-logs":"0.220.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
@@ -52,8 +54,10 @@ RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overr
  && node /opt/agentmemory/verify-otel-runtime.mjs cjs \
  && node /tmp/patch-zod-output-limits.mjs \
  && node /tmp/patch-compose-http-bind.mjs \
+ && node /tmp/patch-worker-offline-embeddings.mjs \
+ && node /tmp/patch-vector-state-ready.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime import OK')" \
- && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs /tmp/patch-compose-http-bind.mjs
+ && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs /tmp/patch-compose-http-bind.mjs /tmp/patch-worker-offline-embeddings.mjs /tmp/patch-vector-state-ready.mjs
 
 # Xray: fast-uri 3.1.8 (CVE-2026-110180, -110306, -110095, -110725) is fixed in
 # 3.1.9. Every installed copy in the npm tree must be at the fixed version.
@@ -185,6 +189,11 @@ COPY --from=builder /opt/agentmemory/workers /opt/agentmemory/workers
 WORKDIR /opt/agentmemory
 RUN --network=none node /opt/agentmemory/offline-embedding-smoke.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime OK')"
+
+# Build-time proof the compose-launched worker loads the offline model loader and the
+# vector checkpoint read waits for state::get (see patch-*.mjs).
+RUN grep -q -F '"--import", "/opt/agentmemory/transformers-offline.mjs", "dist/index.mjs"' node_modules/@agentmemory/agentmemory/dist/cli.mjs \
+ && grep -q -F 'attempt >= 60' node_modules/@agentmemory/agentmemory/dist/index.mjs
 
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/agentmemory-entrypoint.sh
 COPY --chmod=0755 runtime-smoke.mjs /opt/agentmemory/runtime-smoke.mjs

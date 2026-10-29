@@ -1,6 +1,6 @@
 name: agentmemory-mcp
 upstream_version: 0.9.31
-revision: 3
+revision: 4
 build_args:
   III_VERSION: "0.25.0"
   TRANSFORMERS_VERSION: "4.2.0"
