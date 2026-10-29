@@ -1,0 +1,51 @@
+name: Build and publish Bifrost MCP image (Wolfi)
+run-name: Bifrost MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
+
+# Wolfi pilot line, separate from build-bifrost-mcp.yml (Alpine). Publishes
+# <version>-wolfi-v<revision> using the revision in image.wolfi.yaml. No push
+# trigger: a fixed revision must never be re-published by an unrelated change.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "images/bifrost-mcp/Dockerfile.wolfi"
+      - "images/bifrost-mcp/image.wolfi.yaml"
+      - "images/bifrost-mcp/runtime-smoke.sh"
+      - ".github/workflows/build-bifrost-mcp-wolfi.yml"
+
+concurrency:
+  group: bifrost-mcp-wolfi-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: bifrost-mcp
+      context: ./images/bifrost-mcp
+      dockerfile: ./images/bifrost-mcp/Dockerfile.wolfi
+      config: images/bifrost-mcp/image.wolfi.yaml
+      version_arg: BIFROST_VERSION
+      # The Dockerfile clones this exact upstream commit and verifies the tag.
+      platforms: linux/amd64
+      smoke_entrypoint: /bin/sh
+      smoke_command: /app/runtime-smoke.sh
+      smoke_timeout: 90
+      smoke_healthcheck: true
+      scan: true
+      # Trivy findings and scan errors are advisory; build/runtime checks remain blocking.
+      block_on_scan_failure: false
+      tag_suffix: wolfi
+      # Branch dispatches validate the candidate without consuming or publishing
+      # an immutable tag. Only a reviewed main-branch dispatch may publish.
+      publish: ${{ github.ref == 'refs/heads/main' }}
