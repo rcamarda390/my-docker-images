@@ -55,9 +55,11 @@ fi
 
 gosu "$RUN_AS" agentmemory "$@"
 
-# agentmemory 0.9.31 detaches the iii Compose daemon and exits 0. Keep the
-# container alive while that daemon runs, and stop it cleanly on SIGTERM.
+# agentmemory 0.9.31 detaches the iii Compose daemon and exits 0. Hold PID 1
+# open so the container stays up, and stop AgentMemory cleanly on SIGTERM.
+# ponytail: a dead Compose daemon leaves the container running. Upgrade path:
+# loop on a /agentmemory/livez probe and exit when it fails.
 trap 'gosu "$RUN_AS" agentmemory stop; exit 0' TERM INT
-while pgrep -f 'iii compose --namespace' >/dev/null; do
-  sleep 5 & wait $!
+while :; do
+  sleep 60 & wait $!
 done
