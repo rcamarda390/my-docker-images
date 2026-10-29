@@ -7226,6 +7226,35 @@
         }
       },
       "remaining": "agentmemory-mcp Wolfi 0.9.30-wolfi-v2: npm override fast-uri 3.1.9 with a build-time check over every installed copy. Scan of the published digest pending."
+    },
+    {
+      "cve": "CVE-2026-111943",
+      "source_package": "ca-certificates-bundle",
+      "suite": null,
+      "reported_packages": [
+        "ca-certificates-bundle"
+      ],
+      "reported_score": "HIGH",
+      "reported_cwe": [],
+      "reported_fix_version": "20260909-r3",
+      "reported_installed_version": "20260611-r1",
+      "last_reviewed": "2026-10-29",
+      "tracker_url": "https://avd.aquasec.com/nvd/cve-2026-111943",
+      "official_fixed_version": null,
+      "patch_sha256": null,
+      "images": {
+        "bifrost-mcp-wolfi": {
+          "treatment": "package-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Trivy on PR #122 build (run 40912669923) reported ca-certificates-bundle 20260611-r1 (fixed 20260909-r3). Pinned minimum in Dockerfile.wolfi; rescan pending. Trivy gobinary scan of app/main was clean."
     }
   ]
 }

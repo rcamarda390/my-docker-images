@@ -186,7 +186,10 @@ ARG BIFROST_VERSION
 ARG BIFROST_COMMIT
 WORKDIR /app
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache ca-certificates-bundle
+    && apk add --no-cache "ca-certificates-bundle>=20260909-r3"
+# Xray/Trivy: CVE-2026-111943 (HIGH) is reported against ca-certificates-bundle
+# 20260611-r1, fixed in 20260909-r3. The minimum-version pin makes the build
+# fail instead of silently keeping an older bundle if the base lags.
 
 COPY --from=builder /app/main .
 COPY --from=source /src/transports/docker-entrypoint.sh .
