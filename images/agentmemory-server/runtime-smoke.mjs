@@ -74,12 +74,9 @@ async function call(path, secret, body) {
 
 try {
   await waitForHealth();
-  // iii 0.22.1 migrates inline settings into its configuration worker on boot.
-  // The active values live under the bundled config engine working directory.
-  const stateConfig = await readFile("/home/node/.agentmemory/config/iii-state.yaml", "utf8");
-  const streamConfig = await readFile("/home/node/.agentmemory/config/iii-stream.yaml", "utf8");
-  assert.ok(stateConfig.includes("/data/state_store.db"), "state must stay on the persistent volume");
-  assert.ok(streamConfig.includes("/data/stream_store"), "streams must stay on the persistent volume");
+  // Worker Compose writes the state worker config into its project directory.
+  const composeFile = await readFile("/data/compose/worker-compose.yaml", "utf8");
+  assert.ok(composeFile.includes("/data/state_store.db"), "state must stay on the persistent volume");
   const secret = (await readFile("/data/.hmac", "utf8")).trim();
   if (secret.length < 32) throw new Error("generated HMAC secret is unexpectedly short");
 

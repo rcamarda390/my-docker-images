@@ -1,7 +1,8 @@
 // fetch-workers.mjs: bake pinned iii registry workers for AGENTMEMORY_WORKER_BIN_DIR.
 // Runs only in the connected build stage. Each named worker is resolved at its
-// exact version, downloaded, and checked against the registry SHA-256 before it
-// is installed as an executable named after the worker.
+// exact version, downloaded, and checked against the registry SHA-256. Its
+// gzipped tar artifact is extracted and the executable named after the worker
+// is installed.
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
@@ -44,21 +45,15 @@ for (const spec of specs) {
   const worker = (await response.json()).graph.find(item => item.name === name);
   if (worker?.version !== version) throw new Error(`registry did not resolve ${spec}`);
 
+  const artifact = worker.binaries?.[target] ?? (worker.archive_url && { url: worker.archive_url, sha256: worker.sha256 });
+  if (!artifact) throw new Error(`registry has no ${target} artifact for ${spec}`);
+  const archive = join(mkdtempSync(join(tmpdir(), name)), 'archive.tar.gz');
+  writeFileSync(archive, await download(artifact.url, artifact.sha256));
+  const extracted = mkdtempSync(join(tmpdir(), `${name}-x`));
+  execFileSync('tar', ['-xzf', archive, '-C', extracted]);
+  const found = findFile(extracted, name);
+  if (!found) throw new Error(`artifact for ${spec} has no ${name} executable`);
   const destination = join(out, name);
-  const binary = worker.binaries?.[target];
-  if (binary) {
-    writeFileSync(destination, await download(binary.url, binary.sha256), { mode: 0o755 });
-  } else if (worker.archive_url) {
-    // ponytail: bundles are read with tar; zip-only archives would need unzip.
-    const archive = join(mkdtempSync(join(tmpdir(), name)), 'bundle');
-    writeFileSync(archive, await download(worker.archive_url, worker.sha256));
-    const extracted = mkdtempSync(join(tmpdir(), `${name}-x`));
-    execFileSync('tar', ['-xf', archive, '-C', extracted]);
-    const found = findFile(extracted, name);
-    if (!found) throw new Error(`bundle for ${spec} has no ${name} executable`);
-    copyFileSync(found, destination);
-    chmodSync(destination, 0o755);
-  } else {
-    throw new Error(`registry has no ${target} artifact for ${spec}`);
-  }
+  copyFileSync(found, destination);
+  chmodSync(destination, 0o755);
 }
