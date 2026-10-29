@@ -1,16 +1,20 @@
 # syntax=docker/dockerfile:1.7
 
-# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.30 + iii 0.22.1). Stock
+# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.31 + iii 0.25.0). Stock
 # Wolfi base with the same npm overrides, iii engine, offline model and runtime
 # checks as the Debian line. No glibc, coreutils, dash, native or PCRE2 rebuilds
 # and no package removals, so the scan shows what the Wolfi base ships with the
-# release. Not a deployable build until its scan is reviewed.
+# release. The iii registry workers are baked at build time because 0.25.0
+# Worker Compose otherwise fetches them from api.workers.iii.dev at startup.
+# Not a deployable build until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG III_VERSION=0.22.1
-ARG III_SDK_VERSION=0.22.1
-ARG AGENTMEMORY_VERSION=0.9.30
+ARG III_VERSION=0.25.0
+ARG III_SDK_VERSION=0.25.0
+ARG AGENTMEMORY_VERSION=0.9.31
 ARG AGENTMEMORY_IMAGE_VERSION=v1
+ARG STATE_VERSION=0.22.20
+ARG HTTP_VERSION=0.22.7
 ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
@@ -20,12 +24,14 @@ FROM iiidev/iii:${III_VERSION} AS iii-image
 FROM ${WOLFI_IMAGE} AS builder
 ARG III_SDK_VERSION
 ARG AGENTMEMORY_VERSION
+ARG STATE_VERSION
+ARG HTTP_VERSION
 ARG TRANSFORMERS_VERSION
 ARG TRANSFORMERS_MODEL_REVISION
 ARG TRANSFORMERS_MODEL_ID
 
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache ca-certificates-bundle curl nodejs-26 npm \
+    && apk add --no-cache ca-certificates-bundle curl nodejs-26 npm tar \
     && node -e "process.exit(process.versions.node.split('.')[0] === '26' ? 0 : 1)"
 
 # Match the upstream AgentMemory deployment: install into a local prefix so
@@ -33,20 +39,18 @@ RUN apk upgrade --available --no-cache \
 # Overrides are the same Xray remediations as the Debian line.
 WORKDIR /opt/agentmemory
 COPY --chmod=0755 verify-runtime-dependencies.mjs /tmp/verify-runtime-dependencies.mjs
-COPY --chmod=0644 patch-iii-otel2.mjs /tmp/patch-iii-otel2.mjs
-COPY --chmod=0644 verify-otel-runtime.mjs /opt/agentmemory/verify-otel-runtime.mjs
 COPY --chmod=0644 patch-zod-output-limits.mjs /tmp/patch-zod-output-limits.mjs
+COPY --chmod=0644 verify-otel-runtime.mjs /opt/agentmemory/verify-otel-runtime.mjs
 RUN printf '{"name":"agentmemory-deploy","version":"1.0.0","private":true,"overrides":{"iii-sdk":"%s","adm-zip":"0.6.1","proxy-addr":"2.0.8","@modelcontextprotocol/sdk":"1.32.0","hono":"4.13.11","@hono/node-server":"2.1.3","fast-uri":"3.1.9","brace-expansion":"5.0.9","ip-address":"10.7.4","sharp":"0.35.5","tar":"7.5.21","undici":"6.28.0","@opentelemetry/propagator-jaeger":"2.9.0","@opentelemetry/core":"2.9.0","@opentelemetry/context-async-hooks":"2.9.0","@opentelemetry/propagator-b3":"2.9.0","@opentelemetry/resources":"2.9.0","@opentelemetry/sdk-metrics":"2.9.0","@opentelemetry/sdk-trace-base":"2.9.0","@opentelemetry/sdk-trace-node":"2.9.0","@opentelemetry/api-logs":"0.220.0","@opentelemetry/instrumentation":"0.220.0","@opentelemetry/otlp-transformer":"0.220.0","@opentelemetry/sdk-logs":"0.220.0"}}\n' "${III_SDK_VERSION}" > package.json \
  && npm install "@agentmemory/agentmemory@${AGENTMEMORY_VERSION}" "@huggingface/transformers@${TRANSFORMERS_VERSION}" --include=optional --no-fund --no-audit \
  && test "$(node -p "require('./node_modules/iii-sdk/package.json').version")" = "${III_SDK_VERSION}" \
  && test "$(node -p "require('./node_modules/@huggingface/transformers/package.json').version")" = "${TRANSFORMERS_VERSION}" \
  && node /tmp/verify-runtime-dependencies.mjs \
- && node /tmp/patch-iii-otel2.mjs \
  && node /opt/agentmemory/verify-otel-runtime.mjs \
  && node /opt/agentmemory/verify-otel-runtime.mjs cjs \
  && node /tmp/patch-zod-output-limits.mjs \
  && node --input-type=module -e "await import('iii-sdk'); console.log('iii-sdk runtime import OK')" \
- && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs /tmp/patch-iii-otel2.mjs
+ && rm /tmp/verify-runtime-dependencies.mjs /tmp/patch-zod-output-limits.mjs
 
 # Xray: fast-uri 3.1.8 (CVE-2026-110180, -110306, -110095, -110725) is fixed in
 # 3.1.9. Every installed copy in the npm tree must be at the fixed version.
@@ -55,6 +59,14 @@ RUN set -eu; \
     for manifest in $(find node_modules -path '*/fast-uri/package.json'); do \
       node -e "const v = require('./${manifest}').version; if (v !== '3.1.9') { console.error('${manifest} ' + v); process.exit(1) }"; \
     done
+
+# Pinned registry workers for AGENTMEMORY_WORKER_BIN_DIR. The runtime then
+# never resolves api.workers.iii.dev; each download is SHA-256 checked.
+COPY --chmod=0644 fetch-workers.mjs /tmp/fetch-workers.mjs
+RUN node /tmp/fetch-workers.mjs /opt/agentmemory/workers "state=${STATE_VERSION}" "http=${HTTP_VERSION}" \
+ && rm /tmp/fetch-workers.mjs \
+ && test -x /opt/agentmemory/workers/state \
+ && test -x /opt/agentmemory/workers/http
 
 # Pinned model, checksum-verified, fetched only in this connected build stage.
 RUN set -eux; \
@@ -140,6 +152,7 @@ COPY --chmod=0644 prune-onnx-installer.mjs /tmp/prune-onnx-installer.mjs
 RUN node /tmp/prune-onnx-installer.mjs && rm /tmp/prune-onnx-installer.mjs
 
 ENV AGENTMEMORY_III_VERSION=${III_VERSION} \
+    AGENTMEMORY_WORKER_BIN_DIR=/opt/agentmemory/workers \
     EMBEDDING_PROVIDER=local \
     AGENTMEMORY_AUTO_COMPRESS=false \
     AGENTMEMORY_INJECT_CONTEXT=false \
@@ -151,6 +164,9 @@ ENV AGENTMEMORY_III_VERSION=${III_VERSION} \
     HF_HUB_OFFLINE=1 \
     NODE_OPTIONS=--import=/opt/agentmemory/transformers-offline.mjs \
     TINI_SUBREAPER=1
+
+# Baked registry workers, copied from the builder after their SHA-256 checks.
+COPY --from=builder /opt/agentmemory/workers /opt/agentmemory/workers
 
 # Build-time proof: the iii SDK imports, the bundled engine runs, and the staged
 # model is sufficient with the network disabled. The SDK resolves from the
