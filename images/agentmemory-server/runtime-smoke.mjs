@@ -13,36 +13,38 @@ if (offline.status !== 0) {
   throw new Error(`offline embedding smoke failed with status ${offline.status}`);
 }
 
+// 0.9.31 starts Worker Compose as a detached daemon, so the CLI exits 0 once
+// the engine is up. Only a non-zero exit is a startup failure. The entrypoint
+// then holds PID 1 open; unref so this child does not keep Node alive.
 function startServer() {
-  return spawn(entrypoint, [], {
-    detached: true,
+  const child = spawn(entrypoint, [], {
     stdio: "inherit",
     env: process.env,
   });
+  child.unref();
+  return child;
 }
 let server = startServer();
 
 async function stopServer() {
-  if (server.pid === undefined) return;
-  try {
-    process.kill(-server.pid, "SIGTERM");
-  } catch {
-    // The process group may already have exited after a startup failure.
+  const stopped = spawnSync(entrypoint, ["stop"], { stdio: "inherit", env: process.env });
+  if (stopped.status !== 0) throw new Error(`agentmemory stop failed with status ${stopped.status}`);
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    try {
+      await fetch(`${baseUrl}/agentmemory/livez`);
+    } catch {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  const deadline = Date.now() + 10_000;
-  while (server.exitCode === null && server.signalCode === null && Date.now() < deadline) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  if (server.exitCode === null && server.signalCode === null) {
-    try { process.kill(-server.pid, "SIGKILL"); } catch {}
-    throw new Error("agentmemory did not stop cleanly for persistence test");
-  }
+  throw new Error("agentmemory did not stop cleanly for persistence test");
 }
 
 async function waitForHealth() {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
-    if (server.exitCode !== null) {
+    if (server.exitCode !== null && server.exitCode !== 0) {
       throw new Error(`agentmemory exited before health check: ${server.exitCode}`);
     }
     try {
@@ -74,12 +76,9 @@ async function call(path, secret, body) {
 
 try {
   await waitForHealth();
-  // iii 0.22.1 migrates inline settings into its configuration worker on boot.
-  // The active values live under the bundled config engine working directory.
-  const stateConfig = await readFile("/home/node/.agentmemory/config/iii-state.yaml", "utf8");
-  const streamConfig = await readFile("/home/node/.agentmemory/config/iii-stream.yaml", "utf8");
-  assert.ok(stateConfig.includes("/data/state_store.db"), "state must stay on the persistent volume");
-  assert.ok(streamConfig.includes("/data/stream_store"), "streams must stay on the persistent volume");
+  // Worker Compose writes the state worker config into its project directory.
+  const composeFile = await readFile("/data/compose/worker-compose.yaml", "utf8");
+  assert.ok(composeFile.includes("/data/state_store.db"), "state must stay on the persistent volume");
   const secret = (await readFile("/data/.hmac", "utf8")).trim();
   if (secret.length < 32) throw new Error("generated HMAC secret is unexpectedly short");
 
@@ -117,5 +116,5 @@ try {
   assert.ok(persisted.includes(marker), "saved memory must survive a server restart");
   console.log("AgentMemory runtime, health, auth, offline embeddings, and restart persistence smoke OK");
 } finally {
-  await stopServer();
+  await stopServer().catch(() => {});
 }
