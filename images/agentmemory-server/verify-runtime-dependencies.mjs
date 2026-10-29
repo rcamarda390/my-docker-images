@@ -14,7 +14,7 @@ const fixedVersions = {
   "@modelcontextprotocol/sdk": "1.32.0",
   hono: "4.13.11",
   "@hono/node-server": "2.1.3",
-  "fast-uri": "3.1.8",
+  "fast-uri": "3.1.9",
   "brace-expansion": "5.0.9",
   "ip-address": "10.7.4",
   sharp: "0.35.5",

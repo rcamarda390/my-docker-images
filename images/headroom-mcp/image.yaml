@@ -2,8 +2,9 @@ name: headroom-mcp
 upstream_version: 0.42.0
 revision: 2
 build_args:
-  # Carries applied. BASELINE "true" was the 0.42.0 scan candidate; see docs/security/findings.json.
-  BASELINE: "false"
+  # Wolfi test baseline (Dockerfile.wolfi): stock upstream + functionality, no
+  # CVE carries. Debian Dockerfile is not built from this caller any more.
+  BASELINE: "true"
   HEADROOM_COMMIT: 17d38e5699b7d7c69ac6addcd762f39e42dd7f00
   LITELLM_VERSION: 1.103.10
   GLIBC_SOURCE_SUITE: forky

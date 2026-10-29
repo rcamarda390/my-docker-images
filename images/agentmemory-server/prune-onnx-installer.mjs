@@ -1,5 +1,6 @@
-// ONNX's proxy/logger chain is needed only by script/install.js, after npm
-// has installed the native binaries. Keep inference code and binaries intact.
+// ONNX's proxy/logger chain and adm-zip are needed only by script/install.js
+// and script/install-utils.js, after npm has installed the native binaries.
+// Keep inference code and binaries intact.
 import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
@@ -9,8 +10,9 @@ const load = path => JSON.parse(readFileSync(path, 'utf8'));
 const save = (path, value) => writeFileSync(path, JSON.stringify(value, null, 2) + '\n');
 const lockPath = join(root, 'package-lock.json');
 const lock = load(lockPath);
-const removed = new Set(['global-agent', 'roarr', 'sprintf-js']);
+const removed = new Set(['adm-zip', 'global-agent', 'roarr', 'sprintf-js']);
 const expectedConsumers = new Map([
+  ['adm-zip', 'node_modules/onnxruntime-node'],
   ['global-agent', 'node_modules/onnxruntime-node'],
   ['roarr', 'node_modules/global-agent'],
   ['sprintf-js', 'node_modules/roarr'],
@@ -46,21 +48,26 @@ assert.equal(onnx.version, '1.24.3', 're-review installer usage after ONNX upgra
 assert.equal(onnx.main, 'dist/index.js');
 assert.equal(onnx.scripts.postinstall, 'node ./script/install');
 assert.match(readFileSync(join(onnxPath, 'script/install.js'), 'utf8'), /require\('global-agent'\)/);
+assert.match(readFileSync(join(onnxPath, 'script/install-utils.js'), 'utf8'), /require\('adm-zip'\)/);
 assert(existsSync(join(onnxPath, 'bin/napi-v6/linux/x64/onnxruntime_binding.node')));
+// Runtime code must not load adm-zip; only the installer script does.
+assert(!readFileSync(join(onnxPath, 'dist/index.js'), 'utf8').includes('adm-zip'));
 
 // This deployment has no npm at runtime. Remove the installer together with
 // its now-unused helpers and describe the resulting graph truthfully.
+delete onnx.dependencies['adm-zip'];
 delete onnx.dependencies['global-agent'];
 delete onnx.scripts;
 save(join(onnxPath, 'package.json'), onnx);
 rmSync(join(onnxPath, 'script'), { recursive: true });
-for (const name of removed) rmSync(join(root, 'node_modules', name), { recursive: true });
+for (const name of removed) rmSync(join(root, 'node_modules', name), { recursive: true, force: true });
 
 for (const path of [lockPath, join(root, 'node_modules/.package-lock.json')]) {
   const manifest = load(path);
   for (const [packagePath, entry] of Object.entries(manifest.packages)) {
     if (removed.has(nameOf(packagePath, entry))) delete manifest.packages[packagePath];
   }
+  delete manifest.packages['node_modules/onnxruntime-node'].dependencies['adm-zip'];
   delete manifest.packages['node_modules/onnxruntime-node'].dependencies['global-agent'];
   manifest.packages['node_modules/onnxruntime-node'].hasInstallScript = false;
   save(path, manifest);
@@ -70,4 +77,4 @@ for (const name of removed) {
   assert(!Object.values(load(lockPath).packages).some(entry => entry.dependencies?.[name]));
 }
 await import(join(onnxPath, 'dist/index.js'));
-console.log('ONNX installer removed; native inference import OK');
+console.log('ONNX installer and adm-zip removed; native inference import OK');

@@ -1,0 +1,51 @@
+name: Build and publish Gnosis MCP image (Wolfi)
+run-name: Gnosis MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
+
+# Wolfi pilot line, separate from build-gnosis-mcp.yml (Debian). Publishes
+# <version>-wolfi-v<revision> using the revision in image.wolfi.yaml. No push
+# trigger: a fixed revision must never be re-published by an unrelated change.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "images/gnosis-mcp/Dockerfile.wolfi"
+      - "images/gnosis-mcp/image.wolfi.yaml"
+      - ".github/workflows/build-gnosis-mcp-wolfi.yml"
+
+concurrency:
+  group: gnosis-mcp-wolfi-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-image.yml
+    secrets: inherit
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    with:
+      image_name: gnosis-mcp
+      context: ./images/gnosis-mcp
+      dockerfile: ./images/gnosis-mcp/Dockerfile.wolfi
+      config: images/gnosis-mcp/image.wolfi.yaml
+      version_arg: GNOSIS_VERSION
+      revision_arg: GNOSIS_IMAGE_VERSION
+      platforms: linux/amd64
+      smoke_env: -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1
+      smoke_entrypoint: python
+      smoke_command: /usr/local/share/gnosis/runtime-smoke.py
+      smoke_network_disabled: true
+      smoke_timeout: 90
+      scan: true
+      # Trivy findings and scan errors are advisory; build/runtime checks remain blocking.
+      block_on_scan_failure: false
+      tag_suffix: wolfi
+      # Branch dispatches validate the candidate without consuming or publishing
+      # an immutable tag. Only a reviewed main-branch dispatch may publish.
+      publish: ${{ github.ref == 'refs/heads/main' }}

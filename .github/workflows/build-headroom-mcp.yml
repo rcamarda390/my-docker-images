@@ -36,8 +36,8 @@ jobs:
     with:
       image_name: headroom-mcp
       context: ./images/headroom-mcp
-      # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
-      # action builds and publishes the complete deployable image.
+      # Wolfi pilot line: Dockerfile.wolfi carries the Cline/Bedrock patch and
+      # the LiteLLM pin on a Wolfi base. Debian Dockerfile is kept for reference.
       dockerfile: ./images/headroom-mcp/Dockerfile.wolfi
       prepare_script: images/headroom-mcp/prepare.py
       config: images/headroom-mcp/image.yaml

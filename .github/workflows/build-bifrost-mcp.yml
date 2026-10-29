@@ -5,11 +5,15 @@ on:
   pull_request:
     paths:
       - "images/bifrost-mcp/**"
+      - "!images/bifrost-mcp/Dockerfile.wolfi"
+      - "!images/bifrost-mcp/image.wolfi.yaml"
       - ".github/workflows/build-bifrost-mcp.yml"
   push:
     branches: [main]
     paths:
       - "images/bifrost-mcp/**"
+      - "!images/bifrost-mcp/Dockerfile.wolfi"
+      - "!images/bifrost-mcp/image.wolfi.yaml"
       - ".github/workflows/build-bifrost-mcp.yml"
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
