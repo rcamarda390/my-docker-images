@@ -112,7 +112,7 @@ LABEL org.opencontainers.image.title="agentmemory-mcp" \
       agentmemory.model-revision="${TRANSFORMERS_MODEL_REVISION}"
 
 # Runtime needs sh, node, openssl, tini, gosu (entrypoint) and CA certificates.
-# procps-ng provides a full ps: agentmemory stop checks the Compose daemon
+# procps provides a full ps: agentmemory stop checks the Compose daemon
 # identity with ps -p, which the busybox ps in wolfi-base does not support.
 # npm is a build-time tool only; it is removed and its absence asserted below.
 # The Wolfi base carries glibc CVEs that 2.44-r8 fixes (CVE-2026-86805,
@@ -128,7 +128,7 @@ RUN apk upgrade --available --no-cache \
         'libcrypt1-2.44>=2.44-r8' \
         'zlib>=1.3.2.1_rc20260601-r0' \
         'ca-certificates-bundle>=20260909-r3' \
-    && apk add --no-cache ca-certificates-bundle nodejs-26 openssl tini gosu procps-ng \
+    && apk add --no-cache ca-certificates-bundle nodejs-26 openssl tini gosu procps \
     && ! command -v npm \
     && ! command -v npx \
     && addgroup -g 1000 node \
