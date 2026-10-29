@@ -1,15 +1,10 @@
 # File: images/slim-docker-vsix/image.yaml
 name: slim-docker-vsix
-upstream_version: 0.4.16
-revision: 3
+upstream_version: 1.38.0
+revision: 1
 build_args:
-  LIVE_PREVIEW_COMMIT: 79e9df2ffed927625988dfeb6876f84b087f12dd
-  VSIX_SHA256: d4ceeb507bf673c8d10697d494d25499f69862f06d7987f056741503dbcc65a2
-  CLAUDE_CODE_VERSION: 2.1.301
-  CLAUDE_CODE_SHA256: 0b171124cd24afd196a870ea9258309dfbfb97e6b8d8d525d7dbb3225fecc500
+  VSIX_SHA256: 815b3ab3658f75ca071b4000e39f4f2a41486d3c90cc3bb2a4519c9b90abe8f6
 publish:
   ghcr: true
   dockerhub: true
   latest: false
-
-

@@ -1,5 +1,5 @@
-# File: images/slim-docker-vsix/prepare-claude-code.py
-"""Download and unpack the pinned Anthropic Claude Code VSIX for Xray inspection."""
+# File: images/slim-docker-vsix/prepare-vsix.py
+"""Download and unpack a pinned official Marketplace VSIX for Xray inspection."""
 import gzip
 import hashlib
 import json
@@ -9,13 +9,12 @@ import zipfile
 from pathlib import Path
 from urllib.parse import quote
 
-version, expected_sha256, destination = sys.argv[1:]
+publisher, name, version, expected_sha256, destination = sys.argv[1:]
 root = Path(destination)
-identity = f"anthropic.claude-code-{version}-linux-x64"
+identity = f"{publisher}.{name}-{version}"
 url = (
     "https://marketplace.visualstudio.com/_apis/public/gallery/"
-    f"publishers/anthropic/vsextensions/claude-code/{version}/vspackage"
-    "?targetPlatform=linux-x64"
+    f"publishers/{publisher}/vsextensions/{name}/{version}/vspackage"
 )
 original = root / "payload/vsix" / identity
 extracted = root / "payload/unpacked" / identity
@@ -36,7 +35,7 @@ if data.startswith(b"\x1f\x8b"):
 
 digest = hashlib.sha256(data).hexdigest()
 if digest != expected_sha256:
-    raise ValueError(f"Claude Code VSIX SHA-256 mismatch: expected {expected_sha256}, got {digest}")
+    raise ValueError(f"VSIX SHA-256 mismatch: expected {expected_sha256}, got {digest}")
 archive = original / f"{identity}.vsix"
 archive.write_bytes(data)
 
@@ -51,9 +50,9 @@ with zipfile.ZipFile(archive) as package:
 
 manifest_path = extracted / "extension/package.json"
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-if (manifest.get("publisher"), manifest.get("name"), manifest.get("version")) != (
-    "Anthropic",
-    "claude-code",
+if (manifest.get("publisher", "").lower(), manifest.get("name"), manifest.get("version")) != (
+    publisher.lower(),
+    name,
     version,
 ):
     raise ValueError("Unexpected extension identity")
@@ -116,9 +115,6 @@ for path in sorted(extracted.rglob("*")):
         }
     )
 
-if not native_binaries:
-    raise ValueError("Expected at least one ELF native binary in linux-x64 VSIX")
-
 sbom = {
     "bomFormat": "CycloneDX",
     "specVersion": "1.5",
@@ -126,13 +122,12 @@ sbom = {
     "metadata": {
         "component": {
             "type": "application",
-            "name": "anthropic.claude-code",
+            "name": f"{publisher}.{name}",
             "version": version,
             "hashes": [{"alg": "SHA-256", "content": digest}],
         },
         "properties": [
             {"name": "vsix:source", "value": "Microsoft Visual Studio Marketplace"},
-            {"name": "vsix:targetPlatform", "value": "linux-x64"},
             {"name": "vsix:vscodeEngine", "value": vscode_engine},
             {"name": "vsix:artifact", "value": f"/slim/payload/vsix/{identity}/{identity}.vsix"},
             {"name": "vsix:unpacked", "value": f"/slim/payload/unpacked/{identity}"},
@@ -144,7 +139,7 @@ sbom = {
 def write_json(name, value):
     (metadata / name).write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
-write_json("claude-code.cdx.json", sbom)
+write_json(f"{name}.cdx.json", sbom)
 write_json("files.json", file_inventory)
 write_json("package-manifests.json", package_manifests)
 write_json("native-binaries.json", native_binaries)
@@ -154,7 +149,6 @@ write_json(
         "source_url": url,
         "vsix_sha256": digest,
         "vscode_engine": vscode_engine,
-        "target_platform": "linux-x64",
         "files": len(file_inventory),
         "package_manifests": len(package_manifests),
         "sbom_components": len(components),
@@ -171,9 +165,8 @@ write_json(
 write_json(
     "manifest.json",
     {
-        "software": "anthropic.claude-code",
+        "software": f"{publisher}.{name}",
         "version": version,
-        "target_platform": "linux-x64",
         "method": "official-marketplace-vsix",
         "source_url": url,
         "install_step": "VS Code: Install from VSIX",
@@ -188,7 +181,7 @@ write_json(
 print(
     json.dumps(
         {
-            "software": "anthropic.claude-code",
+            "software": f"{publisher}.{name}",
             "version": version,
             "sha256": digest,
             "vscode_engine": vscode_engine,
