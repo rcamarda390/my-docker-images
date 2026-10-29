@@ -13,9 +13,10 @@ if (offline.status !== 0) {
   throw new Error(`offline embedding smoke failed with status ${offline.status}`);
 }
 
+// 0.9.31 starts Worker Compose as a detached daemon, so the CLI exits 0 once
+// the engine is up. Only a non-zero exit is a startup failure.
 function startServer() {
   return spawn(entrypoint, [], {
-    detached: true,
     stdio: "inherit",
     env: process.env,
   });
@@ -23,26 +24,24 @@ function startServer() {
 let server = startServer();
 
 async function stopServer() {
-  if (server.pid === undefined) return;
-  try {
-    process.kill(-server.pid, "SIGTERM");
-  } catch {
-    // The process group may already have exited after a startup failure.
+  const stopped = spawnSync(entrypoint, ["stop"], { stdio: "inherit", env: process.env });
+  if (stopped.status !== 0) throw new Error(`agentmemory stop failed with status ${stopped.status}`);
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    try {
+      await fetch(`${baseUrl}/agentmemory/livez`);
+    } catch {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  const deadline = Date.now() + 10_000;
-  while (server.exitCode === null && server.signalCode === null && Date.now() < deadline) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  if (server.exitCode === null && server.signalCode === null) {
-    try { process.kill(-server.pid, "SIGKILL"); } catch {}
-    throw new Error("agentmemory did not stop cleanly for persistence test");
-  }
+  throw new Error("agentmemory did not stop cleanly for persistence test");
 }
 
 async function waitForHealth() {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
-    if (server.exitCode !== null) {
+    if (server.exitCode !== null && server.exitCode !== 0) {
       throw new Error(`agentmemory exited before health check: ${server.exitCode}`);
     }
     try {
@@ -114,5 +113,5 @@ try {
   assert.ok(persisted.includes(marker), "saved memory must survive a server restart");
   console.log("AgentMemory runtime, health, auth, offline embeddings, and restart persistence smoke OK");
 } finally {
-  await stopServer();
+  await stopServer().catch(() => {});
 }
