@@ -14,12 +14,15 @@ if (offline.status !== 0) {
 }
 
 // 0.9.31 starts Worker Compose as a detached daemon, so the CLI exits 0 once
-// the engine is up. Only a non-zero exit is a startup failure.
+// the engine is up. Only a non-zero exit is a startup failure. The entrypoint
+// then holds PID 1 open; unref so this child does not keep Node alive.
 function startServer() {
-  return spawn(entrypoint, [], {
+  const child = spawn(entrypoint, [], {
     stdio: "inherit",
     env: process.env,
   });
+  child.unref();
+  return child;
 }
 let server = startServer();
 
