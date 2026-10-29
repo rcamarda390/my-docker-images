@@ -1,4 +1,4 @@
-"""Offline regression checks: python test-prepare-claude-code.py."""
+"""Offline regression checks: python test-prepare-vsix.py."""
 import gzip
 import hashlib
 import io
@@ -26,8 +26,8 @@ class PrepareTests(unittest.TestCase):
         self.digest = hashlib.sha256(self.data).hexdigest()
 
     def prepare(self, data, digest, root):
-        script = Path(__file__).with_name('prepare-claude-code.py')
-        with patch.object(sys, 'argv', [str(script), '2.1.291', digest, str(root)]), \
+        script = Path(__file__).with_name('prepare-vsix.py')
+        with patch.object(sys, 'argv', [str(script), 'anthropic', 'claude-code', '2.1.291', digest, str(root)]), \
                 patch('urllib.request.urlopen', return_value=io.BytesIO(data)):
             runpy.run_path(str(script), run_name='__main__')
 
