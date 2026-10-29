@@ -7,7 +7,7 @@
 #   2. Generate the HMAC secret on first boot and persist it to
 #      /data/.hmac (chmod 600) so the secret survives restarts.
 #
-# Then it execs the agentmemory CLI under gosu as the unprivileged
+# Then it runs the agentmemory CLI under gosu as the unprivileged
 # `node` user.
 
 set -eu
@@ -53,4 +53,11 @@ if [ -n "${FLY_APP_NAME:-}" ] || [ -n "${FLY_ALLOC_ID:-}" ]; then
   export AGENTMEMORY_VIEWER_HOST VIEWER_ALLOWED_HOSTS
 fi
 
-exec gosu "$RUN_AS" agentmemory "$@"
+gosu "$RUN_AS" agentmemory "$@"
+
+# agentmemory 0.9.31 detaches the iii Compose daemon and exits 0. Keep the
+# container alive while that daemon runs, and stop it cleanly on SIGTERM.
+trap 'gosu "$RUN_AS" agentmemory stop; exit 0' TERM INT
+while pgrep -f 'iii compose --namespace' >/dev/null; do
+  sleep 5 & wait $!
+done
