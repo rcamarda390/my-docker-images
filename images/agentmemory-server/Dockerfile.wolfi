@@ -200,4 +200,8 @@ COPY --chmod=0755 runtime-smoke.mjs /opt/agentmemory/runtime-smoke.mjs
 
 WORKDIR /opt/agentmemory
 EXPOSE 3111
+# Built-in liveness probe: node + global fetch only (the Wolfi runtime has no curl/wget).
+# /agentmemory/livez is unauthenticated. Launchers may still override with their own check.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3111/agentmemory/livez').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/agentmemory-entrypoint.sh"]
