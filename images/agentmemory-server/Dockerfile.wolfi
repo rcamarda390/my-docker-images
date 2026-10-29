@@ -30,8 +30,9 @@ ARG TRANSFORMERS_VERSION
 ARG TRANSFORMERS_MODEL_REVISION
 ARG TRANSFORMERS_MODEL_ID
 
+# busybox (in wolfi-base) provides tar for the worker bundle extraction.
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache ca-certificates-bundle curl nodejs-26 npm tar \
+    && apk add --no-cache ca-certificates-bundle curl nodejs-26 npm \
     && node -e "process.exit(process.versions.node.split('.')[0] === '26' ? 0 : 1)"
 
 # Match the upstream AgentMemory deployment: install into a local prefix so
