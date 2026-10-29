@@ -3,7 +3,7 @@ name: slim-docker-vsix
 upstream_version: 1.38.0
 revision: 1
 build_args:
-  VSIX_SHA256: PENDING
+  VSIX_SHA256: 815b3ab3658f75ca071b4000e39f4f2a41486d3c90cc3bb2a4519c9b90abe8f6
 publish:
   ghcr: true
   dockerhub: true
