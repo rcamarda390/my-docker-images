@@ -6,10 +6,15 @@ on:
   pull_request:
     paths:
       - "images/gnosis-mcp/**"
+      - "!images/gnosis-mcp/Dockerfile.wolfi"
+      - "!images/gnosis-mcp/image.wolfi.yaml"
       - ".github/workflows/build-gnosis-mcp.yml"
   push:
     branches: [main]
-    paths: ['images/gnosis-mcp/**']
+    paths:
+      - 'images/gnosis-mcp/**'
+      - '!images/gnosis-mcp/Dockerfile.wolfi'
+      - '!images/gnosis-mcp/image.wolfi.yaml'
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:
