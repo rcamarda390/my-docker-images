@@ -160,6 +160,7 @@ RUN set -eu; \
     GOPRIVATE=github.com/rcamarda390/mcp-go GOFLAGS=-mod=mod go mod download github.com/mark3labs/mcp-go; \
     test "$(go list -m -f '{{.Replace.Path}} {{.Replace.Version}}' github.com/mark3labs/mcp-go)" \
       = "github.com/rcamarda390/mcp-go ${MCP_GO_FORK_VERSION}"; \
+    GOPRIVATE=github.com/rcamarda390/mcp-go GOFLAGS=-mod=mod go mod tidy; \
     GOPRIVATE=github.com/rcamarda390/mcp-go go mod vendor; \
     cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/; \
     go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1 -v
