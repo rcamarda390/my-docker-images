@@ -2680,6 +2680,15 @@
       "finding_count": null,
       "observations": [],
       "source": "User Xray table 2026-10-28 for headroom-mcp 0.42.0-v1 (baseline, no CVE carries). Digest not supplied. Remediation in v2 PR: LiteLLM 1.106.5, carries reapplied."
+    },
+    {
+      "id": "bifrost-mcp-wolfi-pilot-20261029",
+      "image": "bifrost-mcp-wolfi",
+      "tag": "2.3.2-wolfi-v1",
+      "digest": null,
+      "finding_count": 0,
+      "source": "Wolfi pilot requested by Rob 2026-10-29. Runtime stage on cgr.dev/chainguard/wolfi-base (same digest as agentmemory pilot); no package removals. Scan pending; Rob supplies Xray.",
+      "observations": []
     }
   ],
   "component_treatments": {
@@ -2794,6 +2803,17 @@
           "scan_tag": "2.3.0-v5",
           "scan_digest": null,
           "scan_url": null
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "docs/images/bifrost-mcp.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Cleared in user Xray scan of bifrost-mcp:2.3.0-v5 (2026-10-16; digest not supplied). Keep pin until upstream go.mod requires >=4.1.6."
@@ -2835,6 +2855,20 @@
           ],
           "scan_status": "cleared",
           "scan_tag": "2.3.0-v5",
+          "scan_digest": null,
+          "scan_url": null
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "fork-replaced",
+          "evidence": [
+            "images/bifrost-mcp/SECURITY-20261015.md",
+            "https://github.com/rcamarda390/mcp-go/commit/aa78020aa10ffa85f1cdce32bfbbef35c98a5870",
+            "https://github.com/maximhq/bifrost/blob/9237ec06672406e437b3cb33fc793ffd0403b3ae/transports/bifrost-http/handlers/mcpserver.go",
+            "images/bifrost-mcp/mcp-go-body-limit_test.go",
+            "images/bifrost-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
           "scan_digest": null,
           "scan_url": null
         }
@@ -6372,6 +6406,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
@@ -6405,6 +6450,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
@@ -6438,6 +6494,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
@@ -6471,6 +6538,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
@@ -6504,6 +6582,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
@@ -6537,6 +6626,17 @@
           "scan_digest": null,
           "scan_url": null,
           "latest_report_id": "bifrost-mcp-xray-20261026"
+        },
+        "bifrost-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/bifrost-mcp/Dockerfile.wolfi",
+            "images/bifrost-mcp/image.wolfi.yaml"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "2.3.2-wolfi-v1",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
       "remaining": "Downstream pin GO_DTLS_VERSION=v3.1.14 (indirect via pion/webrtc/v4) added in bifrost-mcp:2.3.2-v3 source. Build assertions prove the version in go list and the final binary. No Xray clearance until a post-build scan of the v3 digest. Remove the pin once upstream transports go.mod requires >=3.1.14."
