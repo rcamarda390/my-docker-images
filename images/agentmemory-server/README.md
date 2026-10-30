@@ -73,6 +73,10 @@ The 0.9.31 graph index needs a one-time, explicit migration on an existing store
 `agentmemory graph-index migrate --allow-legacy-scan`). Back up `/data` first. Recreate the
 container with `docker stop -t 60` before `docker rm`, not `docker rm -f`.
 
+The image defines a `HEALTHCHECK` (30 s interval) that runs `node` with global `fetch` against
+`http://127.0.0.1:3111/agentmemory/livez`; the Wolfi runtime has no `curl` or `wget`. A launcher can
+still override it. `docker inspect <container> --format '{{.State.Health.Status}}'` shows the result.
+
 ## Combined runtime
 
 The image contains one AgentMemory process and its compatible iii engine. Do not add a separate `iii-engine` container or process. The existing MCP client shim remains outside this image at:
