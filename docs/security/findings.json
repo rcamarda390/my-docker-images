@@ -2794,6 +2794,64 @@
           "fix_version": "0.62.0"
         }
       ]
+    },
+    {
+      "id": "gnosis-mcp-wolfi-xray-20261030",
+      "image": "gnosis-mcp-wolfi",
+      "tag": "0.17.5-wolfi-v2",
+      "digest": null,
+      "finding_count": 4,
+      "source": "User Xray screenshot (JFrog docker-remote-cache) supplied 2026-10-30. 4 findings, 0 critical/high, all pydantic 2.13.4.",
+      "observations": [
+        {
+          "cve": "XRAY-1151256",
+          "component": "pydantic",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20"
+          ],
+          "installed_version": "2.13.4",
+          "fix_version": "2.14.2"
+        },
+        {
+          "cve": "XRAY-1151242",
+          "component": "pydantic",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20"
+          ],
+          "installed_version": "2.13.4",
+          "fix_version": "2.14.2"
+        },
+        {
+          "cve": "XRAY-1151241",
+          "component": "pydantic",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "2.13.4",
+          "fix_version": "2.14.0"
+        },
+        {
+          "cve": "XRAY-1151240",
+          "component": "pydantic",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-407"
+          ],
+          "installed_version": "2.13.4",
+          "fix_version": "2.14.0"
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -7572,6 +7630,138 @@
         }
       },
       "remaining": "Wolfi 2.3.2-wolfi-v1 Xray (2026-10-29) reported 0.60.0, fix 0.62.0. v2 pins it in Dockerfile.wolfi. Scan of v2 digest pending."
+    },
+    {
+      "cve": "XRAY-1151256",
+      "source_package": "pydantic",
+      "suite": null,
+      "reported_packages": [
+        "pydantic"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-20"
+      ],
+      "reported_fix_version": "2.14.2",
+      "reported_installed_version": "2.13.4",
+      "last_reviewed": "2026-10-30",
+      "tracker_url": null,
+      "official_fixed_version": "2.14.2",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.17.5-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "XRAY-1151242",
+      "source_package": "pydantic",
+      "suite": null,
+      "reported_packages": [
+        "pydantic"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-20"
+      ],
+      "reported_fix_version": "2.14.2",
+      "reported_installed_version": "2.13.4",
+      "last_reviewed": "2026-10-30",
+      "tracker_url": null,
+      "official_fixed_version": "2.14.2",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.17.5-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "XRAY-1151241",
+      "source_package": "pydantic",
+      "suite": null,
+      "reported_packages": [
+        "pydantic"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-400"
+      ],
+      "reported_fix_version": "2.14.0",
+      "reported_installed_version": "2.13.4",
+      "last_reviewed": "2026-10-30",
+      "tracker_url": null,
+      "official_fixed_version": "2.14.0",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.17.5-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+    },
+    {
+      "cve": "XRAY-1151240",
+      "source_package": "pydantic",
+      "suite": null,
+      "reported_packages": [
+        "pydantic"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-407"
+      ],
+      "reported_fix_version": "2.14.0",
+      "reported_installed_version": "2.13.4",
+      "last_reviewed": "2026-10-30",
+      "tracker_url": null,
+      "official_fixed_version": "2.14.0",
+      "patch_sha256": null,
+      "images": {
+        "gnosis-mcp": {
+          "treatment": "dependency-pin",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.17.5-wolfi-v2",
+          "scan_digest": null,
+          "scan_url": null
+        }
+      },
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
     }
   ]
 }
