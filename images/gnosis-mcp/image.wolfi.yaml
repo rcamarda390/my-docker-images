@@ -1,0 +1,11 @@
+name: gnosis-mcp
+upstream_version: 0.17.5
+revision: 4
+build_args:
+  EMBED_MODEL: "MongoDB/mdbr-leaf-ir"
+  EXTRAS: "embeddings"
+  PYTHON_VERSION: "3.13"
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
