@@ -33,3 +33,6 @@ mcp>=1.30.0,<2
 # XRAY-1151256, XRAY-1151242 (CWE-20), XRAY-1151241 (CWE-400), XRAY-1151240 (CWE-407):
 # pydantic 2.13.4 -> 2.14.2 (pydantic-core follows the pydantic pin).
 pydantic>=2.14.2,<3
+# CVE-2026-85670 (Xray, CWE-787): tokenizers 0.23.1 -> 0.23.3. Same pin cleared the
+# scan of headroom-mcp 0.42.0-wolfi-v2. The Debian line uses a source patch instead.
+tokenizers>=0.23.3

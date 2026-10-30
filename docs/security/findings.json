@@ -2874,6 +2874,28 @@
           "fix_version": null
         }
       ]
+    },
+    {
+      "id": "gnosis-mcp-wolfi-xray-20261030c",
+      "image": "gnosis-mcp-wolfi",
+      "tag": "0.17.5-wolfi-v4",
+      "digest": null,
+      "finding_count": 1,
+      "source": "User message 2026-10-30: new Xray finding on 0.17.5-wolfi-v4, tokenizers:0.23.1, CWE-787.",
+      "observations": [
+        {
+          "cve": "CVE-2026-85670",
+          "component": "tokenizers",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-787"
+          ],
+          "installed_version": "0.23.1",
+          "fix_version": null
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -6260,7 +6282,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-10-28",
+      "last_reviewed": "2026-10-30",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -6298,9 +6320,23 @@
           "scan_url": null,
           "published_digest": null,
           "scan_result": "absent-from-report"
+        },
+        "gnosis-mcp-wolfi": {
+          "treatment": "version-pinned",
+          "suite": "wolfi",
+          "fixed_version": "0.23.3",
+          "evidence": [
+            "images/gnosis-mcp/requirements.in",
+            "images/gnosis-mcp/requirements.lock",
+            "images/gnosis-mcp/Dockerfile.wolfi"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.17.5-wolfi-v4",
+          "scan_digest": null,
+          "scan_url": null
         }
       },
-      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 and transformers==5.17.0 (the transformers release that accepts 0.23.1+; 5.13.1 caps tokenizers at 0.23.0) with version asserts and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi."
+      "remaining": "Keep existing source fixes; v0.23.3 still contains unchecked BPE merge writes and prefix subtraction. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Builder pins tokenizers==0.23.3 and transformers==5.17.0 (the transformers release that accepts 0.23.1+; 5.13.1 caps tokenizers at 0.23.0) with version asserts and uv pip check. Exact-digest Xray rescan of wolfi-v2 pending. Debian source patch not used on Wolfi. Gnosis Wolfi 0.17.5-wolfi-v5: locked tokenizers==0.23.3 (same pin that cleared headroom-mcp-wolfi) with build assertion; Xray gave no fix version. Debian gnosis line (disabled) still relies on the 0.23.1 source patch and the shared lock now pins 0.23.3, so it needs rework before re-enabling. Exact-digest rescan pending."
     },
     {
       "cve": "CVE-2026-104850",
