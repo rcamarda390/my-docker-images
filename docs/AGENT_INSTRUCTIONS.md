@@ -390,6 +390,59 @@ Never commit AWS keys, API tokens, PATs, registry passwords, Bifrost virtual-key
 
 Use IAM roles, GitHub Actions secrets, runtime environment variables, secret mounts, or approved enterprise secret-management mechanisms.
 
+### Secrets handling (session start)
+
+Secret = API key, token, PAT, password, registry credential, bearer.
+
+Rules:
+
+- Capture at the START of the session, before any task that needs a secret.
+- Capture silently with `read -rs`: no echo, no shell history.
+- Set as an exported environment variable only. Never a file, `.env`, commit, chat, log, or PR text.
+- Verify by LENGTH only. Never print the value, a prefix, a suffix, or a hash.
+- Do NOT unset. The variable lives until the session ends. A reboot or the 15-minute session timeout wipes it; re-capture next session.
+- Never run `set -x`, `env`, `printenv`, unfiltered `docker inspect`, or `echo $VAR`.
+- Never pass a secret as a CLI argument (visible in `ps`). Use `-e NAME` with no value. Do not use `--env-file`.
+- A secret pasted into chat is burned. Tell the user to rotate it. Do not reuse it.
+- The agent shell cannot see variables exported in another terminal. The user must export before launching the agent, in the same shell. Otherwise ask the user to relaunch.
+
+Agent flow:
+
+1. List the secrets the task needs and their expected minimum length. Ask the user to run the capture block. Never ask the user to paste a secret.
+2. Wait for the user to say it is set.
+3. Run the length check. A wrong length means stop and ask for re-capture.
+4. Proceed, referring to the secret by name only.
+5. A new secret mid-task gets the same capture and check, then continue.
+
+Capture (user runs once per secret):
+
+```bash
+read -rs -p "GNOSIS_MCP_API_KEY: " GNOSIS_MCP_API_KEY; echo; export GNOSIS_MCP_API_KEY
+```
+
+Check (prints length only):
+
+```bash
+chk(){ n="${!1}"; l=${#n}; [ "$l" -ge "$2" ] && echo "$1 set (len $l)" || echo "$1 MISSING or short (len $l, need >=$2)"; }; chk GNOSIS_MCP_API_KEY 43
+```
+
+Recover from a running container (no print):
+
+```bash
+export GNOSIS_MCP_API_KEY="$(docker inspect gnosis-mcp --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^GNOSIS_MCP_API_KEY=//p')"
+```
+
+Expected minimum lengths:
+
+| Name | Min length |
+|---|---|
+| `GNOSIS_MCP_API_KEY` (`token_urlsafe(32)`) | 43 |
+| GitHub PAT classic `ghp_...` | 40 |
+| GitHub PAT fine-grained `github_pat_...` | 80 |
+| `AWS_ACCESS_KEY_ID` | 20 |
+| `AWS_SECRET_ACCESS_KEY` | 40 |
+| Other | state the minimum when asking |
+
 ## Image-specific guidance
 
 Always inspect current files because versions change.
