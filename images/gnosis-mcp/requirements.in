@@ -30,3 +30,6 @@ PyJWT>=2.15.0,<3
 # XRAY-1097496, CVE-2026-59951, XRAY-1094841, XRAY-1094609.
 # Keep the supported 1.x API used by Gnosis and its Streamable HTTP smoke test.
 mcp>=1.30.0,<2
+# XRAY-1151256, XRAY-1151242 (CWE-20), XRAY-1151241 (CWE-400), XRAY-1151240 (CWE-407):
+# pydantic 2.13.4 -> 2.14.2 (pydantic-core follows the pydantic pin).
+pydantic>=2.14.2,<3
