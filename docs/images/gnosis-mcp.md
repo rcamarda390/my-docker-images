@@ -93,3 +93,15 @@ Debian line and `build-gnosis-mcp.yml` are unchanged except for path excludes.
 Stock Wolfi base, locked wheels, no CVE carries (no glibc/dash/SQLite/zlib/tokenizers
 rebuilds), no package removals; glibc >= 2.44-r8 and zlib >= 1.3.2.1_rc20260601-r0
 asserted. Scan is advisory. Baseline candidate: not deployable until its scan is reviewed.
+
+### Wolfi v2: `query_embedding` hidden from `search_docs`
+
+Symptom: Cline with gnosis enabled stalled for minutes on a trivial prompt, produced gibberish
+and repeated failed tool calls. The server itself was healthy (stdio and SSE returned valid JSON,
+logs clean). Cause: the upstream 0.17.5 `search_docs` tool schema includes
+`query_embedding: list[float] | None`; the model tries to generate an embedding vector.
+Fix: `patches/gnosis/hide-query-embedding.py` removes the parameter from the tool signature in
+`Dockerfile.wolfi`; the server still embeds queries itself (`GNOSIS_MCP_EMBED_PROVIDER=local`),
+so search results are unchanged. The build asserts the patch anchors and the final signature.
+Revalidate on every upstream bump; drop it if upstream stops exposing the parameter. The Debian
+line (`Dockerfile`) has the same upstream schema and is not yet patched.
