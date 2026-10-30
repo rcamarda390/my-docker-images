@@ -1,20 +1,11 @@
 name: Build and publish Gnosis MCP image
 run-name: Gnosis MCP — ${{ github.event_name }} — ${{ github.ref_name }}
 
+# DISABLED: the Debian line is paused; Gnosis ships from build-gnosis-mcp-wolfi.yml.
+# Manual dispatch only, and the job below is gated off. To re-enable, remove the
+# `if: false` on the build job and restore the pull_request/push path triggers.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "images/gnosis-mcp/**"
-      - "!images/gnosis-mcp/Dockerfile.wolfi"
-      - "!images/gnosis-mcp/image.wolfi.yaml"
-      - ".github/workflows/build-gnosis-mcp.yml"
-  push:
-    branches: [main]
-    paths:
-      - 'images/gnosis-mcp/**'
-      - '!images/gnosis-mcp/Dockerfile.wolfi'
-      - '!images/gnosis-mcp/image.wolfi.yaml'
 
 # Serialize publications so two dispatches cannot calculate the same next tag.
 concurrency:
@@ -31,6 +22,7 @@ permissions:
 
 jobs:
   build:
+    if: false
     uses: ./.github/workflows/build-image.yml
     secrets: inherit
     permissions:
