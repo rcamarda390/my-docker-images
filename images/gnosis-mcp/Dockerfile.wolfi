@@ -4,6 +4,9 @@
 # Python wheels, offline embedding model and runtime checks as the Debian line.
 # No glibc, dash, SQLite, zlib or tokenizers rebuilds and no package removals,
 # so the scan shows what the Wolfi base and locked wheels ship with the release.
+# One functionality carry: patches/gnosis/hide-query-embedding.py removes the
+# query_embedding parameter from the search_docs tool schema (v2). Cline stalls
+# or emits gibberish when it sees that float-array parameter.
 # Not a deployable build until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
@@ -30,6 +33,11 @@ RUN test "$EXTRAS" = "embeddings" \
     && "python${PYTHON_VERSION}" -m venv /opt/venv \
     && /opt/venv/bin/pip install --disable-pip-version-check --no-cache-dir --require-hashes -r /build/requirements.lock \
     && test "$(/opt/venv/bin/python -c 'import importlib.metadata; print(importlib.metadata.version("gnosis-mcp"))')" = "$GNOSIS_VERSION"
+
+# Functionality carry, not a CVE carry. The script asserts its anchors and the
+# resulting search_docs signature, so an upstream change fails the build.
+COPY patches/gnosis/hide-query-embedding.py /tmp/hide-query-embedding.py
+RUN /opt/venv/bin/python /tmp/hide-query-embedding.py && rm /tmp/hide-query-embedding.py
 
 # Download exactly the files local_embed.py needs.
 ENV XDG_DATA_HOME=/gnosis-model-cache
@@ -111,7 +119,7 @@ RUN mkdir -p /data /docs \
 RUN python -c "import sqlite3, sqlite_vec; db=sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); db.execute(\"insert into docs values ('security fixed')\"); assert db.execute(\"select count(*) from docs where docs match 'fixed'\").fetchone()[0] == 1; db.enable_load_extension(True); db.load_extension(sqlite_vec.loadable_path()); db.execute('create virtual table vectors using vec0(embedding float[2])')" \
     && python -c "import onnxruntime, ssl, tokenizers; assert onnxruntime.get_device() in {'CPU', 'GPU'}; assert ssl.OPENSSL_VERSION.split()[1][0] in '34'; print('tokenizers', tokenizers.__version__)" \
     && python -c "from importlib.metadata import version; from packaging.version import Version; assert Version(version('setuptools')) >= Version('84.1.0'); assert Version(version('certifi')) >= Version('2026.10.19'); assert Version(version('filelock')) >= Version('4.2.1'); assert Version(version('msgpack')) >= Version('1.2.3'); assert Version('2.15.0') <= Version(version('PyJWT')) < Version('3'); assert Version('1.30.0') <= Version(version('mcp')) < Version('2'); assert version('gnosis-mcp') == '${GNOSIS_VERSION}'" \
-    && python -c "import gnosis_mcp; print('Verification: gnosis-mcp OK')"
+    && python -c "import inspect, gnosis_mcp.server as s; assert 'query_embedding' not in inspect.signature(s.search_docs).parameters; print('Verification: gnosis-mcp OK')"
 
 USER gnosis
 WORKDIR /home/gnosis
