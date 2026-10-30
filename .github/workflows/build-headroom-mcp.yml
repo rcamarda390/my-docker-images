@@ -36,9 +36,9 @@ jobs:
     with:
       image_name: headroom-mcp
       context: ./images/headroom-mcp
-      # The main Dockerfile includes the downstream Cline/Bedrock carry, so one
-      # action builds and publishes the complete deployable image.
-      dockerfile: ./images/headroom-mcp/Dockerfile
+      # Wolfi pilot line: Dockerfile.wolfi carries the Cline/Bedrock patch and
+      # the LiteLLM pin on a Wolfi base. Debian Dockerfile is kept for reference.
+      dockerfile: ./images/headroom-mcp/Dockerfile.wolfi
       prepare_script: images/headroom-mcp/prepare.py
       config: images/headroom-mcp/image.yaml
       version_arg: HEADROOM_VERSION
@@ -58,5 +58,7 @@ jobs:
       scan: true
       # Count tags already published for this upstream version. Failed builds
       # publish no tag, so they do not consume a revision or open a bump PR.
-      revision_from_published_tag_count: true
+      # Test tag: configured revision (image.yaml) is used; the published-count
+      # mode reads only the Debian tags and would not see wolfi publications.
+      tag_suffix: wolfi
       publish: ${{ github.event_name != 'pull_request' }}
