@@ -29,10 +29,6 @@ with urllib.request.urlopen(request, timeout=120) as response:
 if data[:2] == b"\x1f\x8b":
     data = gzip.decompress(data)
 
-# Marketplace can return gzip-wrapped VSIX bytes despite Accept-Encoding.
-if data.startswith(b"\x1f\x8b"):
-    data = gzip.decompress(data)
-
 digest = hashlib.sha256(data).hexdigest()
 if digest != expected_sha256:
     raise ValueError(f"VSIX SHA-256 mismatch: expected {expected_sha256}, got {digest}")

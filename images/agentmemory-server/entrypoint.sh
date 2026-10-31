@@ -28,7 +28,10 @@ if [ "${1:-}" = "--runtime-smoke-test" ]; then
 fi
 
 mkdir -p "$DATA_DIR"
-chown -R "$RUN_AS" "$DATA_DIR"
+# Re-owning a large volume on every boot is slow; only do it when something is off.
+if [ -n "$(find "$DATA_DIR" \( ! -user node -o ! -group node \) -print -quit)" ]; then
+  chown -R "$RUN_AS" "$DATA_DIR"
+fi
 
 if [ ! -s "$HMAC_FILE" ]; then
   SECRET="$(openssl rand -hex 32)"
