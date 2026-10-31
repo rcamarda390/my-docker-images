@@ -61,4 +61,4 @@ jobs:
       # The published-tag count reads only the wolfi line (tag_suffix), so each publish takes the next wolfi revision.
       tag_suffix: wolfi
       revision_from_published_tag_count: true
-      publish: ${{ github.event_name != 'pull_request' }}
+      publish: ${{ github.ref == 'refs/heads/main' }}
