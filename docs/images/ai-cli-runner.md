@@ -52,7 +52,9 @@ Claude Code and Cline Linux x64 tarballs, original npm platform archives,
 the original Cline launcher archive, SHA-256 sidecars, and the build npm
 manifest/lockfile. Run `bash images/ai-cli-runner/build-airgap.sh` to produce
 the same files locally. Each platform archive is checked against the lockfile's
-npm integrity hash before packaging. Each flat archive preserves the complete
+npm integrity hash before packaging. The Cline launcher archive is not in the
+lockfile, so it is checked against the registry's `dist.integrity` for the
+pinned version instead. Each flat archive preserves the complete
 installed package, including its real `package.json` and bundled files.
 
 The same files remain in the final image at `/opt/security/ai-cli-runner`.

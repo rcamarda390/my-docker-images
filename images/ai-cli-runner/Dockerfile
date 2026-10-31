@@ -49,8 +49,11 @@ RUN apk upgrade --available --no-cache \
         'ld-linux-2.44>=2.44-r8' \
         'glibc-2.44-locale-posix>=2.44-r8' \
         'libcrypt1-2.44>=2.44-r8' \
-    && apk add --no-cache git ca-certificates-bundle bash \
+    && apk add --no-cache git 'ca-certificates-bundle>=20260909-r3' bash \
     && apk add --no-cache --upgrade 'zlib>=1.3.2.1_rc20260601-r0'
+# Xray: CVE-2026-91403 (CRITICAL) and CVE-2026-111943 (HIGH) in ca-certificates-bundle
+# 20260611-r1, fixed in 20260909-r3. Same pin as bifrost-mcp and agentmemory-server.
+# The constraint fails the build if the repo cannot supply the fix.
 # Xray: CVE-2026-85091 (7.4, CWE-787) in wolfi zlib 1.3.2-r5, fixed in
 # 1.3.2.1_rc20260601-r0. The constraint above fails the build if the repo cannot
 # supply it; the check below proves it landed. Drop once the pinned WOLFI_IMAGE
