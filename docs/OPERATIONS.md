@@ -31,6 +31,12 @@ Each `images/<target>/image.yaml` controls the target's upstream version, local 
 
 Check the target image's `image.yaml` for its publication settings.
 
+Published tags are immutable. A publish never overwrites an existing tag:
+
+- Callers with `revision_from_published_tag_count: true` take the next revision from Docker Hub: the highest `<version>-v<N>` (or `<version>-<tag_suffix>-v<N>` for suffixed lines such as `wolfi`) plus one. The `revision:` line in git is not read in this mode and is not updated, so Docker Hub is the source of truth.
+- `build-image.yml` also refuses any publish whose tag already exists in a target registry. A caller that forgets a revision mode fails the build instead of re-pushing a tag.
+- `images/headroom-model-hf` has no revision mode because its `prepare.py` and workflow paths hardcode the tag. A rebuild of the same revision fails until those are updated together.
+
 The preferred operational model is to perform image builds and publishing in a connected build environment rather than requiring Docker on the restricted Windows workstation.
 
 ## GitHub Actions

@@ -56,10 +56,10 @@ jobs:
       scan: true
       # Trivy findings and scan errors are advisory; build/runtime checks remain blocking.
       block_on_scan_failure: false
-      # Wolfi pilot line: publishes <version>-wolfi-v<revision> from the configured
-      # revision in image.yaml. The Debian published-tag count would not see
-      # wolfi publications, so the count mode is not used here.
+      # Wolfi pilot line: publishes <version>-wolfi-v<revision>. The published-tag
+      # count reads only the wolfi line (tag_suffix), so each publish takes the next wolfi revision.
       tag_suffix: wolfi
+      revision_from_published_tag_count: true
       # Branch dispatches validate the candidate without consuming or publishing
       # an immutable tag. Only a reviewed main-branch dispatch may publish.
       publish: ${{ github.ref == 'refs/heads/main' }}

@@ -303,6 +303,7 @@ jobs:
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           AUTO_INCREMENT: ${{ inputs.auto_increment_revision }}
           RUN_NUMBER_REVISION: ${{ inputs.revision_from_run_number }}
+          TAG_SUFFIX: ${{ inputs.tag_suffix }}
         shell: bash
         run: |
           set -euo pipefail
@@ -313,9 +314,11 @@ jobs:
           test -n "$DOCKERHUB_USERNAME"
           version=$(sed -nE 's/^upstream_version:[[:space:]]*(.*)[[:space:]]*$/\1/p' "$CONFIG")
           test -n "$version"
+          # Suffixed side-line tags (for example <version>-wolfi-v<N>) count separately.
+          prefix="${version}${TAG_SUFFIX:+-$TAG_SUFFIX}-v"
           tags_file=$(mktemp)
           trap 'rm -f "$tags_file"' EXIT
-          url="https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${INPUT_IMAGE_NAME}/tags?page_size=100&name=${version}-v"
+          url="https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${INPUT_IMAGE_NAME}/tags?page_size=100&name=${prefix}"
           while [ -n "$url" ] && [ "$url" != "null" ]; do
             response_file=$(mktemp)
             http_code=$(curl --silent --show-error --retry 3 --retry-all-errors \
@@ -333,13 +336,13 @@ jobs:
             fi
             response=$(cat "$response_file")
             rm -f "$response_file"
-            jq -r --arg prefix "${version}-v" \
+            jq -r --arg prefix "$prefix" \
               '.results[].name | select(startswith($prefix)) | select((ltrimstr($prefix) | test("^[0-9]+$")))' \
               <<<"$response" >> "$tags_file"
             url=$(jq -r '.next // empty' <<<"$response")
           done
           published_count=$(sort -u "$tags_file" | grep -c . || true)
-          max_revision=$(awk -v prefix="${version}-v" '
+          max_revision=$(awk -v prefix="$prefix" '
             index($0, prefix) == 1 {
               revision = substr($0, length(prefix) + 1)
               if (revision ~ /^[0-9]+$/ && revision + 0 > max) {
@@ -351,7 +354,7 @@ jobs:
             }
           ' "$tags_file")
           next_revision=$((max_revision + 1))
-          candidate="${version}-v${next_revision}"
+          candidate="${prefix}${next_revision}"
           if grep -Fxq "$candidate" "$tags_file"; then
             echo "::error::Computed tag $candidate already exists; refusing to overwrite an immutable image"
             exit 1
@@ -602,10 +605,11 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Suffixed (side-line) tags use the configured revision, so a repeated
-      # dispatch would otherwise overwrite the published immutable tag.
-      - name: Refuse to overwrite an existing suffixed tag
-        if: inputs.publish && inputs.tag_suffix != '' && (inputs.publish_ghcr || inputs.publish_dockerhub)
+      # Backstop: published tags are immutable. A caller that does not derive
+      # its revision (revision_from_published_tag_count, revision_from_run_number
+      # or auto_increment_revision) would otherwise re-push the configured tag.
+      - name: Refuse to overwrite an existing published tag
+        if: inputs.publish && (inputs.publish_ghcr || inputs.publish_dockerhub)
         env:
           PUBLISH_TAGS: ${{ steps.meta.outputs.publish_tags }}
         shell: bash
