@@ -1,7 +1,7 @@
 name: Build and publish Bifrost MCP image (Wolfi)
 run-name: Bifrost MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
 
-# Wolfi pilot line, separate from build-bifrost-mcp.yml (Alpine). Publishes
+# Wolfi line, the only bifrost-mcp publish workflow (Alpine caller removed). Publishes
 # <version>-wolfi-v<revision> using the revision in image.wolfi.yaml. No push
 # trigger: a fixed revision must never be re-published by an unrelated change.
 on:

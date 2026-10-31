@@ -61,6 +61,7 @@ jobs:
           for entry in "${IMAGES[@]}"; do
             IFS='|' read -r image_name upstream_repo tag_strip commit_arg <<< "$entry"
             config="images/${image_name}/image.yaml"
+            [ -f "$config" ] || config="images/${image_name}/image.wolfi.yaml"
 
             echo "--- Checking ${image_name} ---"
 

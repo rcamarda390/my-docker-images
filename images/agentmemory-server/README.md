@@ -51,7 +51,7 @@ the upgraded store is readable by 0.9.29. The image preserves `/data/.hmac` and
 the existing state/stream paths. REST requests now require Bearer authentication
 by default. Configure remote MCP shims with `AGENTMEMORY_SECRET` from the
 protected persistent secret; do not copy it into an image or source control.
-Upgrade `slim-agentmemory-mcp` to 0.9.30 alongside this server.
+The MCP client shim is installed separately from npm (`@agentmemory/mcp`); `slim-agentmemory-mcp` is retired.
 
 The compatible iii engine and SDK are both 0.22.1. OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
 processor APIs are adapted for the coordinated 2.9.0 / 0.220.0 security pins.
