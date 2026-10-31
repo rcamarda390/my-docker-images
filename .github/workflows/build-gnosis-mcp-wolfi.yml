@@ -1,7 +1,7 @@
-name: Build and publish Gnosis MCP image (Wolfi)
+name: Build and publish Gnosis MCP image
 run-name: Gnosis MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
 
-# Wolfi pilot line, separate from build-gnosis-mcp.yml (Debian). Publishes
+# Gnosis MCP image (Wolfi is the default line). Publishes
 # <version>-wolfi-v<revision> using the revision in image.wolfi.yaml. No push
 # trigger: a fixed revision must never be re-published by an unrelated change.
 on:

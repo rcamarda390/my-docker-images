@@ -1,4 +1,4 @@
-name: Build and publish Bifrost MCP image (Wolfi)
+name: Build and publish Bifrost MCP image
 run-name: Bifrost MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
 
 # Wolfi line, the only bifrost-mcp publish workflow (Alpine caller removed). Publishes

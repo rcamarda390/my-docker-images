@@ -88,8 +88,8 @@ regenerating requirements.lock, and validating compatibility before publication.
 ## Wolfi pilot line
 
 `Dockerfile.wolfi` + `image.wolfi.yaml` build `gnosis-mcp:<version>-wolfi-v<revision>`
-through `build-gnosis-mcp-wolfi.yml` (dispatch/PR only; publishes from `main` only).
-Debian line and `build-gnosis-mcp.yml` are unchanged except for path excludes.
+through `build-gnosis-mcp-wolfi.yml` (dispatch/PR only; publishes from `main` only). The Debian workflow was removed.
+The Debian Dockerfile is kept in the repo but has no workflow.
 Stock Wolfi base, locked wheels, no CVE carries (no glibc/dash/SQLite/zlib/tokenizers
 rebuilds), no package removals; glibc >= 2.44-r8 and zlib >= 1.3.2.1_rc20260601-r0
 asserted. Scan is advisory. Baseline candidate: not deployable until its scan is reviewed.
