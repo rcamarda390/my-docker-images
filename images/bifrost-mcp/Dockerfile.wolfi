@@ -7,10 +7,10 @@
 # until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG BIFROST_VERSION=2.3.2
-ARG BIFROST_COMMIT=a05ea20e68bf116a35e9f05b1a3d749624b3935e
+ARG BIFROST_VERSION=2.4.0
+ARG BIFROST_COMMIT=e869c3f9adc96ea53c38694a21bb04a8e1085487
 
-# Bifrost v2.3.2 uses Go 1.27.3 for CVE-2026-111943.
+# Bifrost v2.4.0 uses Go 1.27.3 (go.mod in transports/go.mod).
 # Verify the compiler version in the final binary.
 # Xray also reads the compiler version from the binary's build info, so keep
 # the toolchain pinned and verified as part of the image supply chain.
@@ -27,12 +27,6 @@ ARG GO_VERSION=1.27.3
 #   andybalholm/brotli      CVE-2026-111497 (9.8, CWE-252), fixed in v1.2.7
 #   otel/sdk v1.45.0        XRAY-1149943 (5.3, CWE-135), fixed in v1.47.0;
 #                           the rest of the otel modules follow the sdk
-#   go-openapi/spec v0.22.3 XRAY-1032958/1032961/1032962, fixed in v0.22.7,
-#                           and XRAY-1032963 (9.3), fixed in v0.22.9
-#   swag/{json,yaml}utils   XRAY-1032959/1032960 against v0.25.4, fixed in
-#                           v0.27.1; v0.27.3 is required by go-openapi/spec v0.22.9
-#   go-openapi/validate     XRAY-1032963 (9.3, CWE-918) and XRAY-1032962
-#     v0.25.1               (5.3, CWE-400), fixed in v0.26.1
 #   go-jose/v4 v4.1.4       XRAY-1110429 (7.5, CWE-407); fixed in v4.1.6
 #                           (indirect upstream)
 #   pion/dtls/v3 v3.1.9     XRAY-1147061/1147051/1147049/1147063/1147062/
@@ -47,21 +41,18 @@ ARG GO_CRYPTO_VERSION=v0.58.0
 ARG GO_NET_VERSION=v0.62.0
 ARG GO_BROTLI_VERSION=v1.2.7
 ARG GO_OTEL_SDK_VERSION=v1.47.0
-ARG GO_OPENAPI_SPEC_VERSION=v0.22.9
-ARG GO_OPENAPI_SWAG_VERSION=v0.27.3
-ARG GO_OPENAPI_VALIDATE_VERSION=v0.26.1
 # mcp-go v0.43.2 is reported by Xray as CVE-2026-81092 (6.8, CWE-346),
 # fixed in v0.56.0.
-ARG GO_MCP_GO_VERSION=v0.56.0
+ARG GO_MCP_GO_VERSION=v1.3.0
 ARG GO_JOSE_VERSION=v4.1.6
 ARG GO_DTLS_VERSION=v3.1.14
 # CVE-2026-108859: mcp-go (all releases through v1.3.0) reads POST bodies
-# without a cap. rcamarda390/mcp-go is upstream v0.56.0 plus the unreleased
-# upstream fix, https://github.com/mark3labs/mcp-go/pull/1092. Drop this
+# without a cap. rcamarda390/mcp-go is upstream v1.3.0 plus the unreleased
+# upstream fix, https://github.com/mark3labs/mcp-go/pull/1119. Drop this
 # replace once a released mcp-go contains that fix. The fork's tags cannot be
 # pushed from the agent session, so the exact commit is pinned as a pseudo-version.
-ARG MCP_GO_FORK_COMMIT=aa78020aa10ffa85f1cdce32bfbbef35c98a5870
-ARG MCP_GO_FORK_VERSION=v0.0.0-20261016132355-aa78020aa10f
+ARG MCP_GO_FORK_COMMIT=d45172ebe44fcd8cd6904170fbf6fc71d38fffcc
+ARG MCP_GO_FORK_VERSION=v0.0.0-20261031173631-d45172ebe44f
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG BIFROST_VERSION
@@ -107,9 +98,6 @@ ARG GO_CRYPTO_VERSION
 ARG GO_NET_VERSION
 ARG GO_BROTLI_VERSION
 ARG GO_OTEL_SDK_VERSION
-ARG GO_OPENAPI_SPEC_VERSION
-ARG GO_OPENAPI_SWAG_VERSION
-ARG GO_OPENAPI_VALIDATE_VERSION
 ARG GO_MCP_GO_VERSION
 ARG GO_JOSE_VERSION
 ARG GO_DTLS_VERSION
@@ -123,10 +111,7 @@ RUN set -eu; \
       "go.opentelemetry.io/otel/sdk@${GO_OTEL_SDK_VERSION}" \
       "github.com/go-jose/go-jose/v4@${GO_JOSE_VERSION}" \
       "github.com/pion/dtls/v3@${GO_DTLS_VERSION}" \
-      "github.com/go-openapi/spec@${GO_OPENAPI_SPEC_VERSION}" \
-      "github.com/go-openapi/swag/jsonutils@${GO_OPENAPI_SWAG_VERSION}" \
-      "github.com/go-openapi/swag/yamlutils@${GO_OPENAPI_SWAG_VERSION}" \
-      "github.com/go-openapi/validate@${GO_OPENAPI_VALIDATE_VERSION}"; \
+      ; \
     for pin in \
       "golang.org/x/crypto=${GO_CRYPTO_VERSION}" \
       "golang.org/x/net=${GO_NET_VERSION}" \
@@ -134,10 +119,6 @@ RUN set -eu; \
       "go.opentelemetry.io/otel/sdk=${GO_OTEL_SDK_VERSION}" \
       "github.com/go-jose/go-jose/v4=${GO_JOSE_VERSION}" \
       "github.com/pion/dtls/v3=${GO_DTLS_VERSION}" \
-      "github.com/go-openapi/spec=${GO_OPENAPI_SPEC_VERSION}" \
-      "github.com/go-openapi/swag/jsonutils=${GO_OPENAPI_SWAG_VERSION}" \
-      "github.com/go-openapi/swag/yamlutils=${GO_OPENAPI_SWAG_VERSION}" \
-      "github.com/go-openapi/validate=${GO_OPENAPI_VALIDATE_VERSION}" \
       "github.com/mark3labs/mcp-go=${GO_MCP_GO_VERSION}"; \
     do \
       module="${pin%=*}"; expected="${pin##*=}"; \
