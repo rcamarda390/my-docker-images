@@ -2,7 +2,7 @@
 
 [Back to repository README](../../README.md) · [Image source](../../images/bifrost-mcp/)
 
-Current release metadata: [image.yaml](../../images/bifrost-mcp/image.yaml).
+Current release metadata: [image.wolfi.yaml](../../images/bifrost-mcp/image.wolfi.yaml).
 
 The notes below describe earlier dependency and base-image maintenance. Inspect the current Dockerfile and manifest before applying them to a newer release.
 
