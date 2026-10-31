@@ -37,77 +37,31 @@
 
 param (
     [string]$ImageTag = "airflow-dev:2.9.3",
-    [string]$AirflowBase = "apache/airflow:latest"
+    [string]$AirflowBase = "apache/airflow:2.9.3-python3.11"
 )
 
 $ErrorActionPreference = "Stop"
 
 # Verify Docker is available
 docker version | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Docker is not available (docker version exited $LASTEXITCODE)."
+    exit 1
+}
 
-# Create Dockerfile
-$dockerfilePath = "Dockerfile.airflow-dev"
-
-@"
-FROM $AirflowBase
-
-USER root
-
-RUN apt-get update && apt-get install -y --no-install-recommends `
-    git `
-    curl `
-    wget `
-    unzip `
-    jq `
-    less `
-    vim `
-    nano `
-    openssh-client `
-    ca-certificates `
-    gnupg `
-    lsb-release `
-    tzdata `
-    procps `
-    iputils-ping `
-    netcat-openbsd `
-    build-essential `
-    gcc `
-    g++ `
-    make `
-    libpq-dev `
-    postgresql-client `
-    docker.io `
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# AWS CLI v2
-RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip `
-    && unzip -q /tmp/awscliv2.zip -d /tmp `
-    && /tmp/aws/install `
-    && rm -rf /tmp/aws /tmp/awscliv2.zip
-
-# Python dev + Redshift tooling
-RUN pip install --no-cache-dir `
-    ruff `
-    black `
-    isort `
-    pytest `
-    mypy `
-    ipython `
-    redshift-connector `
-    psycopg2-binary `
-    sqlalchemy `
-    sqlalchemy-redshift
-
-RUN usermod -aG docker airflow || true
-
-USER airflow
-"@ | Set-Content -Encoding UTF8 $dockerfilePath
+# Dockerfile.airflow-dev is checked in next to this script; anchor paths to it
+$dockerfilePath = Join-Path $PSScriptRoot "Dockerfile.airflow-dev"
 
 # Build image
 docker build `
+    --build-arg "AIRFLOW_BASE=$AirflowBase" `
     -f $dockerfilePath `
     -t $ImageTag `
-    .
+    $PSScriptRoot
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "docker build failed (exit $LASTEXITCODE)."
+    exit 1
+}
 
 Write-Host ""
 Write-Host "Built image: $ImageTag"

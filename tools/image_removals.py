@@ -317,6 +317,25 @@ def expand_paths(root, pattern):
     return sorted(glob.glob(os.path.join(root, pattern.lstrip("/"))))
 
 
+def assert_removed(root, status_file, names, paths, before_broken=frozenset()):
+    """Fail unless the packages and paths are gone and no new package is broken.
+
+    before_broken holds (package, group) pairs already unsatisfied before removal;
+    they are not counted against this removal.
+    """
+    remaining, _ = parse_status(status_file)
+    gone = [n for n in names if n in remaining]
+    if gone:
+        raise SystemExit(f"packages still installed after removal: {gone}")
+    broken = [b for b in unsatisfied(remaining, set()) if (b[0], tuple(b[1])) not in before_broken]
+    if broken:
+        raise SystemExit(f"retained packages have unsatisfied dependencies: {broken}")
+    for path in paths:
+        if expand_paths(root, path):
+            raise SystemExit(f"path still present after removal: {path}")
+    return remaining
+
+
 def apply(manifest_path, root, output, mode, dry_run, ldd=run_ldd, check_elf=True):
     manifest = load_manifest(manifest_path)
     status_file = os.path.join(root, "var/lib/dpkg/status")
@@ -342,6 +361,9 @@ def apply(manifest_path, root, output, mode, dry_run, ldd=run_ldd, check_elf=Tru
     broken_runtime = {}
     unresolved_before = {}
     files = []
+    if check_elf and ldd is run_ldd and root != "/":
+        # The host loader reports host library paths, so a non-/ root would pass vacuously.
+        raise SystemExit("ELF checks with the real loader require --root /")
     if check_elf:
         roots = manifest.get("runtime_roots") or []
         entries = [os.path.join(root, e.lstrip("/")) for e in manifest.get("entrypoints") or []]
@@ -406,16 +428,7 @@ def apply(manifest_path, root, output, mode, dry_run, ldd=run_ldd, check_elf=Tru
             elif os.path.lexists(matched):
                 os.unlink(matched)
 
-    remaining, _ = parse_status(status_file)
-    still_broken = [b for b in unsatisfied(remaining, set()) if (b[0], tuple(b[1])) not in before_broken]
-    if still_broken:
-        raise SystemExit(f"retained packages have unsatisfied dependencies: {still_broken}")
-    gone = [n for n in doomed if n in remaining]
-    if gone:
-        raise SystemExit(f"packages still installed after removal: {gone}")
-    for item in path_items:
-        if expand_paths(root, item["path"]):
-            raise SystemExit(f"path still present after removal: {item['path']}")
+    remaining = assert_removed(root, status_file, doomed, [i["path"] for i in path_items], before_broken)
     if check_elf:
         if root == "/":
             subprocess.run(["ldconfig"], check=False)
@@ -438,16 +451,9 @@ def verify(root, output):
     """Fail unless everything the generated manifest lists is gone and nothing is broken."""
     with open(os.path.join(root, output.lstrip("/")), encoding="utf-8") as stream:
         report = json.load(stream)
-    remaining, _ = parse_status(os.path.join(root, "var/lib/dpkg/status"))
-    present = [p["name"] for p in report["removed_packages"] if p["name"] in remaining]
-    if present:
-        raise SystemExit(f"packages recorded as removed are installed: {present}")
-    broken = unsatisfied(remaining, set())
-    if broken:
-        raise SystemExit(f"unsatisfied dependencies: {broken}")
-    for item in report["removed_paths"]:
-        if glob.glob(os.path.join(root, item["path"].lstrip("/"))):
-            raise SystemExit(f"recorded path still present: {item['path']}")
+    assert_removed(root, os.path.join(root, "var/lib/dpkg/status"),
+                   [p["name"] for p in report["removed_packages"]],
+                   [i["path"] for i in report["removed_paths"]])
     print(f"Verified {len(report['removed_packages'])} removed packages and {len(report['removed_paths'])} paths.")
 
 

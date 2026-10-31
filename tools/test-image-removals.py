@@ -143,6 +143,14 @@ class ClosureTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             module.apply(manifest, self.root, '/etc/image-removals.json', 'full', False, ldd=lambda p: (set(), []))
 
+    def test_real_loader_refuses_a_non_root_tree(self):
+        # run_ldd would report host library paths for files under a temp root, so the
+        # ELF checks must refuse before anything is deleted.
+        manifest = write_manifest(self.root, [('coreutils', []), ('base-tool', [])])
+        with self.assertRaises(SystemExit):
+            module.apply(manifest, self.root, '/etc/image-removals.json', 'full', False)
+        self.assertTrue(Path(self.root, 'usr/bin/cat').exists())
+
     def test_manifest_requires_reason_and_evidence(self):
         bad = Path(self.root, 'bad.yaml')
         bad.write_text('schema_version: 1\npackages:\n  - name: x\n    category: unused-runtime\n')
