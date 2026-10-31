@@ -24,7 +24,9 @@ jobs:
 
       - name: Check and update each image
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Same token policy as build-image.yml: a fine-grained PAT is not subject
+          # to the "Allow GitHub Actions to create and approve pull requests" setting.
+          GH_TOKEN: ${{ secrets.REVISION_PR_TOKEN || secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           BASE_BRANCH: ${{ github.ref_name }}
         run: |
@@ -66,11 +68,8 @@ jobs:
 
             # Releases may share a repository across independent component streams.
             # Choose the newest stable release whose tag matches this image's prefix.
-            release_data=$(gh api "/repos/${upstream_repo}/releases?per_page=100" 2>/dev/null || echo "")
-            if [ -z "$release_data" ]; then
-              echo "  Could not fetch releases for ${upstream_repo}, skipping"
-              continue
-            fi
+            # Lookup failures abort the step (set -e); they are never "no update".
+            release_data=$(gh api "/repos/${upstream_repo}/releases?per_page=100")
 
             latest_tag=$(jq -r --arg prefix "$tag_strip" \
               '[.[] | select(.draft == false and .prerelease == false) | select(.tag_name | startswith($prefix))][0].tag_name // empty' \
@@ -92,20 +91,27 @@ jobs:
 
             branch="chore/update-${image_name}-${latest_version}"
 
-            # Skip if the update branch already exists (PR was already opened)
-            if git ls-remote --exit-code origin "refs/heads/${branch}" &>/dev/null; then
-              echo "  Branch ${branch} already exists — skipping"
+            # Skip only when a PR for this branch is open. A branch with no open PR
+            # (an earlier PR creation failed) gets its PR opened below.
+            open_pr=$(gh pr list --repo "$REPO" --head "$branch" --state open \
+              --json number --jq '.[0].number // empty')
+            if [ -n "$open_pr" ]; then
+              echo "  PR #${open_pr} already open for ${branch} — skipping"
               continue
             fi
+
+            ls_rc=0
+            git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null || ls_rc=$?
+            case "$ls_rc" in
+              0) branch_on_remote=true ;;
+              2) branch_on_remote=false ;;
+              *) echo "::error::git ls-remote failed for ${branch} (exit ${ls_rc})"; exit 1 ;;
+            esac
 
             # Resolve commit SHA for images that pin a specific commit
             commit_sha=""
             if [ -n "$commit_arg" ]; then
-              ref_data=$(gh api "/repos/${upstream_repo}/git/ref/tags/${latest_tag}" 2>/dev/null || echo "")
-              if [ -z "$ref_data" ]; then
-                echo "  Could not resolve tag ${latest_tag} in ${upstream_repo}, skipping"
-                continue
-              fi
+              ref_data=$(gh api "/repos/${upstream_repo}/git/ref/tags/${latest_tag}")
               obj_sha=$(echo "$ref_data" | jq -r '.object.sha')
               obj_type=$(echo "$ref_data" | jq -r '.object.type')
               if [ "$obj_type" = "tag" ]; then
@@ -117,23 +123,28 @@ jobs:
               echo "  Resolved ${latest_tag} -> ${commit_sha}"
             fi
 
-            # Create a fresh branch from the current HEAD
-            git checkout -B "$branch"
+            # Create a fresh branch from the current HEAD. A branch left by an
+            # earlier run is reused as-is; only its PR is missing.
+            if [ "$branch_on_remote" = false ]; then
+              git checkout -B "$branch"
 
-            # Update upstream_version
-            sed -E -i "s|^upstream_version:[[:space:]]*.*|upstream_version: ${latest_version}|" "$config"
+              # Update upstream_version
+              sed -E -i "s|^upstream_version:[[:space:]]*.*|upstream_version: ${latest_version}|" "$config"
 
-            # Update the pinned commit SHA build arg when applicable
-            if [ -n "$commit_arg" ] && [ -n "$commit_sha" ]; then
-              sed -E -i "s/^([[:space:]]*)${commit_arg}:[[:space:]]*.*/\1${commit_arg}: ${commit_sha}/" "$config"
+              # Update the pinned commit SHA build arg when applicable
+              if [ -n "$commit_arg" ] && [ -n "$commit_sha" ]; then
+                sed -E -i "s/^([[:space:]]*)${commit_arg}:[[:space:]]*.*/\1${commit_arg}: ${commit_sha}/" "$config"
+              fi
+
+              git add "$config"
+              git commit \
+                -m "chore: bump ${image_name} upstream to ${latest_version}" \
+                -m "Automated version bump from ${current_version} to ${latest_version}." \
+                -m "Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+              git push origin "$branch"
+            else
+              echo "  Branch ${branch} exists without an open PR; opening one"
             fi
-
-            git add "$config"
-            git commit \
-              -m "chore: bump ${image_name} upstream to ${latest_version}" \
-              -m "Automated version bump from ${current_version} to ${latest_version}." \
-              -m "Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
-            git push origin "$branch"
 
             {
               printf '## Automated upstream version bump\n\n'
@@ -146,13 +157,14 @@ jobs:
               printf '\n> After review, trigger the build workflow to publish the updated image.\n'
             } > /tmp/pr_body.md
 
+            # No fallback: a failed PR fails the step, so the branch is never left
+            # behind without a PR.
             gh pr create \
               --repo "$REPO" \
               --base "$BASE_BRANCH" \
               --head "$branch" \
               --title "chore: bump ${image_name} to ${latest_version}" \
-              --body-file /tmp/pr_body.md \
-              || echo "  PR already exists or could not be created — continuing"
+              --body-file /tmp/pr_body.md
 
             # Return to base branch for the next image
             git checkout "$BASE_BRANCH"
