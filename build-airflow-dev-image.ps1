@@ -49,15 +49,15 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Dockerfile.airflow-dev is checked in next to this script
-$dockerfilePath = "Dockerfile.airflow-dev"
+# Dockerfile.airflow-dev is checked in next to this script; anchor paths to it
+$dockerfilePath = Join-Path $PSScriptRoot "Dockerfile.airflow-dev"
 
 # Build image
 docker build `
     --build-arg "AIRFLOW_BASE=$AirflowBase" `
     -f $dockerfilePath `
     -t $ImageTag `
-    .
+    $PSScriptRoot
 if ($LASTEXITCODE -ne 0) {
     Write-Error "docker build failed (exit $LASTEXITCODE)."
     exit 1
