@@ -35,7 +35,6 @@ The following images have build workflows but do not have independent upstream r
 
 | Docker image | Build Action | Notes |
 | --- | --- | --- |
-| [`slim-agentmemory-mcp`](../images/slim-agentmemory-mcp/) | [`build-slim-agentmemory-mcp.yml`](../.github/workflows/build-slim-agentmemory-mcp.yml) | AgentMemory-related slim image; inspect its own manifest |
 | [`slim-docker-vsix`](../images/slim-docker-vsix/) | [`build-slim-docker-vsix.yml`](../.github/workflows/build-slim-docker-vsix.yml) | Multiple VS Code extensions; inspect payload manifest individually |
 
 ## Check all images for updates

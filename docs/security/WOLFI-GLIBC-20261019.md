@@ -54,7 +54,7 @@ gates remain unchanged. A passing Trivy gate does not clear these MEDIUM rows.
 | bifrost-mcp, ebay-mcp, docker-socket-proxy, sooperset-mcp-atlassian | Alpine/musl final runtime source recipes. No Wolfi package applicability established; embedded copies remain unknown without exact artifact inventory. |
 | sqz-mcp | Scratch final image copies a Rust binary built on Alpine's musl target. No Wolfi package enters the recipe; exact binary linkage remains an artifact verification item. |
 | zeus-dev-image | UBI final runtime. Requires Red Hat-specific review; Wolfi r8 is not a compatible replacement. |
-| slim-archify, slim-agentmemory-mcp, slim-docker-vsix, slim-docker-vsix-upgrades, slim-docker-codeburn, gnosis-model-mdbr-leaf-ir | Scratch payloads; do not inherit builder glibc by base image alone. Embedded/native dependency coverage remains artifact-specific. Gnosis model contains only approved data files. |
+| slim-archify, slim-docker-vsix, slim-docker-vsix-upgrades, slim-docker-codeburn, gnosis-model-mdbr-leaf-ir | Scratch payloads; do not inherit builder glibc by base image alone. Embedded/native dependency coverage remains artifact-specific. Gnosis model contains only approved data files. |
 
 Ran tools/check-debian-security.py against a fresh tracker snapshot:
 49 pending source/CVE pairs reviewed. For these three CVEs, trixie remains

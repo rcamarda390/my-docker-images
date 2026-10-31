@@ -2292,7 +2292,7 @@
         "agentmemory-mcp": "Source already pins MCP SDK 1.32.0, fast-uri 3.1.8 and proxy-addr 2.0.8; exact published digest not rescanned in this task.",
         "zeus-dev-image": "PR 92 pins MCP SDK 1.32.1. Candidate scan run 39133097296 reports none of these four CVEs; broader Xray/embedded-copy coverage is unverified.",
         "slim-docker-codeburn": "Existing remediated payload pins MCP SDK 1.32.0; other embedded dependency versions require exact payload inspection.",
-        "slim-agentmemory-mcp": "npm payload dependency closure is resolved at build; exact artifact versions unverified.",
+        "slim-agentmemory-mcp": "Retired 2026-10-31; image and workflow removed. Previously published tags were not deleted.",
         "slim-docker-vsix": "Rebuilt Live Preview lockfile contains no fast-uri/proxy-addr entry; official Claude native/bundled copies remain artifact-review work.",
         "slim-docker-vsix-upgrades": "Official VSIX payloads must remain byte-preserved; inspect per-extension SBOMs and bundled/native copies before any remediation.",
         "ai-cli-runner": "Native CLI executables and original packages are retained; embedded dependency applicability is unverified.",
