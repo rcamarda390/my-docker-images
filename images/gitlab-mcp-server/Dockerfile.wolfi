@@ -1,0 +1,76 @@
+# syntax=docker/dockerfile:1.7
+
+# GitLab MCP Server (jmrplens/gitlab-mcp-server) on a stock Wolfi runtime,
+# following the github-mcp-server Wolfi pattern. Upstream tag v3.4.0 is cloned
+# and verified against its commit. The binary is built with CGO_ENABLED=0 so it
+# is static and needs no glibc or musl loader; upstream's own Dockerfile links a
+# musl loader, which the glibc Wolfi runtime does not provide.
+
+ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
+ARG GITLAB_MCP_VERSION=3.4.0
+ARG GITLAB_MCP_COMMIT=39b7093afffede232184c1e385b1ef4a215b0258
+
+FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
+ARG GITLAB_MCP_VERSION
+ARG GITLAB_MCP_COMMIT
+RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates git \
+    && git clone --depth 1 --branch "v${GITLAB_MCP_VERSION}" \
+       https://github.com/jmrplens/gitlab-mcp-server.git /src \
+    && test "$(git -C /src rev-parse HEAD)" = "$GITLAB_MCP_COMMIT"
+
+FROM golang:1.27.3-alpine@sha256:f2c872bcee949b7be9c490efd02b48a8a2fbf947cdf533f1c58525ec9d8170fd AS builder
+ARG GITLAB_MCP_VERSION
+ARG GITLAB_MCP_COMMIT
+ARG GO_VERSION=1.27.3
+WORKDIR /build
+# The digest selects the image, so confirm it carries the toolchain named here.
+RUN go version | grep -qwF "go${GO_VERSION}"
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GOTOOLCHAIN=local
+COPY --from=source /src/ ./
+RUN go build \
+      -trimpath \
+      -ldflags="-s -w -X main.version=${GITLAB_MCP_VERSION} -X main.commit=${GITLAB_MCP_COMMIT}" \
+      -o /app/gitlab-mcp-server \
+      ./cmd/server \
+    && /app/gitlab-mcp-server --version | grep -qF "${GITLAB_MCP_VERSION}" \
+    && go version -m /app/gitlab-mcp-server > /tmp/binary-build-info \
+    && grep -qwF "go${GO_VERSION}" /tmp/binary-build-info \
+    && grep -qE "build[[:space:]]+CGO_ENABLED=0" /tmp/binary-build-info
+
+FROM ${WOLFI_IMAGE}
+ARG GITLAB_MCP_VERSION
+ARG GITLAB_MCP_COMMIT
+WORKDIR /app
+# CA bundle for TLS to GitLab. The version constraint fails the build if the
+# repo cannot supply it; the check below proves what landed.
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache --upgrade 'ca-certificates-bundle>=20260909-r3'
+
+RUN set -eu; \
+    spec=ca-certificates-bundle:20260909-r3; \
+    package="${spec%%:*}"; fixed="${spec#*:}"; \
+    installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+    test -n "$installed"; \
+    test "$(apk version -t "$installed" "$fixed")" != '<'; \
+    printf '%s=%s\n' "$package" "$installed"
+
+COPY --from=builder /app/gitlab-mcp-server /app/gitlab-mcp-server
+COPY runtime-smoke.sh /app/runtime-smoke.sh
+
+RUN adduser -D -s /bin/sh appuser
+USER 1000:0
+
+EXPOSE 8080
+ENTRYPOINT ["/app/gitlab-mcp-server"]
+CMD ["--transport", "stdio"]
+
+LABEL org.opencontainers.image.title="gitlab-mcp-server" \
+      org.opencontainers.image.description="GitLab MCP server (jmrplens), built from source on Wolfi" \
+      org.opencontainers.image.source="https://github.com/jmrplens/gitlab-mcp-server" \
+      org.opencontainers.image.version="${GITLAB_MCP_VERSION}" \
+      org.opencontainers.image.revision="${GITLAB_MCP_COMMIT}" \
+      org.opencontainers.image.licenses="MIT"
