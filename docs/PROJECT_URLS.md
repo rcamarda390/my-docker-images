@@ -19,6 +19,7 @@ Use these links to identify projects and locate their Docker image definitions a
 | 13 | Sooperset MCP Atlassian | https://github.com/sooperset/mcp-atlassian | https://github.com/sooperset/mcp-atlassian/releases | [`sooperset-mcp-atlassian`](../images/sooperset-mcp-atlassian/) | [`build-sooperset-mcp-atlassian.yml`](../.github/workflows/build-sooperset-mcp-atlassian.yml) | images/sooperset-mcp-atlassian; not Atlassian Rovo MCP |
 | 14 | SQZ MCP | https://github.com/ojuschugh1/sqz | https://github.com/ojuschugh1/sqz/releases | [`sqz-mcp`](../images/sqz-mcp/) | [`build-sqz-mcp.yml`](../.github/workflows/build-sqz-mcp.yml) | images/sqz-mcp; check vendored Cargo.lock |
 | 15 | Zeus Dev Image | https://github.com/rcamarda390/my-docker-images/tree/main/images/zeus-dev-image | https://gitlab.freedesktop.org/xdg/xdg-user-dirs | [`zeus-dev-image`](../images/zeus-dev-image/) | [`build-zeus-dev-image.yml`](../.github/workflows/build-zeus-dev-image.yml) | Composite image; inspect Dockerfile and installed components |
+| 16 | GitHub MCP Server | https://github.com/github/github-mcp-server | https://github.com/github/github-mcp-server/releases | [`github-mcp-server`](../images/github-mcp-server/) | [`build-github-mcp-server-wolfi.yml`](../.github/workflows/build-github-mcp-server-wolfi.yml) | images/github-mcp-server; Wolfi line |
 
 ## Version-check GitHub Actions
 

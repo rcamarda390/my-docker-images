@@ -1,0 +1,9 @@
+name: github-mcp-server
+upstream_version: 2.0.3
+revision: 1
+build_args:
+  GITHUB_MCP_COMMIT: b98d115bbb080e9555466a96656ec4df605aea21
+publish:
+  ghcr: true
+  dockerhub: true
+  latest: false
