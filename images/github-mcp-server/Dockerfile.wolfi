@@ -31,6 +31,10 @@ FROM golang:1.27.3-alpine@sha256:f2c872bcee949b7be9c490efd02b48a8a2fbf947cdf533f
 ARG GITHUB_MCP_VERSION
 ARG GITHUB_MCP_COMMIT
 ARG GO_VERSION=1.27.3
+# Upstream v2.0.3 resolves golang.org/x/net v0.59.0. Trivy CVE-2026-78669
+# (HIGH, net/http2 SETTINGS DoS) is fixed in v0.60.0. Drop this pin once
+# upstream's go.mod requires v0.60.0 or newer.
+ARG GO_NET_VERSION=v0.60.0
 WORKDIR /build
 # The digest selects the image, so confirm it carries the toolchain named here.
 RUN go version | grep -qwF "go${GO_VERSION}"
@@ -39,13 +43,21 @@ ENV CGO_ENABLED=0 \
     GOTOOLCHAIN=local
 COPY --from=source /src/ ./
 COPY --from=ui-build /app/pkg/github/ui_dist/ ./pkg/github/ui_dist/
+ARG GO_NET_VERSION
+RUN set -eu; \
+    go get "golang.org/x/net@${GO_NET_VERSION}"; \
+    test "$(go list -m -f '{{.Version}}' golang.org/x/net)" = "${GO_NET_VERSION}"
 RUN go build \
       -ldflags="-s -w -X main.version=v${GITHUB_MCP_VERSION} -X main.commit=${GITHUB_MCP_COMMIT}" \
       -trimpath \
       -o /app/github-mcp-server \
       ./cmd/github-mcp-server \
     && /app/github-mcp-server --version | grep -qF "Version: v${GITHUB_MCP_VERSION}" \
-    && go version -m /app/github-mcp-server | grep -qwF "go${GO_VERSION}"
+    && go version -m /app/github-mcp-server > /tmp/binary-build-info \
+    && grep -qwF "go${GO_VERSION}" /tmp/binary-build-info \
+    && awk -v expected="$GO_NET_VERSION" \
+      '$1 == "dep" && $2 == "golang.org/x/net" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info
 
 FROM ${WOLFI_IMAGE}
 ARG GITHUB_MCP_VERSION
