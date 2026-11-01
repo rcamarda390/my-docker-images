@@ -39,7 +39,7 @@ RUN go build \
     && /app/gitlab-mcp-server --version | grep -qF "${GITLAB_MCP_VERSION}" \
     && go version -m /app/gitlab-mcp-server > /tmp/binary-build-info \
     && grep -qwF "go${GO_VERSION}" /tmp/binary-build-info \
-    && grep -qF "build	CGO_ENABLED=0" /tmp/binary-build-info
+    && grep -qE "build[[:space:]]+CGO_ENABLED=0" /tmp/binary-build-info
 
 FROM ${WOLFI_IMAGE}
 ARG GITLAB_MCP_VERSION
