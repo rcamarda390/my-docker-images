@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.31 + iii 0.25.0). Stock
+# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.32 + iii 0.25.0). Stock
 # Wolfi base with the same npm overrides, iii engine, offline model and runtime
 # checks as the Debian line. No glibc, coreutils, dash, native or PCRE2 rebuilds
 # and no package removals, so the scan shows what the Wolfi base ships with the
