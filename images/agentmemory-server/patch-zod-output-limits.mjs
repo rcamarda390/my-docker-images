@@ -8,7 +8,7 @@ import { runInNewContext } from 'node:vm';
 const root = process.env.AGENTMEMORY_ROOT || '/opt/agentmemory';
 const dist = join(root, 'node_modules/@agentmemory/agentmemory/dist');
 const version = JSON.parse(readFileSync(join(dist, '../package.json'), 'utf8')).version;
-assert.equal(version, '0.9.31', 'revalidate generated-output patch on upstream upgrades');
+assert.equal(version, '0.9.32', 'revalidate generated-output patch on upstream upgrades');
 const { z } = await import(pathToFileURL(join(root, 'node_modules/zod/index.js')));
 const fields = ['facts', 'concepts', 'files', 'keyDecisions', 'filesModified'];
 const before = 'function validateInput(schema, data, functionId) {\n\tconst parsed = schema.safeParse(data);';
