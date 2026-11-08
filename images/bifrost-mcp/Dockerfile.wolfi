@@ -7,16 +7,16 @@
 # until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG BIFROST_VERSION=2.4.0
-ARG BIFROST_COMMIT=e869c3f9adc96ea53c38694a21bb04a8e1085487
+ARG BIFROST_VERSION=2.5.0
+ARG BIFROST_COMMIT=69f4d56d18b9ba00ac5f9cf969b4501a882b9967
 
-# Bifrost v2.4.0 uses Go 1.27.3 (go.mod in transports/go.mod).
+# Bifrost v2.5.0 uses Go 1.27.3 (go.mod in transports/go.mod).
 # Verify the compiler version in the final binary.
 # Xray also reads the compiler version from the binary's build info, so keep
 # the toolchain pinned and verified as part of the image supply chain.
 ARG GO_VERSION=1.27.3
 
-# Keep downstream Go pins only where upstream v2.3.2 still resolves below the
+# Keep downstream Go pins only where upstream v2.5.0 still resolves below the
 # verified Xray fix:
 #   mcp-go v0.43.2          CVE-2026-81092; fixed in v0.56.0
 #   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0;
@@ -33,7 +33,7 @@ ARG GO_VERSION=1.27.3
 #                           1147064 (9.1 CWE-347, 9.1/7.4 CWE-287, N/A
 #                           CWE-400/770); fixed in v3.1.13 and v3.1.14
 #                           (indirect via pion/webrtc)
-# Upstream v2.3.2 already requires x/text v0.41.0,
+# Upstream v2.5.0 already requires x/text v0.43.0,
 # go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
 # are intentionally omitted.
 # Drop a pin once upstream's own go.mod requires that version or newer.
@@ -41,18 +41,14 @@ ARG GO_CRYPTO_VERSION=v0.58.0
 ARG GO_NET_VERSION=v0.62.0
 ARG GO_BROTLI_VERSION=v1.2.7
 ARG GO_OTEL_SDK_VERSION=v1.47.0
-# mcp-go v0.43.2 is reported by Xray as CVE-2026-81092 (6.8, CWE-346),
-# fixed in v0.56.0.
-ARG GO_MCP_GO_VERSION=v1.3.0
+# Bifrost v2.5.0 pins mcp-go v1.5.0 and replaces it with its own
+# maximhq/mcp-go commit, which includes the upstream bounded request-body fix
+# (mark3labs/mcp-go#1119). Keep the regression check below against that exact
+# upstream replacement until Bifrost drops it.
+ARG GO_MCP_GO_VERSION=v1.5.0
+ARG BIFROST_MCP_GO_REPLACE_VERSION=v0.0.0-20261102181017-b7da3bc145a1
 ARG GO_JOSE_VERSION=v4.1.6
 ARG GO_DTLS_VERSION=v3.1.14
-# CVE-2026-108859: mcp-go (all releases through v1.3.0) reads POST bodies
-# without a cap. rcamarda390/mcp-go is upstream v1.3.0 plus the unreleased
-# upstream fix, https://github.com/mark3labs/mcp-go/pull/1119. Drop this
-# replace once a released mcp-go contains that fix. The fork's tags cannot be
-# pushed from the agent session, so the exact commit is pinned as a pseudo-version.
-ARG MCP_GO_FORK_COMMIT=d45172ebe44fcd8cd6904170fbf6fc71d38fffcc
-ARG MCP_GO_FORK_VERSION=v0.0.0-20261031173631-d45172ebe44f
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG BIFROST_VERSION
@@ -101,6 +97,7 @@ ARG GO_OTEL_SDK_VERSION
 ARG GO_MCP_GO_VERSION
 ARG GO_JOSE_VERSION
 ARG GO_DTLS_VERSION
+ARG BIFROST_MCP_GO_REPLACE_VERSION
 RUN set -eu; \
     GOFLAGS=-mod=mod go get \
       "github.com/mark3labs/mcp-go@${GO_MCP_GO_VERSION}" \
@@ -129,20 +126,14 @@ RUN set -eu; \
       fi; \
       echo "remediated: $module $resolved"; \
     done
-# Route the mcp-go module to the fork. Build info keeps the original dep line and
-# records the replacement on a "=>" line, so the substitution stays visible.
-ARG MCP_GO_FORK_COMMIT
-ARG MCP_GO_FORK_VERSION
+# Retain the existing body-limit regression test and verify that Bifrost's
+# own pinned replacement includes the bounded-read fix before vendoring.
 COPY mcp-go-body-limit_test.go /tmp/
 RUN set -eu; \
-    case "$MCP_GO_FORK_VERSION" in *"$(printf %.12s "$MCP_GO_FORK_COMMIT")") ;; \
-      *) echo "fork version does not match fork commit" >&2; exit 1;; esac; \
-    go mod edit -replace "github.com/mark3labs/mcp-go=github.com/rcamarda390/mcp-go@${MCP_GO_FORK_VERSION}"; \
-    GOPRIVATE=github.com/rcamarda390/mcp-go GOFLAGS=-mod=mod go mod download github.com/mark3labs/mcp-go; \
     test "$(go list -m -f '{{.Replace.Path}} {{.Replace.Version}}' github.com/mark3labs/mcp-go)" \
-      = "github.com/rcamarda390/mcp-go ${MCP_GO_FORK_VERSION}"; \
-    GOPRIVATE=github.com/rcamarda390/mcp-go GOFLAGS=-mod=mod go mod tidy; \
-    GOPRIVATE=github.com/rcamarda390/mcp-go go mod vendor; \
+      = "github.com/maximhq/mcp-go ${BIFROST_MCP_GO_REPLACE_VERSION}"; \
+    go mod tidy; \
+    go mod vendor; \
     cp /tmp/mcp-go-body-limit_test.go vendor/github.com/mark3labs/mcp-go/server/; \
     go test -mod=vendor ./vendor/github.com/mark3labs/mcp-go/server -run '^TestXrayBodyLimit$' -count=1 -v
 ARG BIFROST_VERSION
@@ -177,8 +168,8 @@ RUN set -eu; \
     awk -v expected="$GO_DTLS_VERSION" \
       '$1 == "dep" && $2 == "github.com/pion/dtls/v3" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
-    awk -v expected="$MCP_GO_FORK_VERSION" \
-      '$1 == "=>" && $2 == "github.com/rcamarda390/mcp-go" { found = ($3 == expected) } END { exit !found }' \
+    awk -v expected="$BIFROST_MCP_GO_REPLACE_VERSION" \
+      '$1 == "=>" && $2 == "github.com/maximhq/mcp-go" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info
 
 FROM ${WOLFI_IMAGE}
