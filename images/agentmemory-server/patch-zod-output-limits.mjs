@@ -1,6 +1,6 @@
 // patch-zod-output-limits.mjs: bound AgentMemory's generated-output validation.
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runInNewContext } from 'node:vm';
@@ -29,9 +29,12 @@ const after = `function validateInput(schema, data, functionId) {
 	}
 	const parsed = schema.safeParse(data);`;
 
-// Both entry bundles contain the same shared validator. Patch exact source;
-// changing a different schema or a package-wide Zod API would broaden behavior.
-for (const file of ['index.mjs', 'compression-recovery-CnhLQC6N.mjs']) {
+// Bundle filenames change across upstream releases. Patch only emitted bundles
+// containing this exact validator; unrelated files and schemas remain untouched.
+const bundles = readdirSync(dist).filter((file) => file.endsWith('.mjs'));
+const targets = bundles.filter((file) => readFileSync(join(dist, file), 'utf8').includes(before));
+assert.ok(targets.length >= 1, 'generated-output validator not found in dist bundles');
+for (const file of targets) {
   const path = join(dist, file);
   const source = readFileSync(path, 'utf8');
   assert.equal(source.split(before).length - 1, 1, `validator changed: ${file}`);
