@@ -4,9 +4,9 @@ This image intentionally follows the upstream `rohitg00/agentmemory` deployment 
 
 ## Upstream components
 
-- AgentMemory: `0.9.30`
-- iii engine: `0.22.1`
-- iii SDK: `0.22.1`
+- AgentMemory: `0.9.32`
+- iii engine: `0.25.0`
+- iii SDK: `0.25.0`
 - Runtime base: `node:26-slim`
 - Local embedding runtime: `@huggingface/transformers` `4.2.0`
 - Local embedding model: `Xenova/all-MiniLM-L6-v2` (`q8`, 384 dimensions)
@@ -43,7 +43,7 @@ The first build of a new upstream version is published as `UPSTREAM_VERSION-v1`;
 
 Persist `/data` for AgentMemory state and the generated HMAC secret. Port `3111` exposes the AgentMemory HTTP service and health endpoint. The image starts with graph extraction, consolidation, auto-compression, and context injection disabled; enable graph extraction and consolidation only after the Headroom path is validated.
 
-## Upgrade to 0.9.30
+## Upgrade to 0.9.32
 
 Back up the persistent `/data` volume before the first start. AgentMemory runs
 one-time data migrations; test rollback against the backup rather than assuming
@@ -53,10 +53,19 @@ by default. Configure remote MCP shims with `AGENTMEMORY_SECRET` from the
 protected persistent secret; do not copy it into an image or source control.
 The MCP client shim is installed separately from npm (`@agentmemory/mcp`); `slim-agentmemory-mcp` is retired.
 
-The compatible iii engine and SDK are both 0.22.1. OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
+AgentMemory 0.9.32 changes provider activation. Remote LLM features (summaries, compression,
+consolidation, and reflection) require `AGENTMEMORY_LLM_PROVIDER` plus the matching provider key;
+an API key by itself no longer enables them. Cloud embeddings require an explicit
+`EMBEDDING_PROVIDER`; this image explicitly keeps local embeddings enabled. The removed
+`OPENAI_API_KEY_FOR_LLM` variable is not supported. Remote hooks will not send data to a plain
+`http://` server, and PreCompact memory injection requires `AGENTMEMORY_INJECT_CONTEXT=true`.
+Check deployment environment variables before upgrading, especially if hooks use a remote
+AgentMemory URL or PreCompact injection is expected.
+
+The compatible iii engine and SDK are both 0.25.0. OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
 processor APIs are adapted for the coordinated 2.9.0 / 0.220.0 security pins.
 The generated-output array bound remains necessary and is regression-tested
-against both 0.9.30 entry bundles.
+against the installed 0.9.32 entry bundle.
 
 ## Worker environment and restarts (0.9.31)
 
@@ -92,14 +101,15 @@ Devcontainers remain client-only and connect to the persistent service over HTTP
 When Headroom is available, inject these values at runtime through the protected deployment environment; do not put them in Git, the Dockerfile, compose files, or image layers:
 
 ```env
+AGENTMEMORY_LLM_PROVIDER=openai
 OPENAI_API_KEY=<Headroom inbound token>
 OPENAI_BASE_URL=http://<headroom-host>:<port>/v1
 OPENAI_MODEL=<exact model ID accepted by Headroom and Bedrock>
+EMBEDDING_PROVIDER=local
 GRAPH_EXTRACTION_ENABLED=true
 CONSOLIDATION_ENABLED=true
 AGENTMEMORY_AUTO_COMPRESS=false
 AGENTMEMORY_INJECT_CONTEXT=false
-EMBEDDING_PROVIDER=local
 ```
 
 The path is `AgentMemory -> Headroom -> Bifrost/LiteLLM -> AWS Bedrock`. Headroom is an HTTP LLM proxy, not an MCP server, so it does not belong in `cline_mcp_settings.json`. From inside the container, `localhost` refers to the AgentMemory container; use the Headroom Docker service name or a reachable host gateway instead.

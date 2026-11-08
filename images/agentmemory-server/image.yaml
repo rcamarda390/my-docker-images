@@ -1,5 +1,5 @@
 name: agentmemory-mcp
-upstream_version: 0.9.31
+upstream_version: 0.9.32
 revision: 5
 build_args:
   III_VERSION: "0.25.0"
