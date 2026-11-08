@@ -1,5 +1,5 @@
 // patch-vector-state-ready.mjs: wait for the state worker before loading the vector checkpoint.
-// AgentMemory 0.9.31 starts the agentmemory worker once the state worker process is up, not once
+// AgentMemory 0.9.32 starts the agentmemory worker once the state worker process is up, not once
 // state::get is registered. The first vector-metadata read can lose that race by ~100 ms, which
 // reports the checkpoint as unavailable and pauses vector recovery and saves until restart.
 import assert from 'node:assert/strict';
@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 const root = process.env.AGENTMEMORY_ROOT || '/opt/agentmemory';
 const pkg = join(root, 'node_modules/@agentmemory/agentmemory');
-assert.equal(JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8')).version, '0.9.31', 'revalidate vector state-ready patch on upstream upgrades');
+assert.equal(JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8' )).version, '0.9.32', 'revalidate vector state-ready patch on upstream upgrades');
 const dist = join(pkg, 'dist');
 const before = 'meta = await this.kv.get(KV.bm25Index, VECTOR_META_KEY);';
 // ponytail: retries only this one boot read, 60 x 500 ms. Upgrade path: upstream retry in
