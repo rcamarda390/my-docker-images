@@ -10,8 +10,8 @@
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
 ARG UV_IMAGE=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a
-ARG HEADROOM_VERSION=0.42.0
-ARG HEADROOM_COMMIT=17d38e5699b7d7c69ac6addcd762f39e42dd7f00
+ARG HEADROOM_VERSION=0.44.0
+ARG HEADROOM_COMMIT=b21479e0fa84db5f3e46bb79f96c962de4d5fdc6
 ARG LITELLM_VERSION=1.103.10
 ARG PYTHON_VERSION=3.13
 ARG RUSTUP_VERSION=1.28.2
@@ -32,6 +32,7 @@ ARG HEADROOM_VERSION
 ARG LITELLM_VERSION
 ARG PYTHON_VERSION
 ARG RUSTUP_VERSION
+ARG BASELINE
 
 ENV CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup \
@@ -63,7 +64,7 @@ RUN set -eux; \
     rm /tmp/rustup-init
 
 WORKDIR /build
-COPY --from=source /src/pyproject.toml /src/uv.lock /src/README.md ./
+COPY --from=source /src/pyproject.toml /src/uv.lock /src/README-pypi.md /src/LICENSE /src/NOTICE ./
 COPY --from=source /src/Cargo.toml /src/Cargo.lock /src/rust-toolchain.toml ./
 COPY --from=source /src/crates/ crates/
 COPY --from=source /src/headroom/ headroom/
@@ -85,20 +86,25 @@ RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
 # CVE-2026-85670 (tokenizers <=0.23.2) is fixed in 0.23.3. transformers 5.13.1
 # (uv.lock) caps tokenizers at 0.23.0, so move to transformers 5.17.0, which
 # accepts 0.23.1+ and matches the Debian line. Both pins are asserted.
-RUN uv pip install --python /opt/venv/bin/python \
+RUN if [ "$BASELINE" != "true" ]; then \
+      uv pip install --python /opt/venv/bin/python \
       --upgrade-package tokenizers --upgrade-package transformers \
       "tokenizers==0.23.3" "transformers==5.17.0" \
     && /opt/venv/bin/python -c \
       "import importlib.metadata as m; assert m.version('tokenizers') == '0.23.3'; assert m.version('transformers') == '5.17.0'" \
-    && uv pip check --python /opt/venv/bin/python
+    && uv pip check --python /opt/venv/bin/python; \
+    fi
 
 # CVE-2026-75104 (transformers, all versions): no upstream fix exists, so carry
 # the checkpoint shard path guard. The patch asserts its anchor and fails the
 # build if transformers changes.
 COPY patch-transformers-shards.py /tmp/
-RUN PATH="/opt/venv/bin:${PATH}" python /tmp/patch-transformers-shards.py \
-    && PATH="/opt/venv/bin:${PATH}" python -c \
-      "import pathlib, transformers.utils.hub as h; assert 'downstream CVE-2026-75104 guard' in pathlib.Path(h.__file__).read_text()"
+RUN if [ "$BASELINE" != "true" ]; then \
+      export PATH="/opt/venv/bin:${PATH}"; \
+      python /tmp/patch-transformers-shards.py \
+      && python -c \
+        "import pathlib, transformers.utils.hub as h; assert 'downstream CVE-2026-75104 guard' in pathlib.Path(h.__file__).read_text()"; \
+    fi
 
 # ---------------------------------------------------------------------------
 # Downstream carry: Cline's OpenAI-compatible transport to AWS Bedrock.
@@ -208,38 +214,41 @@ ENV HEADROOM_HOST=0.0.0.0 \
     HEADROOM_SKIP_UPSTREAM_CHECK=1 \
     HEADROOM_OUTPUT_SHAPER=1
 
-# Same apk world pins as litellm: the Wolfi base is r6 and carries the three
-# glibc CVEs that r8 fixes. The version check fails the build below r8.
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache --upgrade \
-        'glibc-2.44>=2.44-r8' \
-        'ld-linux-2.44>=2.44-r8' \
-        'glibc-2.44-locale-posix>=2.44-r8' \
-        'libcrypt1-2.44>=2.44-r8' \
-        'ca-certificates-bundle>=20260909-r3' \
-        'zlib>=1.3.2.1_rc20260601-r0' \
     && apk add --no-cache python-3.13 \
     && adduser -D -u 10001 headroom \
     && mkdir -p /home/headroom/.headroom \
     && chown -R headroom:headroom /home/headroom
 
+# Keep the previous Wolfi security floors available outside baseline builds.
+# glibc CVEs require r8, CVE-2026-111943 requires ca-certificates 20260909-r3,
+# and CVE-2026-85091 requires zlib 1.3.2.1_rc20260601-r0.
 RUN set -eu; \
-    for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+    if [ "$BASELINE" != "true" ]; then \
+      apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r8' \
+        'ld-linux-2.44>=2.44-r8' \
+        'glibc-2.44-locale-posix>=2.44-r8' \
+        'libcrypt1-2.44>=2.44-r8' \
+        'ca-certificates-bundle>=20260909-r3' \
+        'zlib>=1.3.2.1_rc20260601-r0'; \
+    fi
+
+RUN set -eu; \
+    if [ "$BASELINE" != "true" ]; then \
+      check_apk_floor() { \
+        package="$1"; floor="$2"; \
         installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
         test -n "$installed"; \
-        test "$(apk version -t "$installed" 2.44-r8)" != '<'; \
+        test "$(apk version -t "$installed" "$floor")" != '<'; \
         printf '%s=%s\n' "$package" "$installed"; \
-    done
-# Trivy HIGH CVE-2026-111943 is fixed in 20260909-r3; fail the build below it.
-RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "ca-certificates-bundle" {print $2}' /lib/apk/db/installed) \
-    && test -n "$installed" \
-    && test "$(apk version -t "$installed" 20260909-r3)" != '<' \
-    && printf 'ca-certificates-bundle=%s\n' "$installed"
-# CVE-2026-85091 zlib is fixed in 1.3.2.1_rc20260601-r0; fail the build below it.
-RUN installed=$(awk -F: '$1 == "P" {p=$2} $1 == "V" && p == "zlib" {print $2}' /lib/apk/db/installed) \
-    && test -n "$installed" \
-    && test "$(apk version -t "$installed" 1.3.2.1_rc20260601-r0)" != '<' \
-    && printf 'zlib=%s\n' "$installed"
+      }; \
+      for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        check_apk_floor "$package" 2.44-r8; \
+      done; \
+      check_apk_floor ca-certificates-bundle 20260909-r3; \
+      check_apk_floor zlib 1.3.2.1_rc20260601-r0; \
+    fi
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /opt/headroom-cache /opt/headroom-cache
