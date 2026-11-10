@@ -26,8 +26,9 @@ ARG GO_VERSION=1.27.3
 #   andybalholm/brotli      CVE-2026-111497 (9.8, CWE-252), fixed in v1.2.7
 #   otel/sdk v1.45.0        XRAY-1149943 (5.3, CWE-135), fixed in v1.47.0;
 #                           the rest of the otel modules follow the sdk
-#   go-jose/v4 v4.1.4       XRAY-1110429 (7.5, CWE-407); fixed in v4.1.6
-#                           (indirect upstream)
+#   pgx/v5 v5.9.2           XRAY-1152420/1152418; fixed in v5.12.0
+#   go-jose/v4 v4.1.6       XRAY-1152119/1152117/1152115/1152118/1152113;
+#                           fixed in v4.1.7, with follow-up fixes in v4.1.9
 #   pion/dtls/v3 v3.1.9     XRAY-1147061/1147051/1147049/1147063/1147062/
 #                           1147064 (9.1 CWE-347, 9.1/7.4 CWE-287, N/A
 #                           CWE-400/770); fixed in v3.1.13 and v3.1.14
@@ -46,7 +47,8 @@ ARG GO_OTEL_SDK_VERSION=v1.47.0
 # upstream replacement until Bifrost drops it.
 ARG GO_MCP_GO_VERSION=v1.5.0
 ARG BIFROST_MCP_GO_REPLACE_VERSION=v0.0.0-20261102181017-b7da3bc145a1
-ARG GO_JOSE_VERSION=v4.1.6
+ARG GO_JOSE_VERSION=v4.1.9
+ARG GO_PGX_VERSION=v5.12.0
 ARG GO_DTLS_VERSION=v3.1.14
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
@@ -95,6 +97,7 @@ ARG GO_BROTLI_VERSION
 ARG GO_OTEL_SDK_VERSION
 ARG GO_MCP_GO_VERSION
 ARG GO_JOSE_VERSION
+ARG GO_PGX_VERSION
 ARG GO_DTLS_VERSION
 ARG BIFROST_MCP_GO_REPLACE_VERSION
 RUN set -eu; \
@@ -105,6 +108,7 @@ RUN set -eu; \
       "golang.org/x/net@${GO_NET_VERSION}" \
       "github.com/andybalholm/brotli@${GO_BROTLI_VERSION}" \
       "go.opentelemetry.io/otel/sdk@${GO_OTEL_SDK_VERSION}" \
+      "github.com/jackc/pgx/v5@${GO_PGX_VERSION}" \
       "github.com/go-jose/go-jose/v4@${GO_JOSE_VERSION}" \
       "github.com/pion/dtls/v3@${GO_DTLS_VERSION}" \
       ; \
@@ -113,6 +117,7 @@ RUN set -eu; \
       "golang.org/x/net=${GO_NET_VERSION}" \
       "github.com/andybalholm/brotli=${GO_BROTLI_VERSION}" \
       "go.opentelemetry.io/otel/sdk=${GO_OTEL_SDK_VERSION}" \
+      "github.com/jackc/pgx/v5=${GO_PGX_VERSION}" \
       "github.com/go-jose/go-jose/v4=${GO_JOSE_VERSION}" \
       "github.com/pion/dtls/v3=${GO_DTLS_VERSION}" \
       "github.com/mark3labs/mcp-go=${GO_MCP_GO_VERSION}"; \
@@ -157,6 +162,9 @@ RUN set -eu; \
       /tmp/binary-build-info; \
     awk -v expected="$GO_OTEL_SDK_VERSION" \
       '$1 == "dep" && $2 == "go.opentelemetry.io/otel/sdk" { found = ($3 == expected) } END { exit !found }' \
+      /tmp/binary-build-info; \
+    awk -v expected="$GO_PGX_VERSION" \
+      '$1 == "dep" && $2 == "github.com/jackc/pgx/v5" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
     awk -v expected="$GO_JOSE_VERSION" \
       '$1 == "dep" && $2 == "github.com/go-jose/go-jose/v4" { found = ($3 == expected) } END { exit !found }' \
