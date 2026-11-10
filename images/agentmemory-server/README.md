@@ -4,10 +4,10 @@ This image intentionally follows the upstream `rohitg00/agentmemory` deployment 
 
 ## Upstream components
 
-- AgentMemory: `0.9.32`
-- iii engine: `0.25.0`
-- iii SDK: `0.25.0`
-- Runtime base: `node:26-slim`
+- AgentMemory: `0.9.33`
+- iii engine: `0.25.1`
+- iii SDK: `0.25.1`
+- Runtime base: Wolfi with Node.js 26
 - Local embedding runtime: `@huggingface/transformers` `4.2.0`
 - Local embedding model: `Xenova/all-MiniLM-L6-v2` (`q8`, 384 dimensions)
 - Published architecture: `linux/amd64` (the RHEL EC2 deployment target)
@@ -37,13 +37,13 @@ versioned tag reported in the Actions summary before using `docker-compose.yml`
 or the validation command below. The compose file requires this value instead
 of assuming a tag has already been published.
 
-The first build of a new upstream version is published as `UPSTREAM_VERSION-v1`; subsequent security or packaging revisions increment the `vN` suffix without changing the upstream version.
+The first build of a new upstream version is published as `UPSTREAM_VERSION-wolfi-v1`; subsequent security or packaging revisions increment the `vN` suffix without changing the upstream version.
 
 ## Runtime data
 
 Persist `/data` for AgentMemory state and the generated HMAC secret. Port `3111` exposes the AgentMemory HTTP service and health endpoint. The image starts with graph extraction, consolidation, auto-compression, and context injection disabled; enable graph extraction and consolidation only after the Headroom path is validated.
 
-## Upgrade to 0.9.32
+## Upgrade to 0.9.33
 
 Back up the persistent `/data` volume before the first start. AgentMemory runs
 one-time data migrations; test rollback against the backup rather than assuming
@@ -62,10 +62,14 @@ an API key by itself no longer enables them. Cloud embeddings require an explici
 Check deployment environment variables before upgrading, especially if hooks use a remote
 AgentMemory URL or PreCompact injection is expected.
 
-The compatible iii engine and SDK are both 0.25.0. OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
+AgentMemory 0.9.33 pairs iii engine and SDK 0.25.1 with the baked state
+0.22.22 and HTTP 0.22.8 workers. Use `?limit=N` to page `/memories` and
+`/relations` responses that exceed the iii transport limit.
+
+OpenTelemetry still enters through @iii-dev/helpers; its Resource and log
 processor APIs are adapted for the coordinated 2.9.0 / 0.220.0 security pins.
 The generated-output array bound remains necessary and is regression-tested
-against the installed 0.9.32 entry bundle.
+against the installed 0.9.33 entry bundle.
 
 ## Worker environment and restarts (0.9.31)
 
