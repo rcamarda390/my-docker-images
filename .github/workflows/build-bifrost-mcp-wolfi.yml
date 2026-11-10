@@ -2,10 +2,14 @@ name: Build and publish Bifrost MCP image
 run-name: Bifrost MCP Wolfi — ${{ github.event_name }} — ${{ github.ref_name }}
 
 # Wolfi line, the only bifrost-mcp publish workflow (Alpine caller removed). Publishes
-# <version>-wolfi-v<revision> using the revision in image.wolfi.yaml. No push
-# trigger: a fixed revision must never be re-published by an unrelated change.
+# <version>-wolfi-v<revision>, deriving revisions from published tags. Only a
+# main-branch release manifest change or manual dispatch can trigger publication.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "images/bifrost-mcp/image.wolfi.yaml"
   pull_request:
     paths:
       - "images/bifrost-mcp/Dockerfile.wolfi"
@@ -48,5 +52,5 @@ jobs:
       tag_suffix: wolfi
       revision_from_published_tag_count: true
       # Branch dispatches validate the candidate without consuming or publishing
-      # an immutable tag. Only a reviewed main-branch dispatch may publish.
+      # an immutable tag. Publication is restricted to main.
       publish: ${{ github.ref == 'refs/heads/main' }}
