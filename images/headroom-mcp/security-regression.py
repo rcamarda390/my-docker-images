@@ -18,14 +18,23 @@ import tokenizers
 from tokenizers import Tokenizer, models
 from transformers.utils.hub import get_checkpoint_shard_files
 
-for name, expected in {
-    "litellm": "1.103.10", "PyJWT": "2.15.1", "mcp": "1.30.0",
-    "fsspec": "2026.6.0", "multidict": "6.9.1", "aiohttp": "3.14.5",
-    "tokenizers": "0.23.2+rcamarda1", "transformers": "5.17.0",
-}.items():
+mode = sys.argv[1]
+if mode == "wolfi":
+    expected_versions = {
+        "pydantic": "2.14.2", "pydantic-core": "2.50.2",
+        "tokenizers": "0.23.3+rcamarda1", "transformers": "5.17.0",
+    }
+else:
+    expected_versions = {
+        "litellm": "1.103.10", "PyJWT": "2.15.1", "mcp": "1.30.0",
+        "fsspec": "2026.6.0", "multidict": "6.9.1", "aiohttp": "3.14.5",
+        "tokenizers": "0.23.2+rcamarda1", "transformers": "5.17.0",
+    }
+for name, expected in expected_versions.items():
     assert version(name) == expected, (name, version(name))
 
-assert tokenizers.__version__ == "0.23.2+rcamarda1", tokenizers.__version__
+assert tokenizers.__version__ == expected_versions["tokenizers"], tokenizers.__version__
+print("Headroom Python package versions:", expected_versions)
 
 # PanicException derives from BaseException: catching Exception deliberately
 # rejects the original Rust panic while accepting the ordinary OOV error.
@@ -66,6 +75,11 @@ with tempfile.TemporaryDirectory() as directory:
     files, metadata = get_checkpoint_shard_files(str(root), str(index), local_files_only=True)
     assert files == [str(root / "nested" / "weights.safetensors")], files
     assert metadata["all_checkpoint_keys"] == ["weight"]
+
+if mode == "wolfi":
+    print("Headroom tokenizer and checkpoint path regressions passed")
+    sys.exit(0)
+
 
 async def verify_aiohttp():
     from aiohttp import ClientSession, ClientTimeout, web
@@ -133,7 +147,7 @@ assert pointer and pointer % 32 == 0
 release(pointer, 32)
 print("CVE-2026-95619: oversized allocations rejected; ordinary allocation passed")
 
-if sys.argv[1] == "runtime":
+if mode == "runtime":
     asyncio.run(verify_aiohttp())
     asyncio.run(verify_mcp())
     assert importlib.util.find_spec("_uuid") is None
