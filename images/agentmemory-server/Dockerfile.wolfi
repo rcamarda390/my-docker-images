@@ -1,20 +1,20 @@
 # syntax=docker/dockerfile:1.7
 
-# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.32 + iii 0.25.0). Stock
+# Wolfi pilot for agentmemory-mcp (AgentMemory 0.9.33 + iii 0.25.1). Stock
 # Wolfi base with the same npm overrides, iii engine, offline model and runtime
 # checks as the Debian line. No glibc, coreutils, dash, native or PCRE2 rebuilds
 # and no package removals, so the scan shows what the Wolfi base ships with the
-# release. The iii registry workers are baked at build time because 0.25.0
+# release. The iii registry workers are baked at build time because 0.25.1
 # Worker Compose otherwise fetches them from api.workers.iii.dev at startup.
 # Not a deployable build until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG III_VERSION=0.25.0
-ARG III_SDK_VERSION=0.25.0
-ARG AGENTMEMORY_VERSION=0.9.32
+ARG III_VERSION=0.25.1
+ARG III_SDK_VERSION=0.25.1
+ARG AGENTMEMORY_VERSION=0.9.33
 ARG AGENTMEMORY_IMAGE_VERSION=v1
-ARG STATE_VERSION=0.22.20
-ARG HTTP_VERSION=0.22.7
+ARG STATE_VERSION=0.22.22
+ARG HTTP_VERSION=0.22.8
 ARG TRANSFORMERS_VERSION=4.2.0
 ARG TRANSFORMERS_MODEL_REVISION=751bff37182d3f1213fa05d7196b954e230abad9
 ARG TRANSFORMERS_MODEL_ID=Xenova/all-MiniLM-L6-v2
