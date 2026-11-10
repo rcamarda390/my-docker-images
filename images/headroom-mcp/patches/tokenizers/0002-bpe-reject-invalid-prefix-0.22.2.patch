@@ -1,0 +1,16 @@
+# CVE-2026-85670: tokenizers 0.22.2 has no scratch merge buffer, but the
+# unchecked byte slice still panics for short or invalid UTF-8 prefixes.
+--- a/tokenizers/src/models/bpe/model.rs
++++ b/tokenizers/src/models/bpe/model.rs
+@@ -183,7 +183,10 @@
+                 let b_id = vocab
+                     .get(&b)
+                     .ok_or_else(|| Error::MergeTokenOutOfVocabulary(b.to_owned()))?;
+-                let new_token = format!("{}{}", a, &b[prefix_len..]);
++                let b_suffix = b
++                    .get(prefix_len..)
++                    .ok_or_else(|| Error::MergeTokenOutOfVocabulary(b.to_owned()))?;
++                let new_token = format!("{a}{b_suffix}");
+                 let new_id = vocab
+                     .get(&new_token)
+                     .ok_or(Error::MergeTokenOutOfVocabulary(new_token))?;
