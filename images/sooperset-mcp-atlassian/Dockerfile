@@ -100,6 +100,10 @@ FROM alpine:${ALPINE_VERSION}
 ARG PYTHON_APK_VERSION
 ARG EXPAT_MIN_VERSION
 ARG MCP_VERSION
+ARG AUTHLIB_VERSION
+ARG CERTIFI_VERSION
+ARG DNSPYTHON_VERSION
+ARG JOSERFC_VERSION
 ARG OAUTHLIB_VERSION
 ARG CRYPTOGRAPHY_VERSION
 ARG PYJWT_VERSION
@@ -143,7 +147,7 @@ RUN apk info -e "python3=${PYTHON_APK_VERSION}" \
     && /app/.venv/bin/python -c "import ssl, pyexpat; assert tuple(map(int, pyexpat.EXPAT_VERSION.removeprefix('expat_').split('.'))) >= (2,8,5), pyexpat.EXPAT_VERSION; assert pyexpat.ParserCreate().Parse('<root/>', True) == 1" \
     && python3 -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
     && /app/.venv/bin/python -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && /app/.venv/bin/python -c "import importlib.util, pathlib, sqlite3; from importlib.metadata import distributions; from packaging.version import Version; assert importlib.util.find_spec('pip') is None, importlib.util.find_spec('pip'); assert importlib.util.find_spec('setuptools') is None, importlib.util.find_spec('setuptools'); roots=(pathlib.Path('/app/.venv'), pathlib.Path('/usr/lib')); forbidden=[str(path) for root in roots for path in root.rglob('*') if path.is_file() and ('/pip/_vendor/' in str(path) or '/ensurepip/_bundled/' in str(path))]; assert not forbidden, forbidden[:20]; packages={d.metadata['Name'].lower(): d.version for d in distributions() if d.metadata.get('Name')}; assert sqlite3.sqlite_version_info >= (3,53,4), sqlite3.sqlite_version; assert 'msgpack' not in packages or Version(packages['msgpack']) >= Version('1.2.1'), packages.get('msgpack'); import mcp_atlassian; from mcp_atlassian import main; assert callable(main)" \
     && /app/.venv/bin/mcp-atlassian --help
 
