@@ -4,7 +4,11 @@ ARG ALPINE_VERSION=3.24
 ARG PYTHON_APK_VERSION=3.14.10-r1
 ARG EXPAT_MIN_VERSION=2.8.5-r0
 ARG MCP_VERSION=1.30.0
-ARG OAUTHLIB_VERSION=4.0.0
+ARG AUTHLIB_VERSION=1.9.5
+ARG CERTIFI_VERSION=2026.10.23
+ARG DNSPYTHON_VERSION=2.9.2
+ARG JOSERFC_VERSION=1.7.7
+ARG OAUTHLIB_VERSION=4.0.1
 
 # Exact application dependency versions already resolved in the hardened
 # uv.lock. These are promoted to explicit build inputs so the Docker build
@@ -25,6 +29,10 @@ FROM alpine:${ALPINE_VERSION} AS builder
 ARG PYTHON_APK_VERSION
 ARG EXPAT_MIN_VERSION
 ARG MCP_VERSION
+ARG AUTHLIB_VERSION
+ARG CERTIFI_VERSION
+ARG DNSPYTHON_VERSION
+ARG JOSERFC_VERSION
 ARG OAUTHLIB_VERSION
 ARG CRYPTOGRAPHY_VERSION
 ARG PYJWT_VERSION
@@ -80,7 +88,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Xray-remediated application dependency resolved to the exact intended version
 # before anything is copied into the runtime image.
 RUN /app/.venv/bin/python -c "import platform; assert platform.python_version() == '${PYTHON_APK_VERSION%-r*}', platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && find /app/.venv -name '__pycache__' -type d -exec rm -rf {} + \
     && find /app/.venv -name '*.pyc' -delete \
     && find /app/.venv -name '*.pyo' -delete \
@@ -125,7 +133,7 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 # Verify the final artifact, not merely the builder inputs. Xray should see the
-# APK package record for Python 3.14.8-r0, while the runtime check proves the
+# APK package record for the selected Alpine Python package, while the runtime check proves the
 # venv uses that same interpreter and retains every fixed dependency version.
 RUN apk info -e "python3=${PYTHON_APK_VERSION}" \
         "libexpat>=${EXPAT_MIN_VERSION}" \
