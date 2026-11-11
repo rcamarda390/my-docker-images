@@ -205,14 +205,14 @@ class ConfluencePage(ApiModel, TimestampMixin):
             created = history.get("createdDate", EMPTY_STRING)
             updated = history.get("lastUpdated", {}).get("when", EMPTY_STRING)
 
-            # Fall back to version date if no history is available
-            if not updated and version and version.when:
-                updated = version.when
-
             # Fall back to history.createdBy if no top-level author
             if not author:
                 if created_by := history.get("createdBy"):
                     author = ConfluenceUser.from_api_response(created_by)
+
+        # Fall back to the version date when history has no update timestamp
+        if not updated and version and version.when:
+            updated = version.when
 
         # Construct URL if base_url is provided
         url = None
@@ -285,6 +285,12 @@ class ConfluencePage(ApiModel, TimestampMixin):
         # Add version information if available
         if self.version:
             result["version"] = self.version.number
+            if self.version.by:
+                result["version_author"] = self.version.by.display_name
+            if self.version.when:
+                # Raw ISO 8601, unlike created/updated: the timezone offset is
+                # what makes this usable for activity tracking (see #1375)
+                result["version_date"] = self.version.when
 
         # Add attachments if available
         result["attachments"] = [
