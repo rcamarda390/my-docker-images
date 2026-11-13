@@ -68,6 +68,13 @@
       "report_id": "bifrost-mcp-wolfi-xray-20261110",
       "validation": "Correlated the binary layer to Wolfi v1, resolved the fixed modules on Go 1.27.3, reviewed the HTTP package closure, and ran the live Debian tracker (35 open, 2 resolved, 56 upstream-review entries). Exact-digest Xray validation pending.",
       "evidence": "images/bifrost-mcp/SECURITY-20261110.md"
+    },
+    {
+      "date": "2026-11-13",
+      "image": "sooperset-mcp-atlassian",
+      "report_id": "sooperset-mcp-atlassian-xray-20261113",
+      "validation": "Resolved compatible Python 3.14 dependencies, tested candidate Markdown patches through Confluence rendering, and ran the live Debian tracker check. Exact-digest Xray validation pending.",
+      "evidence": "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
     }
   ],
   "reports": [
@@ -3602,6 +3609,400 @@
           "severity": "HIGH",
           "installed_version": "1.3.2-r5",
           "fix_version": "1.3.2.1_rc20260601-r0"
+        }
+      ]
+    },
+    {
+      "id": "sooperset-mcp-atlassian-xray-20261113",
+      "image": "sooperset-mcp-atlassian",
+      "tag": "0.24.3-v2",
+      "digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+      "finding_count": 21,
+      "source": "User-supplied JFrog Xray CSV on 2026-11-13; scanned layer matched the Docker Hub linux/amd64 manifest for 0.24.3-v2",
+      "observations": [
+        {
+          "cve": "XRAY-1113557",
+          "xray_id": "XRAY-1113557",
+          "summary": "Remote code execution in FastMCP client when parsing a server-supplied tool output schema",
+          "component": "fastmcp",
+          "severity": "Critical",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-95"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "2.10.0 ≤ Version < 3.4.8,4.0.0a1 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2019-25781",
+          "xray_id": "XRAY-1153726",
+          "summary": "Python-Markdown 3.0 through 3.11.2 contains an algorithmic complexity vulnerability in inline link parsing that allows remote attackers to exhaust CPU through unmatched brackets. Attackers can submit short Markdown containing repeated [ or ![ characters, forcing LinkInlineProcessor.getText() and getLink() into quadratic scans that keep workers busy for minutes.",
+          "component": "Markdown",
+          "severity": "High",
+          "cvss": 7.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-407"
+          ],
+          "installed_version": "3.10.3",
+          "infected_range": "3.0 ≤ Version ≤ 3.11.2",
+          "fix_version": null,
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/markdown-3.10.3.dist-info/Markdown:3.10.3",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1116160",
+          "xray_id": "XRAY-1116160",
+          "summary": "Attacker-controlled regex in RegexSearchTransform can block a FastMCP worker",
+          "component": "fastmcp",
+          "severity": "High",
+          "cvss": 7.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.1.0 ≤ Version < 3.4.9,4.0.0a1 ≤ Version < 4.1.1",
+          "fix_version": "3.4.9,4.1.1",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113728",
+          "xray_id": "XRAY-1113728",
+          "summary": "Unknown JWT key IDs each trigger a JWKS fetch in JWTVerifier, amplifying unauthenticated traffic to the identity provider",
+          "component": "fastmcp",
+          "severity": "High",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "2.6.0 ≤ Version < 3.4.9,4.0.0a1 ≤ Version < 4.1.0",
+          "fix_version": "3.4.9,4.1.0",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113553",
+          "xray_id": "XRAY-1113553",
+          "summary": "Unbounded CIMD document cache and client store allow unauthenticated resource exhaustion in OAuthProxy",
+          "component": "fastmcp",
+          "severity": "High",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.0.0b2 ≤ Version < 3.4.8,4.0.0a1 ≤ Version < 4.0.0b4",
+          "fix_version": "3.4.8,4.0.0b4",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113349",
+          "xray_id": "XRAY-1113349",
+          "summary": "ToolInjectionMiddleware Bypasses Per-Tool Authorization",
+          "component": "fastmcp",
+          "severity": "High",
+          "cvss": 8.1,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
+          "cwe": [
+            "CWE-862"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.0.0b1 ≤ Version < 3.4.8,4.0.0a1 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113344",
+          "xray_id": "XRAY-1113344",
+          "summary": "Incomplete fix for CVE-2025-64340: command injection in claude-code/gemini-cli installers via unsanitized --with deps, entrypoint, and env (Windows)",
+          "component": "fastmcp",
+          "severity": "High",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-78"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "< 3.4.8,4.0.0 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1151256",
+          "xray_id": "XRAY-1151256",
+          "summary": "Validation bypass of aliased fields in TypedDict and dataclasses allowing extra data",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20"
+          ],
+          "installed_version": "2.13.4",
+          "infected_range": "2.0 ≤ Version < 2.14.2",
+          "fix_version": "2.14.2",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/pydantic-2.13.4.dist-info/pydantic:2.13.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1151242",
+          "xray_id": "XRAY-1151242",
+          "summary": "Validation bypass of extra data keys in JSON model validation",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20"
+          ],
+          "installed_version": "2.13.4",
+          "infected_range": "2.13.0 ≤ Version < 2.14.2",
+          "fix_version": "2.14.2",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/pydantic-2.13.4.dist-info/pydantic:2.13.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1151241",
+          "xray_id": "XRAY-1151241",
+          "summary": "Unbounded exponent in Fraction validation",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "2.13.4",
+          "infected_range": "2.10.0 ≤ Version < 2.14.0",
+          "fix_version": "2.14.0",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/pydantic-2.13.4.dist-info/pydantic:2.13.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1151240",
+          "xray_id": "XRAY-1151240",
+          "summary": "Quadratic time and memory multi-host URL validation",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-407"
+          ],
+          "installed_version": "2.13.4",
+          "infected_range": "< 2.14.0",
+          "fix_version": "2.14.0",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/pydantic-2.13.4.dist-info/pydantic:2.13.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-114603",
+          "xray_id": "XRAY-1144358",
+          "summary": "OpenTelemetry Python provides the Python API and SDK for OpenTelemetry. Prior to 1.45.1, the opentelemetry-api function TraceState.from_header in opentelemetry/trace/span.py, reached through TraceContextTextMapPropagator.extract, parses inbound W3C tracestate headers with an unbounded optional-whitespace regular expression. A malformed header containing a long run of spaces or tabs without a following comma causes quadratic backtracking before the member-count limit is applied. Services using the default W3C Trace Context propagator can therefore spend excessive CPU time on one unauthenticated request when the HTTP server, parser, gateway, or custom carrier accepts a sufficiently large header. The processing can occupy a synchronous worker or delay unrelated requests on the same asynchronous event loop. The impact is limited to availability and does not expose or modify telemetry data or allow code execution. This issue is fixed in version 1.45.1.",
+          "component": "opentelemetry-api",
+          "severity": "Medium",
+          "cvss": 5.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "installed_version": "1.44.0",
+          "infected_range": "≤ 1.45.0",
+          "fix_version": "1.45.1",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/opentelemetry_api-1.44.0.dist-info/opentelemetry-api:1.44.0",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1140597",
+          "xray_id": "XRAY-1140597",
+          "summary": "FastMCP: Post-transform component authorization is skipped on direct calls",
+          "component": "fastmcp-slim",
+          "severity": "Medium",
+          "cvss": 6.8,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N",
+          "cwe": [
+            "CWE-862"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.0.0 ≤ Version < 3.4.10,4.0.0 ≤ Version < 4.1.2",
+          "fix_version": "3.4.10,4.1.2",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp_slim-3.4.7.dist-info/fastmcp-slim:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1140597",
+          "xray_id": "XRAY-1140597",
+          "summary": "FastMCP: Post-transform component authorization is skipped on direct calls",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": 6.8,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N",
+          "cwe": [
+            "CWE-862"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.0.0 ≤ Version < 3.4.10,4.0.0 ≤ Version < 4.1.2",
+          "fix_version": "3.4.10,4.1.2",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113556",
+          "xray_id": "XRAY-1113556",
+          "summary": "OpenAPI path parameters set to `..` reach other backend routes (incomplete fix for CVE-2026-32871)",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-918"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "< 3.4.9,4.0.0 ≤ Version < 4.1.0",
+          "fix_version": "3.4.9,4.1.0",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113350",
+          "xray_id": "XRAY-1113350",
+          "summary": "OpenAPI components forward undeclared header, cookie, and query arguments, letting clients override configured upstream credentials",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20",
+            "CWE-639"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "< 3.4.8,4.0.0 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113348",
+          "xray_id": "XRAY-1113348",
+          "summary": "Sensitive Cookie header forwarded to third-party OpenAPI backends",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": 6.1,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:N/A:N",
+          "cwe": [
+            "CWE-200"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "2.5.0 ≤ Version < 3.4.8",
+          "fix_version": "3.4.8",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113347",
+          "xray_id": "XRAY-1113347",
+          "summary": "Hashed FastMCPApp tool calls bypass disable and allowlist visibility rules",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-863"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.2.0 ≤ Version < 3.4.8,4.0.0 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113346",
+          "xray_id": "XRAY-1113346",
+          "summary": "host_origin_protection is silently ignored on the SSE transport",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-346",
+            "CWE-693"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.4.3 ≤ Version < 3.4.8,4.0.0 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113345",
+          "xray_id": "XRAY-1113345",
+          "summary": "Component manager enable/disable routes skip the server auth provider when required_scopes is unset",
+          "component": "fastmcp",
+          "severity": "Medium",
+          "cvss": 6.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-306",
+            "CWE-1188"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "< 3.4.8,4.0.0 ≤ Version < 4.0.11",
+          "fix_version": "3.4.8,4.0.11",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1113559",
+          "xray_id": "XRAY-1113559",
+          "summary": "Skill providers read a symlinked SKILL.md that points outside its skill folder",
+          "component": "fastmcp",
+          "severity": "Low",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-59"
+          ],
+          "installed_version": "3.4.7",
+          "infected_range": "3.0.0b1 ≤ Version < 3.4.9,4.0.0b1 ≤ Version < 4.1.0",
+          "fix_version": "3.4.9,4.1.0",
+          "component_physical_path": "sha256__2fe16cdafc73d97193423c13318b6c7673fcdb3e195de6d9f13b3fe1157ddb12.tar.gz/app/.venv/lib/python3.14/site-packages/fastmcp-3.4.7.dist-info/fastmcp:3.4.7",
+          "applicability": "Not Covered"
         }
       ]
     }
@@ -8663,7 +9064,7 @@
       ],
       "reported_fix_version": "2.14.2",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-13",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-3r8g-cqwr-jr29",
       "official_fixed_version": "2.14.2",
       "patch_sha256": null,
@@ -8697,6 +9098,24 @@
           "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "0.44.0-wolfi-v2"
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "2.14.2",
+          "packages": [
+            "pydantic"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
@@ -8714,7 +9133,7 @@
       ],
       "reported_fix_version": "2.14.2",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-10-30",
+      "last_reviewed": "2026-11-13",
       "tracker_url": null,
       "official_fixed_version": "2.14.2",
       "patch_sha256": null,
@@ -8730,6 +9149,24 @@
           "scan_tag": "0.17.5-wolfi-v2",
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "2.14.2",
+          "packages": [
+            "pydantic"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
@@ -8747,7 +9184,7 @@
       ],
       "reported_fix_version": "2.14.0",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-13",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-gj4f-r7mf-jjxh",
       "official_fixed_version": "2.14.0",
       "patch_sha256": null,
@@ -8781,6 +9218,24 @@
           "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "0.44.0-wolfi-v2"
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "2.14.2",
+          "packages": [
+            "pydantic"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
@@ -8798,7 +9253,7 @@
       ],
       "reported_fix_version": "2.14.0",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-13",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-955g-x97g-8mcp",
       "official_fixed_version": "2.14.0",
       "patch_sha256": null,
@@ -8832,6 +9287,24 @@
           "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "0.44.0-wolfi-v2"
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "2.14.2",
+          "packages": [
+            "pydantic"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
@@ -9453,6 +9926,638 @@
           "latest_report_id": "bifrost-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "2.5.1-wolfi-v2"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113557",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-95"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "CVE-2019-25781",
+      "source_package": "markdown",
+      "suite": null,
+      "reported_packages": [
+        "markdown"
+      ],
+      "reported_score": 7.5,
+      "reported_cwe": [
+        "CWE-407"
+      ],
+      "reported_fix_version": null,
+      "reported_installed_version": "3.10.3",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://bugs.debian.org/1152830",
+      "official_fixed_version": null,
+      "patch_sha256": "bf8771ee5712b8894874aaf9aa115c34deb2c806c4c7a29c56f1276e480a686ae",
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "downstream-source-patch",
+          "fixed_version": null,
+          "packages": [
+            "markdown"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1116160",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": 7.5,
+      "reported_cwe": [
+        "CWE-1333"
+      ],
+      "reported_fix_version": "3.4.9,4.1.1",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.9",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113728",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-400",
+        "CWE-770"
+      ],
+      "reported_fix_version": "3.4.9,4.1.0",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.9",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113553",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-400",
+        "CWE-770"
+      ],
+      "reported_fix_version": "3.4.8,4.0.0b4",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113349",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": 8.1,
+      "reported_cwe": [
+        "CWE-862"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113344",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-78"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "CVE-2026-114603",
+      "source_package": "opentelemetry-api",
+      "suite": null,
+      "reported_packages": [
+        "opentelemetry-api"
+      ],
+      "reported_score": 5.3,
+      "reported_cwe": [
+        "CWE-400",
+        "CWE-1333"
+      ],
+      "reported_fix_version": "1.45.1",
+      "reported_installed_version": "1.44.0",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://github.com/open-telemetry/opentelemetry-python/security/advisories/GHSA-xcq7-p3pf-p88h",
+      "official_fixed_version": "1.45.1",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "1.45.1",
+          "packages": [
+            "opentelemetry-api"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1140597",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp-slim",
+        "fastmcp"
+      ],
+      "reported_score": 6.8,
+      "reported_cwe": [
+        "CWE-862"
+      ],
+      "reported_fix_version": "3.4.10,4.1.2",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp-slim/3.4.11/",
+      "official_fixed_version": "3.4.10",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp-slim",
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113556",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-918"
+      ],
+      "reported_fix_version": "3.4.9,4.1.0",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.9",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113350",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-20",
+        "CWE-639"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113348",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": 6.1,
+      "reported_cwe": [
+        "CWE-200"
+      ],
+      "reported_fix_version": "3.4.8",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113347",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-863"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113346",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-346",
+        "CWE-693"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113345",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": 6.5,
+      "reported_cwe": [
+        "CWE-306",
+        "CWE-1188"
+      ],
+      "reported_fix_version": "3.4.8,4.0.11",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.8",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
+        }
+      },
+      "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1113559",
+      "source_package": "fastmcp",
+      "suite": null,
+      "reported_packages": [
+        "fastmcp"
+      ],
+      "reported_score": null,
+      "reported_cwe": [
+        "CWE-59"
+      ],
+      "reported_fix_version": "3.4.9,4.1.0",
+      "reported_installed_version": "3.4.7",
+      "last_reviewed": "2026-11-13",
+      "tracker_url": "https://pypi.org/project/fastmcp/3.4.11/",
+      "official_fixed_version": "3.4.9",
+      "patch_sha256": null,
+      "images": {
+        "sooperset-mcp-atlassian": {
+          "treatment": "dependency-pin",
+          "fixed_version": "3.4.11",
+          "packages": [
+            "fastmcp"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile",
+            "images/sooperset-mcp-atlassian/uv.lock",
+            "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
+          "scan_url": null,
+          "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Verify an exact-digest Xray rescan."

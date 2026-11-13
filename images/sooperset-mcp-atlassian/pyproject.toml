@@ -3,7 +3,7 @@ name = "mcp-atlassian"
 dynamic = ["version"]
 description = "The Model Context Protocol (MCP) Atlassian integration is an open-source implementation that bridges Atlassian products (Jira and Confluence) with AI language models following Anthropic's MCP specification. This project enables secure, contextual AI interactions with Atlassian tools while maintaining data privacy and security. Key features include:"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "anyio>=4.0.0",
     "atlassian-python-api>=4.0.0,<5.0.0",
@@ -11,13 +11,13 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "httpx>=0.28.0",
     "mcp>=1.30.0,<2.0.0",
-    "fastmcp>=3.4.4,<4.0.0",
+    "fastmcp==3.4.11",
     "fakeredis>=2.32.1,<2.35.0",
     "python-dotenv>=1.0.1",
     "markdownify>=0.11.6",
-    "markdown>=3.7.0",
+    "markdown==3.11.3",
     "markdown-to-confluence>=0.6.0,<0.7.0",
-    "pydantic>=2.10.6,<3.0",
+    "pydantic==2.14.2",
     "trio>=0.29.0",
     "click>=8.1.7",
     "uvicorn>=0.27.1",
@@ -180,6 +180,7 @@ constraint-dependencies = [
     "dnspython>=2.9.2,<3.0.0; python_full_version >= '3.11'",
     "joserfc>=1.7.5,<1.8.0",
     "oauthlib>=4.0.1,<5.0.0",
+    "opentelemetry-api==1.45.1",
     "soupsieve==4.0.0; python_full_version >= '3.11.5'",
     "PyJWT>=2.15.0,<3.0.0",
 ]
