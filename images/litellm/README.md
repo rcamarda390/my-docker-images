@@ -1,6 +1,6 @@
 # LiteLLM AI Gateway
 
-Builds the exact published LiteLLM v1.106.0 Python distribution. The existing
+Builds the exact published LiteLLM v1.109.1 Python distribution. The existing
 CVE-2026-93355 JWT-email carry is revalidated against this release. MCP 2.x follows
 upstream requirements; previous security minimums remain enforced.
 
@@ -13,14 +13,14 @@ upstream `proxy-runtime` feature group that requires them.
 
 Published images use immutable tags:
 
-- `ghcr.io/rcamarda390/litellm:1.106.0-vN`
-- `docker.io/rcamarda390/litellm:1.106.0-vN`
+- `ghcr.io/rcamarda390/litellm:1.109.1-vN`
+- `docker.io/rcamarda390/litellm:1.109.1-vN`
 
 The manual `Build and publish LiteLLM image` workflow calculates the next
 revision from successfully published Docker Hub tags, smoke-tests the health
 endpoint, and blocks publication on HIGH/CRITICAL Trivy findings.
 
-LiteLLM 1.106.0 requires a master key at startup. Supply LITELLM_MASTER_KEY
+LiteLLM 1.109.1 requires a master key at startup. Supply LITELLM_MASTER_KEY
 through runtime secret management; the image never contains a default key.
 The CI health test uses a disposable run-specific key.
 
