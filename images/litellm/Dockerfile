@@ -47,6 +47,8 @@ RUN apk upgrade --available --no-cache \
         'ld-linux-2.44>=2.44-r8' \
         'glibc-2.44-locale-posix>=2.44-r8' \
         'libcrypt1-2.44>=2.44-r8' \
+        'zlib>=1.3.2.1_rc20260601-r0' \
+        'ca-certificates-bundle>=20260909-r3' \
     && apk add --no-cache ca-certificates libsndfile python3 \
     && adduser -D -u 10001 litellm
 
