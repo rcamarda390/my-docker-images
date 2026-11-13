@@ -26,8 +26,9 @@ FROM ${WOLFI_IMAGE} AS python-base
 
 # Share the installed interpreter and libraries between builder and runtime.
 RUN apk upgrade --available --no-cache \
-    && apk add --no-cache \
-        ca-certificates-bundle \
+    && apk add --no-cache --upgrade \
+        'ca-certificates-bundle>=20260909-r3' \
+        'zlib>=1.3.2.1_rc20260601-r0' \
         'glibc-2.44>=2.44-r8' \
         'ld-linux-2.44>=2.44-r8' \
         'glibc-2.44-locale-posix>=2.44-r8' \
@@ -125,7 +126,7 @@ COPY --from=builder --chown=app:app /app/.venv /app/.venv
 # Verify the final Wolfi image and preserve package provenance for scanners.
 RUN grep -qx 'ID=wolfi' /etc/os-release \
     && apk info -e python-3.14-runtime libexpat1 sqlite-libs \
-    && apk info -v python-3.14-runtime libexpat1 sqlite-libs \
+    && apk info -v python-3.14-runtime libexpat1 sqlite-libs ca-certificates-bundle zlib \
     && /app/.venv/bin/python -c "import ssl, pyexpat; assert tuple(map(int, pyexpat.EXPAT_VERSION.removeprefix('expat_').split('.'))) >= (2,8,5), pyexpat.EXPAT_VERSION; assert pyexpat.ParserCreate().Parse('<root/>', True) == 1" \
     && /app/.venv/bin/python -c "import platform; assert tuple(map(int, platform.python_version_tuple())) >= (3, 14, 10), platform.python_version()" \
     && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
