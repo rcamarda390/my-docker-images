@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-/app/github-mcp-server --version | grep -qF 'Version: v2.0.3'
+/app/github-mcp-server --version | grep -qF 'Version: v2.1.0'
 
 # Disposable token. MCP initialize does not call the GitHub API. The server
 # answers asynchronously and exits on stdin EOF, so hold stdin open for a few

@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
 # GitHub MCP Server on a stock Wolfi runtime, following the bifrost-mcp Wolfi
-# pattern. Upstream tag v2.0.3 is cloned and verified against its commit. The
+# pattern. Upstream tag v2.1.0 is cloned and verified against its commit. The
 # UI is built with the same Node/Go toolchain pins upstream uses. The runtime
 # stage has no package removals, so the scan shows what the Wolfi base ships.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG GITHUB_MCP_VERSION=2.0.3
-ARG GITHUB_MCP_COMMIT=b98d115bbb080e9555466a96656ec4df605aea21
+ARG GITHUB_MCP_VERSION=2.1.0
+ARG GITHUB_MCP_COMMIT=4bcdcdf8d7beee98c9448e73e257308280924cc4
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG GITHUB_MCP_VERSION
@@ -18,7 +18,7 @@ RUN apk upgrade --no-cache \
        https://github.com/github/github-mcp-server.git /src \
     && test "$(git -C /src rev-parse HEAD)" = "$GITHUB_MCP_COMMIT"
 
-# Same Node and Go image digests upstream's Dockerfile pins for v2.0.3.
+# Same Node and Go image digests upstream's Dockerfile pins for v2.1.0.
 FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS ui-build
 WORKDIR /app
 COPY --from=source /src/ui/package*.json ./ui/
@@ -31,10 +31,8 @@ FROM golang:1.27.3-alpine@sha256:f2c872bcee949b7be9c490efd02b48a8a2fbf947cdf533f
 ARG GITHUB_MCP_VERSION
 ARG GITHUB_MCP_COMMIT
 ARG GO_VERSION=1.27.3
-# Upstream v2.0.3 resolves golang.org/x/net v0.59.0. Trivy CVE-2026-78669
-# (HIGH, net/http2 SETTINGS DoS) is fixed in v0.60.0. Drop this pin once
-# upstream's go.mod requires v0.60.0 or newer.
-ARG GO_NET_VERSION=v0.60.0
+# Assert the upstream version, which includes the CVE-2026-78669 fix.
+ARG GO_NET_VERSION=v0.61.0
 WORKDIR /build
 # The digest selects the image, so confirm it carries the toolchain named here.
 RUN go version | grep -qwF "go${GO_VERSION}"
@@ -43,10 +41,7 @@ ENV CGO_ENABLED=0 \
     GOTOOLCHAIN=local
 COPY --from=source /src/ ./
 COPY --from=ui-build /app/pkg/github/ui_dist/ ./pkg/github/ui_dist/
-ARG GO_NET_VERSION
-RUN set -eu; \
-    go get "golang.org/x/net@${GO_NET_VERSION}"; \
-    test "$(go list -m -f '{{.Version}}' golang.org/x/net)" = "${GO_NET_VERSION}"
+RUN test "$(go list -m -f '{{.Version}}' golang.org/x/net)" = "${GO_NET_VERSION}"
 RUN go build \
       -ldflags="-s -w -X main.version=v${GITHUB_MCP_VERSION} -X main.commit=${GITHUB_MCP_COMMIT}" \
       -trimpath \
