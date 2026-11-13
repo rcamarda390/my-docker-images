@@ -3615,10 +3615,10 @@
     {
       "id": "sooperset-mcp-atlassian-xray-20261113",
       "image": "sooperset-mcp-atlassian",
-      "tag": null,
-      "digest": null,
+      "tag": "0.24.3-v2",
+      "digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
       "finding_count": 21,
-      "source": "User-supplied JFrog Xray CSV on 2026-11-13",
+      "source": "User-supplied JFrog Xray CSV on 2026-11-13; scanned layer matched the Docker Hub linux/amd64 manifest for 0.24.3-v2",
       "observations": [
         {
           "cve": "XRAY-1113557",
@@ -9111,8 +9111,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -9162,8 +9162,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -9231,8 +9231,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -9300,8 +9300,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -9960,8 +9960,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -9999,8 +9999,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10038,8 +10038,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10078,8 +10078,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10118,8 +10118,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10157,8 +10157,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10196,8 +10196,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10236,8 +10236,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10277,8 +10277,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10316,8 +10316,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10356,8 +10356,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10395,8 +10395,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10434,8 +10434,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10474,8 +10474,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10514,8 +10514,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
@@ -10553,8 +10553,8 @@
             "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
           ],
           "scan_status": "pending",
-          "scan_tag": null,
-          "scan_digest": null,
+          "scan_tag": "0.24.3-v2",
+          "scan_digest": "sha256:5ce85e58fed245eeba033884ee01d4a88ca3521a716538c59cb4025ece539c10",
           "scan_url": null,
           "latest_report_id": "sooperset-mcp-atlassian-xray-20261113",
           "scan_result": "reported"
