@@ -21,6 +21,10 @@ ARG PYMDOWN_EXTENSIONS_VERSION=11.0.2
 ARG PYDANTIC_SETTINGS_VERSION=2.15.0
 ARG PYTHON_DOTENV_VERSION=1.2.3
 ARG PYGMENTS_VERSION=2.21.0
+ARG FASTMCP_VERSION=3.4.11
+ARG PYDANTIC_VERSION=2.14.2
+ARG OPENTELEMETRY_API_VERSION=1.45.1
+ARG MARKDOWN_VERSION=3.11.3
 
 FROM ${WOLFI_IMAGE} AS python-base
 
@@ -57,6 +61,10 @@ ARG PYMDOWN_EXTENSIONS_VERSION
 ARG PYDANTIC_SETTINGS_VERSION
 ARG PYTHON_DOTENV_VERSION
 ARG PYGMENTS_VERSION
+ARG FASTMCP_VERSION
+ARG PYDANTIC_VERSION
+ARG OPENTELEMETRY_API_VERSION
+ARG MARKDOWN_VERSION
 
 # uv is copied as a standalone binary and is forbidden from downloading or
 # substituting another interpreter.
@@ -76,6 +84,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     uv sync --frozen --extra wpad --no-install-project --no-dev --no-editable
 
+# Apply downstream Python-Markdown fixes in the builder only.
+RUN apk add --no-cache patch
+
 COPY . /app
 RUN if [ -n "$VERSION" ] && echo "$VERSION" | grep -qE '^[0-9]'; then \
       sed -i "s/fallback-version = \"0.0.0\"/fallback-version = \"$VERSION\"/" pyproject.toml; \
@@ -84,11 +95,18 @@ RUN if [ -n "$VERSION" ] && echo "$VERSION" | grep -qE '^[0-9]'; then \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --extra wpad --no-dev --no-editable
 
+# Apply to the locked wheel after the final sync. Any source mismatch fails the build.
+RUN cd /app/patches \
+    && sha256sum -c SHA256SUMS \
+    && site_packages=$(/app/.venv/bin/python -c 'import sysconfig; print(sysconfig.get_path("purelib"))') \
+    && patch --batch --forward --fuzz=0 -d "$site_packages" -p1 < markdown-1680.patch \
+    && patch --batch --forward --fuzz=0 -d "$site_packages" -p1 < markdown-1664.patch
+
 # Bifrost-style fail-closed version assertions: prove the interpreter and each
 # Xray-remediated application dependency resolved to the exact intended version
 # before anything is copied into the runtime image.
 RUN /app/.venv/bin/python -c "import platform; assert tuple(map(int, platform.python_version_tuple())) >= (3, 14, 10), platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}','fastmcp':'${FASTMCP_VERSION}','fastmcp-slim':'${FASTMCP_VERSION}','pydantic':'${PYDANTIC_VERSION}','opentelemetry-api':'${OPENTELEMETRY_API_VERSION}','Markdown':'${MARKDOWN_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && find /app/.venv -name '__pycache__' -type d -exec rm -rf {} + \
     && find /app/.venv -name '*.pyc' -delete \
     && find /app/.venv -name '*.pyo' -delete \
@@ -113,6 +131,10 @@ ARG PYMDOWN_EXTENSIONS_VERSION
 ARG PYDANTIC_SETTINGS_VERSION
 ARG PYTHON_DOTENV_VERSION
 ARG PYGMENTS_VERSION
+ARG FASTMCP_VERSION
+ARG PYDANTIC_VERSION
+ARG OPENTELEMETRY_API_VERSION
+ARG MARKDOWN_VERSION
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -129,10 +151,13 @@ RUN grep -qx 'ID=wolfi' /etc/os-release \
     && apk info -v python-3.14-runtime libexpat1 sqlite-libs ca-certificates-bundle zlib \
     && /app/.venv/bin/python -c "import ssl, pyexpat; assert tuple(map(int, pyexpat.EXPAT_VERSION.removeprefix('expat_').split('.'))) >= (2,8,5), pyexpat.EXPAT_VERSION; assert pyexpat.ParserCreate().Parse('<root/>', True) == 1" \
     && /app/.venv/bin/python -c "import platform; assert tuple(map(int, platform.python_version_tuple())) >= (3, 14, 10), platform.python_version()" \
-    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
+    && /app/.venv/bin/python -c "from importlib.metadata import version; expected={'mcp':'${MCP_VERSION}','Authlib':'${AUTHLIB_VERSION}','certifi':'${CERTIFI_VERSION}','dnspython':'${DNSPYTHON_VERSION}','joserfc':'${JOSERFC_VERSION}','oauthlib':'${OAUTHLIB_VERSION}','cryptography':'${CRYPTOGRAPHY_VERSION}','PyJWT':'${PYJWT_VERSION}','urllib3':'${URLLIB3_VERSION}','click':'${CLICK_VERSION}','idna':'${IDNA_VERSION}','soupsieve':'${SOUPSIEVE_VERSION}','pymdown-extensions':'${PYMDOWN_EXTENSIONS_VERSION}','pydantic-settings':'${PYDANTIC_SETTINGS_VERSION}','python-dotenv':'${PYTHON_DOTENV_VERSION}','Pygments':'${PYGMENTS_VERSION}','fastmcp':'${FASTMCP_VERSION}','fastmcp-slim':'${FASTMCP_VERSION}','pydantic':'${PYDANTIC_VERSION}','opentelemetry-api':'${OPENTELEMETRY_API_VERSION}','Markdown':'${MARKDOWN_VERSION}'}; actual={name:version(name) for name in expected}; assert actual == expected, (actual, expected); print('remediated:', actual)" \
     && /app/.venv/bin/python -c "import importlib.util, pathlib, sqlite3; from importlib.metadata import distributions; from packaging.version import Version; assert importlib.util.find_spec('pip') is None, importlib.util.find_spec('pip'); assert importlib.util.find_spec('setuptools') is None, importlib.util.find_spec('setuptools'); roots=(pathlib.Path('/app/.venv'), pathlib.Path('/usr/lib')); forbidden=[str(path) for root in roots for path in root.rglob('*') if path.is_file() and ('/pip/_vendor/' in str(path) or '/ensurepip/_bundled/' in str(path))]; assert not forbidden, forbidden[:20]; packages={d.metadata['Name'].lower(): d.version for d in distributions() if d.metadata.get('Name')}; assert sqlite3.sqlite_version_info >= (3,53,4), sqlite3.sqlite_version; assert 'msgpack' not in packages or Version(packages['msgpack']) >= Version('1.2.1'), packages.get('msgpack'); import mcp_atlassian; from mcp_atlassian import main; assert callable(main)" \
     && /app/.venv/bin/mcp-atlassian --help
 
 USER app
+
+RUN --mount=type=bind,source=verify-markdown.py,target=/tmp/verify-markdown.py \
+    /app/.venv/bin/python /tmp/verify-markdown.py
 
 ENTRYPOINT ["/app/.venv/bin/mcp-atlassian"]
