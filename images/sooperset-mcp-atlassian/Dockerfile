@@ -138,6 +138,7 @@ ARG MARKDOWN_VERSION
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    FASTMCP_CHECK_FOR_UPDATES=off \
     PATH="/app/.venv/bin:$PATH"
 
 RUN adduser -D -h /home/app -s /bin/sh app
