@@ -3573,6 +3573,37 @@
           "applicability": "Not Covered"
         }
       ]
+    },
+    {
+      "id": "sooperset-mcp-atlassian-wolfi-trivy-20261113",
+      "image": "sooperset-mcp-atlassian",
+      "tag": null,
+      "digest": null,
+      "finding_count": 3,
+      "source": "Blocking Trivy scan of unpublished Wolfi candidate on PR #153: https://github.com/rcamarda390/my-docker-images/actions/runs/43462989240",
+      "observations": [
+        {
+          "cve": "CVE-2026-91403",
+          "component": "ca-certificates-bundle",
+          "severity": "CRITICAL",
+          "installed_version": "20260611-r1",
+          "fix_version": "20260909-r3"
+        },
+        {
+          "cve": "CVE-2026-111943",
+          "component": "ca-certificates-bundle",
+          "severity": "HIGH",
+          "installed_version": "20260611-r1",
+          "fix_version": "20260909-r3"
+        },
+        {
+          "cve": "CVE-2026-85091",
+          "component": "zlib",
+          "severity": "HIGH",
+          "installed_version": "1.3.2-r5",
+          "fix_version": "1.3.2.1_rc20260601-r0"
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -4419,6 +4450,21 @@
           "scan_tag": "2.3.2-wolfi-v2",
           "scan_digest": null,
           "scan_url": null
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "package-pin",
+          "fixed_version": "1.3.2.1_rc20260601-r0",
+          "packages": [
+            "zlib"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_digest": null,
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/43462989240",
+          "latest_report_id": "sooperset-mcp-atlassian-wolfi-trivy-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Verify final package/library and runtime; rescan exact immutable digest. Keep carry until official release covers all hunks. Not in Xray report of 0.41.0-v3 (sha256:650e062a...bb12); cleared for headroom-mcp only. Wolfi 0.42.0-wolfi-v2: Runtime apk pin zlib>=1.3.2.1_rc20260601-r0 with build-time version assert. Exact-digest Xray rescan of wolfi-v2 pending. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending. Bifrost Wolfi v2 also pins this (2.3.2-wolfi-v2); scan of that digest pending.",
@@ -8451,6 +8497,21 @@
           "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "0.44.0-wolfi-v2"
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "package-pin",
+          "fixed_version": "20260909-r3",
+          "packages": [
+            "ca-certificates-bundle"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_digest": null,
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/43462989240",
+          "latest_report_id": "sooperset-mcp-atlassian-wolfi-trivy-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Trivy on PR #122 build (run 40912669923) reported ca-certificates-bundle 20260611-r1 (fixed 20260909-r3). Pinned minimum in Dockerfile.wolfi; rescan pending. Trivy gobinary scan of app/main was clean. Gnosis Wolfi: Xray supplied no fix version; applied the 20260909-r3 floor from the Trivy report (apk constraint + build assertion) in 0.17.5-wolfi-v4. Repo availability not verified from this session (packages.wolfi.dev blocked); build fails if unavailable. Scan pending.",
@@ -9090,6 +9151,21 @@
           "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
           "scan_result": "reported",
           "remediation_tag": "0.44.0-wolfi-v2"
+        },
+        "sooperset-mcp-atlassian": {
+          "treatment": "package-pin",
+          "fixed_version": "20260909-r3",
+          "packages": [
+            "ca-certificates-bundle"
+          ],
+          "evidence": [
+            "images/sooperset-mcp-atlassian/Dockerfile"
+          ],
+          "scan_status": "pending",
+          "scan_digest": null,
+          "scan_url": "https://github.com/rcamarda390/my-docker-images/actions/runs/43462989240",
+          "latest_report_id": "sooperset-mcp-atlassian-wolfi-trivy-20261113",
+          "scan_result": "reported"
         }
       },
       "remaining": "Wolfi vendor fix is 20260909-r3. Check the replacement image with Xray before recording clearance.",
