@@ -28,13 +28,14 @@ RUN set -eux; \
     test "$(git rev-parse HEAD)" = "${EBAY_MCP_COMMIT}"; \
     test "$(node -p "require('./package.json').version")" = "${EBAY_PACKAGE_VERSION}"
 
-# Install the upstream lockfile, which includes the patched dependencies.
-RUN pnpm install --frozen-lockfile --ignore-scripts \
+# Keep the upstream lock selections and raise vulnerable Express 5 body-parser.
+RUN node -e "const fs=require('fs'); const p=require('./package.json'); p.pnpm=p.pnpm||{}; p.pnpm.overrides={...(p.pnpm.overrides||{}),'body-parser@2':'2.4.0'}; fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\\n')" \
+    && pnpm install --no-frozen-lockfile --ignore-scripts \
     && pnpm run build \
     && pnpm prune --prod --ignore-scripts
 
 # Verify every physical pnpm runtime copy, including transitive dependencies.
-RUN node -e "const fs=require('fs'); const root='node_modules/.pnpm'; const expected={'@modelcontextprotocol/sdk':'1.32.1','fast-uri':'3.1.8','proxy-addr':'2.0.8'}; for (const [name,version] of Object.entries(expected)) { let seen=0; for (const entry of fs.readdirSync(root)) { const file=root+'/'+entry+'/node_modules/'+name+'/package.json'; if (fs.existsSync(file)) { const actual=JSON.parse(fs.readFileSync(file)).version; if (actual!==version) throw new Error(name+': '+actual); seen++; } } if (!seen) throw new Error('Missing runtime dependency '+name); console.log(name+'='+version+' ('+seen+' copies)'); }"
+RUN node -e "const fs=require('fs'); const root='node_modules/.pnpm'; const expected={'@modelcontextprotocol/sdk':'1.32.1','fast-uri':'3.1.8','proxy-addr':'2.0.8','body-parser':'2.4.0'}; for (const [name,version] of Object.entries(expected)) { let seen=0; for (const entry of fs.readdirSync(root)) { const file=root+'/'+entry+'/node_modules/'+name+'/package.json'; if (fs.existsSync(file)) { const actual=JSON.parse(fs.readFileSync(file)).version; if (actual!==version) throw new Error(name+': '+actual); seen++; } } if (!seen) throw new Error('Missing runtime dependency '+name); console.log(name+'='+version+' ('+seen+' copies)'); }"
 
 FROM node:${NODE_VERSION}-alpine3.23@${NODE_IMAGE_DIGEST}
 ARG EBAY_MCP_VERSION
