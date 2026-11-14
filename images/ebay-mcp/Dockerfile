@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.7
 
-ARG EBAY_MCP_VERSION=1.18.3
-# Upstream v1.18.3 retains package.json version 1.18.0; verify both identities.
+ARG EBAY_MCP_VERSION=2.0.4
+# Upstream v2.0.4 retains package.json version 1.18.0; verify both identities.
 ARG EBAY_PACKAGE_VERSION=1.18.0
-ARG EBAY_MCP_COMMIT=034bebcce8b92d350fb933b8e1c945ec8002d886
-ARG NODE_VERSION=22.23.2
+ARG EBAY_MCP_COMMIT=3c12ea5441961d5d0ce728d8585d2c1acbd0079d
+ARG NODE_VERSION=24.22.3
 ARG PNPM_VERSION=10.14.0
-ARG NODE_IMAGE_DIGEST=sha256:72c5815a06aed9a2273aea5628d74d348af57843a7b547af2fe53dd3e4b95261
+ARG NODE_IMAGE_DIGEST=sha256:3946fb783fdce8a2812136ea694bc95c698c4f4096f3fd18568dc27a8ac389dc
 
 FROM node:${NODE_VERSION}-alpine3.23@${NODE_IMAGE_DIGEST} AS builder
 ARG EBAY_MCP_VERSION
@@ -28,10 +28,8 @@ RUN set -eux; \
     test "$(git rev-parse HEAD)" = "${EBAY_MCP_COMMIT}"; \
     test "$(node -p "require('./package.json').version")" = "${EBAY_PACKAGE_VERSION}"
 
-# Keep vulnerable transitive runtime dependencies above their fixed versions. These exact
-# overrides are applied to the pinned upstream lockfile before installation.
-RUN node -e "const fs=require('fs'); const p=require('./package.json'); p.pnpm=p.pnpm||{}; p.pnpm.overrides={...(p.pnpm.overrides||{}),'fast-uri':'3.1.8','@modelcontextprotocol/sdk':'1.32.1','proxy-addr':'2.0.8','ip-address':'10.3.1','brace-expansion@2':'2.1.4'}; fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\\n')" \
-    && pnpm install --no-frozen-lockfile --ignore-scripts \
+# Install the upstream lockfile, which includes the patched dependencies.
+RUN pnpm install --frozen-lockfile --ignore-scripts \
     && pnpm run build \
     && pnpm prune --prod --ignore-scripts
 

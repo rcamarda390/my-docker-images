@@ -26,7 +26,7 @@ docker run --rm \
   -e EBAY_MCP_TOOLS=browse,inventory,analytics,communication,fulfillment,developer \
   -e EBAY_READ_ONLY=true \
   -e MCP_AUTH_TOKEN \
-  ghcr.io/rcamarda390/ebay-mcp:1.18.3-v1
+  ghcr.io/rcamarda390/ebay-mcp:2.0.4-v1
 ```
 
 Start in eBay sandbox with `EBAY_READ_ONLY=true`. Remove read-only mode only
@@ -42,4 +42,4 @@ Local media access is disabled unless `EBAY_MCP_MEDIA_DIRS` or
 `EBAY_MCP_MEDIA_ROOT` names a mounted directory.
 
 
-Upstream tag v1.18.3 retains package.json version 1.18.0. The build independently verifies the tag commit and that package version; image tags follow the source release.
+Upstream tag v2.0.4 retains package.json version 1.18.0. The build independently verifies the tag commit and that package version; image tags follow the source release.
