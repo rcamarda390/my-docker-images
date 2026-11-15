@@ -182,6 +182,8 @@ import os
 import sys
 from huggingface_hub import hf_hub_download
 from transformers import AutoTokenizer
+# Pin to the revisions this headroom build looks up in the offline cache; an unpinned download caches the floating ref, which the runtime then misses. KeyError fails the build on purpose.
+from headroom.onnx_runtime import _PINNED_REVISIONS
 
 hf_home = '/opt/headroom-cache/huggingface'
 os.environ['HF_HOME'] = hf_home
@@ -189,6 +191,7 @@ os.environ['HF_HOME'] = hf_home
 # Download Kompress model artifacts: prefer int8-wo (weight-only quantized),
 # fallback to fp32 and older int8 for compatibility
 kompress_model = 'chopratejas/kompress-v2-base'
+kompress_rev = _PINNED_REVISIONS[kompress_model]
 kompress_onnx_files = [
     'onnx/kompress-int8-wo.onnx',
     'onnx/kompress-fp32.onnx',
@@ -200,6 +203,7 @@ for onnx_file in kompress_onnx_files:
     try:
         hf_hub_download(
             repo_id=kompress_model,
+            revision=kompress_rev,
             filename=onnx_file,
             repo_type="model",
             resume_download=True,
@@ -216,9 +220,11 @@ if not onnx_success:
 else:
     # Download tokenizer from ModernBERT-base (Kompress reuses this exact tokenizer)
     tokenizer_model = "answerdotai/ModernBERT-base"
+    tokenizer_rev = _PINNED_REVISIONS[tokenizer_model]
     try:
         AutoTokenizer.from_pretrained(
             tokenizer_model,
+            revision=tokenizer_rev,
             trust_remote_code=True,
         )
         print(f"✓ Downloaded tokenizer from {tokenizer_model}")
