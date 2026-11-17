@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
 # GitHub MCP Server on a stock Wolfi runtime, following the bifrost-mcp Wolfi
-# pattern. Upstream tag v2.1.0 is cloned and verified against its commit. The
+# pattern. Upstream tag v2.2.0 is cloned and verified against its commit. The
 # UI is built with the same Node/Go toolchain pins upstream uses. The runtime
 # stage has no package removals, so the scan shows what the Wolfi base ships.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG GITHUB_MCP_VERSION=2.1.0
-ARG GITHUB_MCP_COMMIT=4bcdcdf8d7beee98c9448e73e257308280924cc4
+ARG GITHUB_MCP_VERSION=2.2.0
+ARG GITHUB_MCP_COMMIT=67d4dc489700ec955ad255d098396dd86c729523
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG GITHUB_MCP_VERSION
@@ -18,7 +18,7 @@ RUN apk upgrade --no-cache \
        https://github.com/github/github-mcp-server.git /src \
     && test "$(git -C /src rev-parse HEAD)" = "$GITHUB_MCP_COMMIT"
 
-# Same Node and Go image digests upstream's Dockerfile pins for v2.1.0.
+# Same Node and Go image digests upstream's Dockerfile pins for v2.2.0.
 FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS ui-build
 WORKDIR /app
 COPY --from=source /src/ui/package*.json ./ui/
