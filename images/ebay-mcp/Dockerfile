@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
-ARG EBAY_MCP_VERSION=2.0.4
-# Upstream v2.0.4 retains package.json version 1.18.0; verify both identities.
+ARG EBAY_MCP_VERSION=2.0.11
+# Upstream v2.0.11 retains package.json version 1.18.0; verify both identities.
 ARG EBAY_PACKAGE_VERSION=1.18.0
-ARG EBAY_MCP_COMMIT=3c12ea5441961d5d0ce728d8585d2c1acbd0079d
+ARG EBAY_MCP_COMMIT=7561e5608caecb5a5808a4467758eeadb54c2f48
 ARG NODE_VERSION=24.22.3
 ARG PNPM_VERSION=10.14.0
 ARG NODE_IMAGE_DIGEST=sha256:3946fb783fdce8a2812136ea694bc95c698c4f4096f3fd18568dc27a8ac389dc

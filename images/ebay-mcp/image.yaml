@@ -1,9 +1,9 @@
 name: ebay-mcp
-upstream_version: 2.0.4
+upstream_version: 2.0.11
 revision: 1
 build_args:
   EBAY_PACKAGE_VERSION: 1.18.0
-  EBAY_MCP_COMMIT: 3c12ea5441961d5d0ce728d8585d2c1acbd0079d
+  EBAY_MCP_COMMIT: 7561e5608caecb5a5808a4467758eeadb54c2f48
   NODE_VERSION: 24.22.3
   PNPM_VERSION: 10.14.0
 publish:
