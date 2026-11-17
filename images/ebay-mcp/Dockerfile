@@ -57,7 +57,7 @@ RUN set -eux; \
 COPY --from=builder --chown=node:node /src/package.json /src/pnpm-lock.yaml ./
 COPY --from=builder --chown=node:node /src/node_modules ./node_modules
 COPY --from=builder --chown=node:node /src/build ./build
-COPY --from=builder --chown=node:node /src/public ./public
+COPY --from=builder --chown=node:node /src/assets ./assets
 COPY --chown=node:node runtime-smoke.mjs ./runtime-smoke.mjs
 
 ENV NODE_ENV=production \
