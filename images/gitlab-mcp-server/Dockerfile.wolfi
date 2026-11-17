@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1.7
 
 # GitLab MCP Server (jmrplens/gitlab-mcp-server) on a stock Wolfi runtime,
-# following the github-mcp-server Wolfi pattern. Upstream tag v3.5.0 is cloned
+# following the github-mcp-server Wolfi pattern. Upstream tag v3.7.0 is cloned
 # and verified against its commit. The binary is built with CGO_ENABLED=0 so it
 # is static and needs no glibc or musl loader; upstream's own Dockerfile links a
 # musl loader, which the glibc Wolfi runtime does not provide.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG GITLAB_MCP_VERSION=3.5.0
-ARG GITLAB_MCP_COMMIT=26e93c7258648462dced778b44f6b87a0bb7fbc6
+ARG GITLAB_MCP_VERSION=3.7.0
+ARG GITLAB_MCP_COMMIT=a785049321fd680d8c38f0519cbfb4b3dd068423
 
 FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
 ARG GITLAB_MCP_VERSION
