@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-/app/gitlab-mcp-server --version | grep -qF '3.5.0'
+/app/gitlab-mcp-server --version | grep -qF '3.7.0'
 
 # Disposable token. MCP initialize does not call GitLab. The server exits on
 # stdin EOF, so hold stdin open for a few seconds before closing it.
