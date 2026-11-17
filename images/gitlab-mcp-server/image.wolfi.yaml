@@ -1,8 +1,8 @@
 name: gitlab-mcp-server
-upstream_version: 3.4.0
+upstream_version: 3.5.0
 revision: 1
 build_args:
-  GITLAB_MCP_COMMIT: 39b7093afffede232184c1e385b1ef4a215b0258
+  GITLAB_MCP_COMMIT: 26e93c7258648462dced778b44f6b87a0bb7fbc6
 publish:
   ghcr: true
   dockerhub: true
