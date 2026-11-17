@@ -1,5 +1,5 @@
 name: sooperset-mcp-atlassian
-upstream_version: 0.24.4
+upstream_version: 0.24.6
 revision: 1
 build_args: {}
 publish:
