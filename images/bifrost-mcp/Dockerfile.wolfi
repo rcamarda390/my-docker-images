@@ -19,6 +19,7 @@ ARG GO_VERSION=1.27.4
 # assertions for those upstream versions and retain downstream pins only where
 # this release still resolves below verified Xray fixes:
 #   pgx/v5 v5.9.2           XRAY-1152420/1152418; fixed in v5.12.0
+#   Xray XRAY-1162538 flags v5.12.0; fixed in v5.13.0
 #   go-jose/v4 v4.1.6       XRAY-1152119/1152117/1152115/1152118/1152113;
 #                           fixed in v4.1.7, with follow-up fixes in v4.1.9
 #   pion/dtls/v3 v3.1.9     XRAY-1147061/1147051/1147049/1147063/1147062/
@@ -36,7 +37,7 @@ ARG GO_OTEL_SDK_VERSION=v1.47.0
 ARG GO_MCP_GO_VERSION=v1.5.0
 ARG BIFROST_MCP_GO_REPLACE_VERSION=v0.0.0-20261102181017-b7da3bc145a1
 ARG GO_JOSE_VERSION=v4.1.9
-ARG GO_PGX_VERSION=v5.12.0
+ARG GO_PGX_VERSION=v5.13.0
 ARG GO_DTLS_VERSION=v3.1.14
 
 FROM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS source
