@@ -7,51 +7,39 @@
 # until its scan is reviewed.
 
 ARG WOLFI_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:65e1acb87a2bf356b92c5f70f3980f03b4bb51dfd483c834e01557525f15c1d9
-ARG BIFROST_VERSION=2.5.1
-ARG BIFROST_COMMIT=7cb75fb2f8276ca48d0792c857fecb67b8879e2f
+ARG BIFROST_VERSION=2.6.0
+ARG BIFROST_COMMIT=172617bb045c6f43d697843c115e64f0155ed143
 
-# Bifrost v2.5.1 uses Go 1.27.3 (go.mod in transports/go.mod).
-# Verify the compiler version in the final binary.
-# Xray also reads the compiler version from the binary's build info, so keep
-# the toolchain pinned and verified as part of the image supply chain.
-ARG GO_VERSION=1.27.3
+# Bifrost v2.6.0 requires Go 1.27.4. Verify the compiler in the final binary;
+# Xray reads that stamped compiler version as part of the image supply chain.
+ARG GO_VERSION=1.27.4
 
-# Keep downstream Go pins only where upstream v2.5.1 still resolves below the
-# verified Xray fix:
-#   x/crypto v0.55.0        CVE-2026-56855/CVE-2026-78662; fixed in v0.56.0;
-#                           x/net v0.62.0 requires v0.58.0
-#   x/net v0.58.0           CVE-2026-78663/78669/78660/78659/97032;
-#                           fixed in v0.60.0. Wolfi scan 2026-10-29:
-#                           CVE-2026-78661/97045 fixed in v0.62.0
-#   andybalholm/brotli      CVE-2026-111497 (9.8, CWE-252), fixed in v1.2.7
-#   otel/sdk v1.45.0        XRAY-1149943 (5.3, CWE-135), fixed in v1.47.0;
-#                           the rest of the otel modules follow the sdk
+# Upstream v2.6.0 already includes the Go 1.27.4 security release and the
+# fixes for x/net, brotli, compress, and OpenTelemetry. Keep exact build
+# assertions for those upstream versions and retain downstream pins only where
+# this release still resolves below verified Xray fixes:
 #   pgx/v5 v5.9.2           XRAY-1152420/1152418; fixed in v5.12.0
 #   go-jose/v4 v4.1.6       XRAY-1152119/1152117/1152115/1152118/1152113;
 #                           fixed in v4.1.7, with follow-up fixes in v4.1.9
 #   pion/dtls/v3 v3.1.9     XRAY-1147061/1147051/1147049/1147063/1147062/
-#                           1147064 (9.1 CWE-347, 9.1/7.4 CWE-287, N/A
-#                           CWE-400/770); fixed in v3.1.13 and v3.1.14
+#                           1147064; fixed in v3.1.13 and v3.1.14
 #                           (indirect via pion/webrtc)
-# Upstream v2.5.1 already requires x/text v0.43.0,
-# go-git/v5 v5.19.2, gRPC v1.83.2, and otel/sdk v1.45.0, so those overrides
-# are intentionally omitted.
-# Drop a pin once upstream's own go.mod requires that version or newer.
-ARG GO_CRYPTO_VERSION=v0.58.0
+# Drop a downstream pin once upstream's own go.mod requires that version or newer.
+ARG GO_CRYPTO_VERSION=v0.58.1-0.20261009181718-2f1f834330b2
 ARG GO_NET_VERSION=v0.62.0
-ARG GO_BROTLI_VERSION=v1.2.7
+ARG GO_BROTLI_VERSION=v1.2.8
+ARG GO_COMPRESS_VERSION=v1.20.3
 ARG GO_OTEL_SDK_VERSION=v1.47.0
-# Bifrost v2.5.1 pins mcp-go v1.5.0 and replaces it with its own
-# maximhq/mcp-go commit, which includes the upstream bounded request-body fix
-# (mark3labs/mcp-go#1119). Keep the regression check below against that exact
-# upstream replacement until Bifrost drops it.
+# Upstream v2.6.0 still pins mcp-go v1.5.0 and replaces it with its own
+# commit, which includes the bounded request-body fix (mark3labs/mcp-go#1119).
+# Keep the regression check below against that exact upstream replacement.
 ARG GO_MCP_GO_VERSION=v1.5.0
 ARG BIFROST_MCP_GO_REPLACE_VERSION=v0.0.0-20261102181017-b7da3bc145a1
 ARG GO_JOSE_VERSION=v4.1.9
 ARG GO_PGX_VERSION=v5.12.0
 ARG GO_DTLS_VERSION=v3.1.14
 
-FROM alpine:3.23.5@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40 AS source
+FROM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS source
 ARG BIFROST_VERSION
 ARG BIFROST_COMMIT
 RUN apk upgrade --no-cache \
@@ -68,8 +56,8 @@ RUN npm ci
 COPY --from=source /src/ui/ ./
 RUN npm run build-enterprise
 
-# The new 1.27.3 tag digest must be pinned after resolution in CI.
-FROM golang:1.27.3-alpine3.24 AS builder
+# Match upstream's verified Go 1.27.4 Alpine image digest.
+FROM golang:1.27.4-alpine3.24@sha256:70bd7ddea8b6cbe5d6943cde279d6b67feb10cc924fb9100d1d8757c1575b280 AS builder
 ARG GO_VERSION
 WORKDIR /app
 # The digest is what actually selects the image, so confirm it still carries the
@@ -94,6 +82,7 @@ COPY --from=ui-builder /app/out ./bifrost-http/ui
 ARG GO_CRYPTO_VERSION
 ARG GO_NET_VERSION
 ARG GO_BROTLI_VERSION
+ARG GO_COMPRESS_VERSION
 ARG GO_OTEL_SDK_VERSION
 ARG GO_MCP_GO_VERSION
 ARG GO_JOSE_VERSION
@@ -107,6 +96,7 @@ RUN set -eu; \
       "golang.org/x/crypto@${GO_CRYPTO_VERSION}" \
       "golang.org/x/net@${GO_NET_VERSION}" \
       "github.com/andybalholm/brotli@${GO_BROTLI_VERSION}" \
+      "github.com/klauspost/compress@${GO_COMPRESS_VERSION}" \
       "go.opentelemetry.io/otel/sdk@${GO_OTEL_SDK_VERSION}" \
       "github.com/jackc/pgx/v5@${GO_PGX_VERSION}" \
       "github.com/go-jose/go-jose/v4@${GO_JOSE_VERSION}" \
@@ -116,6 +106,7 @@ RUN set -eu; \
       "golang.org/x/crypto=${GO_CRYPTO_VERSION}" \
       "golang.org/x/net=${GO_NET_VERSION}" \
       "github.com/andybalholm/brotli=${GO_BROTLI_VERSION}" \
+      "github.com/klauspost/compress=${GO_COMPRESS_VERSION}" \
       "go.opentelemetry.io/otel/sdk=${GO_OTEL_SDK_VERSION}" \
       "github.com/jackc/pgx/v5=${GO_PGX_VERSION}" \
       "github.com/go-jose/go-jose/v4=${GO_JOSE_VERSION}" \
@@ -160,6 +151,8 @@ RUN set -eu; \
     awk -v expected="$GO_BROTLI_VERSION" \
       '$1 == "dep" && $2 == "github.com/andybalholm/brotli" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
+    awk -v expected="$GO_COMPRESS_VERSION" \
+      '$1 == "dep" && $2 == "github.com/klauspost/compress" { found = ($3 == expected) } END { exit !found }' /tmp/binary-build-info; \
     awk -v expected="$GO_OTEL_SDK_VERSION" \
       '$1 == "dep" && $2 == "go.opentelemetry.io/otel/sdk" { found = ($3 == expected) } END { exit !found }' \
       /tmp/binary-build-info; \
