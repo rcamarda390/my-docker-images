@@ -6,6 +6,31 @@ Current release metadata: [image.wolfi.yaml](../../images/bifrost-mcp/image.wolf
 
 The notes below describe earlier dependency and base-image maintenance. Inspect the current Dockerfile and manifest before applying them to a newer release.
 
+## Upgrade to 2.6.0
+
+The Wolfi image builds upstream `transports/v2.6.0` at commit
+`172617bb045c6f43d697843c115e64f0155ed143`. The build uses upstream's
+Go 1.27.4 Alpine toolchain digest, carries forward the existing Xray fixes for
+pgx, go-jose, and pion/dtls, and verifies the resolved security-sensitive
+module versions in the final binary. It also retains the MCP request-body
+regression check and runtime smoke tests.
+
+The release adds model routers, Bifrost's own MCP server, Claude Code gateway
+sign-in, realtime speech routes, and new providers. Review the upstream release
+notes for the complete feature and migration list before deployment. In
+particular, `/gateway` is now reserved: deployments with a
+`server.base_path` whose first segment is `gateway` must move to another
+prefix before upgrading. Sarvam `sarvam-30b` is no longer served; use
+`sarvam-105b`. Rebuild any custom Go plugins with Go 1.27.4.
+
+The release adds database migrations, including model-router and datasheet
+override tables. Back up persistent application data before deployment and
+review the upstream migration notes for non-reversible tables. A successful
+CI build and smoke test do not establish Xray clearance; scan the exact
+published image digest.
+
+Upstream: [Bifrost HTTP v2.6.0 release](https://github.com/maximhq/bifrost/releases/tag/transports%2Fv2.6.0).
+
 For Bifrost v1.6.11, prior investigation established that the upstream release should be followed closely rather than maintaining unnecessary dependency overrides.
 
 Relevant upstream characteristics identified during that work included:
