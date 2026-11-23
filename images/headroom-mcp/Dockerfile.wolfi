@@ -91,6 +91,14 @@ RUN if [ "$BASELINE" = "true" ]; then \
         && uv pip check --python /opt/venv/bin/python; \
     fi
 
+# Apply the AnyIO and Transformers source fixes before building installable
+# wheels so their provenance and RECORD hashes describe the shipped code.
+RUN --mount=type=bind,target=/tmp/headroom-image-context \
+    if [ "$BASELINE" != "true" ]; then \
+      sh /tmp/headroom-image-context/build-patched-python-wheels.sh \
+        /tmp/patched-python-wheels /opt/venv/bin/python; \
+    fi
+
 # The published tokenizers 0.23.3 wheel still panics on malformed BPE merges.
 # Build the checked-in fix from its pinned sdist with a downstream version.
 # Transformers 5.17.0 accepts this version. Pydantic 2.14.2 covers
@@ -127,32 +135,12 @@ uv pip install --python /opt/venv/bin/python \
   --upgrade-package tokenizers --upgrade-package transformers --upgrade-package pydantic \
   --upgrade-package litellm --upgrade-package fastapi \
   --upgrade-package filelock --upgrade-package anyio \
-  /tmp/tokenizers-wheel/tokenizers-*.whl "transformers==5.17.0" "pydantic==2.14.2" \
-  "litellm==${LITELLM_VERSION}" "fastapi==0.163.2" "filelock==4.3.0" "anyio==4.16.0"
+  /tmp/tokenizers-wheel/tokenizers-*.whl /tmp/patched-python-wheels/*.whl \
+  "pydantic==2.14.2" "litellm==${LITELLM_VERSION}" "fastapi==0.163.2" "filelock==4.3.0"
 uv pip check --python /opt/venv/bin/python
 cd /build
-rm -rf /tmp/tokenizers.tar.gz /tmp/tokenizers-0.23.3 /tmp/tokenizers-wheel
+rm -rf /tmp/tokenizers.tar.gz /tmp/tokenizers-0.23.3 /tmp/tokenizers-wheel /tmp/patched-python-wheels
 SH
-
-# Keep AnyIO's released wheel and backport the upstream PathLike fix to
-# both subprocess backends until that fix ships in a stable release.
-RUN --mount=type=bind,source=patches/anyio,target=/tmp/anyio-patches \
-    if [ "$BASELINE" != "true" ]; then \
-      site_packages=$(/opt/venv/bin/python -c 'import sysconfig; print(sysconfig.get_path("purelib"))') \
-        && patch --batch --forward --fuzz=0 -d "$site_packages" -p2 \
-          < /tmp/anyio-patches/0001-execute-pathlike-without-shell.patch; \
-    fi
-
-# CVE-2026-75104 (transformers, all versions): no upstream fix exists, so carry
-# the checkpoint shard path guard. The patch asserts its anchor and fails the
-# build if transformers changes.
-COPY patch-transformers-shards.py /tmp/
-RUN if [ "$BASELINE" != "true" ]; then \
-      export PATH="/opt/venv/bin:${PATH}"; \
-      python /tmp/patch-transformers-shards.py \
-      && python -c \
-        "import pathlib, transformers.utils.hub as h; assert 'downstream CVE-2026-75104 guard' in pathlib.Path(h.__file__).read_text()"; \
-    fi
 
 # ---------------------------------------------------------------------------
 # Downstream carry: Cline's OpenAI-compatible transport to AWS Bedrock.

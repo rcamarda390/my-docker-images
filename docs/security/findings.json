@@ -82,6 +82,13 @@
       "report_id": "headroom-mcp-wolfi-xray-20261123",
       "validation": "Matched both CSV layer digests to the published baseline. Verified the Wolfi APK index, Wolfi security data and upgrade package metadata. Rechecked 117 pending entries against the live Debian tracker. Candidate image build and exact-digest Xray validation pending.",
       "evidence": "images/headroom-mcp/SECURITY-20261123.md"
+    },
+    {
+      "date": "2026-11-23",
+      "image": "headroom-mcp-wolfi",
+      "report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+      "validation": "Matched the reported layer to the published v2 manifest in both registries. Two advisories remain and 19 v1 advisories are absent from the v2 report. Checked the latest upstream PyPI releases and Transformers main. Rechecked 126 ledger entries against the live Debian tracker. The v3 candidate uses checksum-verified downstream wheels. Xray validation is pending for v3.",
+      "evidence": "images/headroom-mcp/SECURITY-20261123.md"
     }
   ],
   "reports": [
@@ -4746,6 +4753,58 @@
           "applicability": "Not Covered"
         }
       ]
+    },
+    {
+      "id": "headroom-mcp-wolfi-xray-20261123-v2",
+      "image": "headroom-mcp-wolfi",
+      "tag": "0.45.0-wolfi-v2",
+      "digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
+      "finding_count": 2,
+      "source": "User-supplied November 23 JFrog Xray CSV. Both paths identify a layer of the exact linux/amd64 manifest published in GHCR and Docker Hub.",
+      "build_run": "https://github.com/rcamarda390/my-docker-images/actions/runs/45174357368",
+      "layer_digest": "sha256:d4585a6cfb165834f71682889b061e52cc19fc5087918f1dc173f8590c1c6bdb",
+      "observations": [
+        {
+          "cve": "XRAY-1170984",
+          "xray_id": "XRAY-1170984",
+          "summary": "AnyIO runs a single `PathLike` command through the shell, so an untrusted path component is command injection",
+          "component": "anyio",
+          "severity": "High",
+          "cvss": 7.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-78"
+          ],
+          "installed_version": "4.16.0",
+          "infected_range": "4.5.0 ≤ Version ≤ 4.16.0",
+          "fix_version": null,
+          "source_component_id": "pypi://anyio:4.16.0",
+          "source_id": "pypi://anyio",
+          "component_physical_path": "sha256__d4585a6cfb165834f71682889b061e52cc19fc5087918f1dc173f8590c1c6bdb.tar.gz/opt/venv/lib/python3.13/site-packages/anyio-4.16.0.dist-info/anyio:4.16.0",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-75104",
+          "xray_id": "XRAY-1060152",
+          "summary": "Hugging Face Transformers fails to validate shard filenames in checkpoint index files, allowing attackers to read arbitrary files outside the model directory. Attackers can supply malicious index files with parent-directory references or absolute paths that are joined without validation, enabling file disclosure and filesystem reconnaissance.",
+          "component": "transformers",
+          "severity": "Medium",
+          "cvss": 5.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "5.17.0",
+          "infected_range": "All Versions",
+          "fix_version": null,
+          "source_component_id": "pypi://transformers:5.17.0",
+          "source_id": "pypi://transformers",
+          "component_physical_path": "sha256__d4585a6cfb165834f71682889b061e52cc19fc5087918f1dc173f8590c1c6bdb.tar.gz/opt/venv/lib/python3.13/site-packages/transformers-5.17.0.dist-info/transformers:5.17.0",
+          "applicability": "Not Covered"
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -5547,14 +5606,14 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
             "fixed_version": "1.3.2.1_rc20260601-r0",
@@ -5563,28 +5622,47 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
             "prior_treatment": {
-              "treatment": "vendor-fix-pinned",
-              "suite": "wolfi",
+              "treatment": "package-pin",
               "fixed_version": "1.3.2.1_rc20260601-r0",
-              "evidence": [
-                "images/headroom-mcp/Dockerfile.wolfi"
+              "packages": [
+                "zlib"
               ],
-              "scan_status": "cleared",
-              "scan_tag": "0.42.0-wolfi-v2",
-              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
               "scan_url": null,
-              "published_digest": null,
-              "scan_result": "absent-from-report"
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2",
+              "prior_treatment": {
+                "treatment": "vendor-fix-pinned",
+                "suite": "wolfi",
+                "fixed_version": "1.3.2.1_rc20260601-r0",
+                "evidence": [
+                  "images/headroom-mcp/Dockerfile.wolfi"
+                ],
+                "scan_status": "cleared",
+                "scan_tag": "0.42.0-wolfi-v2",
+                "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+                "scan_url": null,
+                "published_digest": null,
+                "scan_result": "absent-from-report"
+              }
             }
           }
         },
@@ -6207,34 +6285,56 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
-            "fixed_version": "2.44-r8",
+            "fixed_version": "2.44-r16",
             "packages": [
-              "glibc-2.44",
-              "glibc-2.44-locale-posix",
+              "libcrypt1-2.44",
               "ld-linux-2.44",
-              "libcrypt1-2.44"
+              "glibc-2.44",
+              "glibc-2.44-locale-posix"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "2.44-r8",
+              "packages": [
+                "glibc-2.44",
+                "glibc-2.44-locale-posix",
+                "ld-linux-2.44",
+                "libcrypt1-2.44"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         }
       },
@@ -7020,34 +7120,56 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
-            "fixed_version": "2.44-r8",
+            "fixed_version": "2.44-r16",
             "packages": [
-              "glibc-2.44",
               "glibc-2.44-locale-posix",
-              "ld-linux-2.44",
-              "libcrypt1-2.44"
+              "glibc-2.44",
+              "libcrypt1-2.44",
+              "ld-linux-2.44"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "2.44-r8",
+              "packages": [
+                "glibc-2.44",
+                "glibc-2.44-locale-posix",
+                "ld-linux-2.44",
+                "libcrypt1-2.44"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         }
       },
@@ -7602,34 +7724,56 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
-            "fixed_version": "2.44-r8",
+            "fixed_version": "2.44-r16",
             "packages": [
-              "glibc-2.44",
               "glibc-2.44-locale-posix",
+              "glibc-2.44",
               "ld-linux-2.44",
               "libcrypt1-2.44"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "2.44-r8",
+              "packages": [
+                "glibc-2.44",
+                "glibc-2.44-locale-posix",
+                "ld-linux-2.44",
+                "libcrypt1-2.44"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         }
       },
@@ -7900,34 +8044,56 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
-            "fixed_version": "2.44-r8",
+            "fixed_version": "2.44-r16",
             "packages": [
-              "glibc-2.44",
               "glibc-2.44-locale-posix",
-              "ld-linux-2.44",
-              "libcrypt1-2.44"
+              "libcrypt1-2.44",
+              "glibc-2.44",
+              "ld-linux-2.44"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "2.44-r8",
+              "packages": [
+                "glibc-2.44",
+                "glibc-2.44-locale-posix",
+                "ld-linux-2.44",
+                "libcrypt1-2.44"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         }
       },
@@ -8313,7 +8479,7 @@
       "reported_fix_version": null,
       "reported_installed_version": null,
       "last_reviewed": "2026-11-23",
-      "tracker_url": null,
+      "tracker_url": "https://github.com/advisories/GHSA-fv5v-hfxp-5379",
       "images": {
         "headroom-mcp": {
           "treatment": "downstream-fixed",
@@ -8336,63 +8502,87 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py",
-            "images/headroom-mcp/patch-transformers-shards.py"
+            "images/headroom-mcp/patch-transformers-shards.py",
+            "images/headroom-mcp/build-patched-python-wheels.sh"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "still-reported",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
-          "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray. A version-based scan may continue to flag the source-patched package.",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "still-reported",
+          "remediation_tag": "0.45.0-wolfi-v3",
+          "remaining": "The v2 digest already carries the source fix. Build a source-patched wheel for v3 and rescan its exact digest. Metadata matches may persist.",
           "prior_treatment": {
             "treatment": "source-patch",
-            "fixed_version": null,
+            "fixed_version": "5.17.0 with downstream checkpoint shard path guard",
             "packages": [
               "transformers"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/patch-transformers-shards.py",
-              "images/headroom-mcp/SECURITY-20261110.md",
-              "images/headroom-mcp/patch-transformers-shards.py",
-              "images/headroom-mcp/security-regression.py"
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py",
+              "images/headroom-mcp/patch-transformers-shards.py"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2",
-            "replacement_build": "Transformers 5.17.0 with downstream checkpoint shard path guard",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray. A version-based scan may continue to flag the source-patched package.",
             "prior_treatment": {
-              "treatment": "no-fix-mitigated",
-              "suite": "wolfi",
+              "treatment": "source-patch",
               "fixed_version": null,
+              "packages": [
+                "transformers"
+              ],
               "evidence": [
                 "images/headroom-mcp/Dockerfile.wolfi",
-                "images/headroom-mcp/patch-transformers-shards.py"
+                "images/headroom-mcp/patch-transformers-shards.py",
+                "images/headroom-mcp/SECURITY-20261110.md",
+                "images/headroom-mcp/patch-transformers-shards.py",
+                "images/headroom-mcp/security-regression.py"
               ],
-              "scan_status": "still-reported",
-              "scan_tag": "0.42.0-wolfi-v2",
-              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
               "scan_url": null,
-              "published_digest": null,
-              "scan_result": "still-reported",
-              "checked_upstream": {
-                "date": "2026-10-28",
-                "releases_checked": [
-                  "5.17.0",
-                  "5.20.2",
-                  "5.21.0"
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2",
+              "replacement_build": "Transformers 5.17.0 with downstream checkpoint shard path guard",
+              "prior_treatment": {
+                "treatment": "no-fix-mitigated",
+                "suite": "wolfi",
+                "fixed_version": null,
+                "evidence": [
+                  "images/headroom-mcp/Dockerfile.wolfi",
+                  "images/headroom-mcp/patch-transformers-shards.py"
                 ],
-                "result": "no shard-path validation in any release; no advisory fixed_version found"
-              },
-              "mitigation": "Build-time guard in patch-transformers-shards.py rejects absolute/.. shard names and escaping local model paths; anchor and marker asserted at build."
+                "scan_status": "still-reported",
+                "scan_tag": "0.42.0-wolfi-v2",
+                "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+                "scan_url": null,
+                "published_digest": null,
+                "scan_result": "still-reported",
+                "checked_upstream": {
+                  "date": "2026-10-28",
+                  "releases_checked": [
+                    "5.17.0",
+                    "5.20.2",
+                    "5.21.0"
+                  ],
+                  "result": "no shard-path validation in any release; no advisory fixed_version found"
+                },
+                "mitigation": "Build-time guard in patch-transformers-shards.py rejects absolute/.. shard names and escaping local model paths; anchor and marker asserted at build."
+              }
             }
-          }
+          },
+          "scanned_installed_version": "5.17.0",
+          "replacement_build": "5.17.0+rcamarda1"
         }
       },
       "remaining": "No upstream fix in transformers 5.17.0, 5.20.2 or 5.21.0 (latest on PyPI 2026-10-28). Xray reports by version and still lists transformers 5.17.0 on 0.42.0-wolfi-v2 (digest sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20). Treatment: no-fix, mitigated by downstream guard. Reachability: the guard covers checkpoint shard filenames from index.json; loading from the Hub uses the same code path but is not separately analysed. Suggested Xray exception for this image only, pending Rob approval."
@@ -8512,48 +8702,70 @@
             "images/headroom-mcp/patches/tokenizers/0002-bpe-reject-invalid-prefix-0.22.2.patch",
             "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray. Check Gnosis independently for the Python wheel and embedded copies. A version-based scan may continue to flag the source-patched package.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
-            "treatment": "downstream-source-patch",
-            "fixed_version": null,
+            "treatment": "source-patch",
+            "fixed_version": "0.23.3+rcamarda1",
             "packages": [
               "tokenizers"
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md",
-              "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py",
               "images/headroom-mcp/patches/tokenizers/0002-bpe-reject-invalid-prefix-0.22.2.patch",
-              "images/headroom-mcp/security-regression.py"
+              "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2",
-            "replacement_build": "Python tokenizers 0.23.3+rcamarda1 and guarded Rust crates 0.22.2 and 0.23.2",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray. Check Gnosis independently for the Python wheel and embedded copies. A version-based scan may continue to flag the source-patched package.",
             "prior_treatment": {
-              "treatment": "version-pinned",
-              "suite": "wolfi",
-              "fixed_version": "0.23.3",
-              "evidence": [
-                "images/headroom-mcp/Dockerfile.wolfi"
+              "treatment": "downstream-source-patch",
+              "fixed_version": null,
+              "packages": [
+                "tokenizers"
               ],
-              "scan_status": "cleared",
-              "scan_tag": "0.42.0-wolfi-v2",
-              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md",
+                "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch",
+                "images/headroom-mcp/patches/tokenizers/0002-bpe-reject-invalid-prefix-0.22.2.patch",
+                "images/headroom-mcp/security-regression.py"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
               "scan_url": null,
-              "published_digest": null,
-              "scan_result": "absent-from-report"
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2",
+              "replacement_build": "Python tokenizers 0.23.3+rcamarda1 and guarded Rust crates 0.22.2 and 0.23.2",
+              "prior_treatment": {
+                "treatment": "version-pinned",
+                "suite": "wolfi",
+                "fixed_version": "0.23.3",
+                "evidence": [
+                  "images/headroom-mcp/Dockerfile.wolfi"
+                ],
+                "scan_status": "cleared",
+                "scan_tag": "0.42.0-wolfi-v2",
+                "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+                "scan_url": null,
+                "published_digest": null,
+                "scan_result": "absent-from-report"
+              }
             }
           }
         },
@@ -9816,14 +10028,14 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
             "fixed_version": "20260909-r3",
@@ -9832,15 +10044,34 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "20260909-r3",
+              "packages": [
+                "ca-certificates-bundle"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         },
         "sooperset-mcp-atlassian": {
@@ -10036,14 +10267,14 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "dependency-pin",
             "fixed_version": "2.14.2",
@@ -10052,15 +10283,35 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "dependency-pin",
+              "fixed_version": "2.14.2",
+              "packages": [
+                "pydantic"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         },
         "sooperset-mcp-atlassian": {
@@ -10179,14 +10430,14 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "dependency-pin",
             "fixed_version": "2.14.2",
@@ -10195,15 +10446,35 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "dependency-pin",
+              "fixed_version": "2.14.2",
+              "packages": [
+                "pydantic"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         },
         "sooperset-mcp-atlassian": {
@@ -10271,14 +10542,14 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "dependency-pin",
             "fixed_version": "2.14.2",
@@ -10287,15 +10558,35 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "dependency-pin",
+              "fixed_version": "2.14.2",
+              "packages": [
+                "pydantic"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         },
         "sooperset-mcp-atlassian": {
@@ -10630,14 +10921,14 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
           "prior_treatment": {
             "treatment": "package-pin",
             "fixed_version": "20260909-r3",
@@ -10646,15 +10937,34 @@
             ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/SECURITY-20261110.md"
+              "images/headroom-mcp/SECURITY-20261123.md"
             ],
             "scan_status": "pending",
-            "scan_tag": "0.44.0-wolfi-v1",
-            "scan_digest": null,
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
             "scan_url": null,
-            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
             "scan_result": "reported",
-            "remediation_tag": "0.44.0-wolfi-v2"
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray.",
+            "prior_treatment": {
+              "treatment": "package-pin",
+              "fixed_version": "20260909-r3",
+              "packages": [
+                "ca-certificates-bundle"
+              ],
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/SECURITY-20261110.md"
+              ],
+              "scan_status": "pending",
+              "scan_tag": "0.44.0-wolfi-v1",
+              "scan_digest": null,
+              "scan_url": null,
+              "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+              "scan_result": "reported",
+              "remediation_tag": "0.44.0-wolfi-v2"
+            }
           }
         },
         "sooperset-mcp-atlassian": {
@@ -11622,16 +11932,40 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py",
-            "images/headroom-mcp/patches/anyio/0001-execute-pathlike-without-shell.patch"
+            "images/headroom-mcp/patches/anyio/0001-execute-pathlike-without-shell.patch",
+            "images/headroom-mcp/build-patched-python-wheels.sh"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "still-reported",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
-          "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray. Replace the backport when a stable AnyIO release contains the commit. A version-based scan may continue to flag the source-patched package."
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "still-reported",
+          "remediation_tag": "0.45.0-wolfi-v3",
+          "remaining": "The v2 digest already carries the source fix. Build a source-patched wheel for v3 and rescan its exact digest. Metadata matches may persist.",
+          "prior_treatment": {
+            "treatment": "source-patch",
+            "fixed_version": "4.16.0 with upstream commit 71f5af9dbdc5b4e44a3b665270ff036197187b6a",
+            "packages": [
+              "anyio"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py",
+              "images/headroom-mcp/patches/anyio/0001-execute-pathlike-without-shell.patch"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray. Replace the backport when a stable AnyIO release contains the commit. A version-based scan may continue to flag the source-patched package."
+          },
+          "scanned_installed_version": "4.16.0",
+          "replacement_build": "4.16.0+rcamarda1"
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray. Replace the backport when a stable AnyIO release contains the commit. A version-based scan may continue to flag the source-patched package."
@@ -11666,14 +12000,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "0.163.2",
+            "packages": [
+              "fastapi"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."
@@ -11708,14 +12062,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "1.110.2",
+            "packages": [
+              "litellm"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."
@@ -11754,14 +12128,36 @@
             "images/headroom-mcp/Dockerfile.wolfi",
             "images/headroom-mcp/SECURITY-20261123.md"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "2.44-r16",
+            "packages": [
+              "libcrypt1-2.44",
+              "glibc-2.44",
+              "ld-linux-2.44",
+              "glibc-2.44-locale-posix"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray.",
@@ -11803,14 +12199,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "4.3.0",
+            "packages": [
+              "filelock"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."
@@ -11844,14 +12260,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray. Standalone LiteLLM pins 1.110.1 and needs its own validation."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "1.110.2",
+            "packages": [
+              "litellm"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray. Standalone LiteLLM pins 1.110.1 and needs its own validation."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray. Standalone LiteLLM pins 1.110.1 and needs its own validation."
@@ -11885,14 +12321,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "4.3.0",
+            "packages": [
+              "filelock"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."
@@ -11926,14 +12382,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "4.3.0",
+            "packages": [
+              "filelock"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."
@@ -11967,14 +12443,34 @@
             "images/headroom-mcp/SECURITY-20261123.md",
             "images/headroom-mcp/security-regression.py"
           ],
-          "scan_status": "pending",
-          "scan_tag": "0.45.0-wolfi-v1",
-          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_status": "cleared",
+          "scan_tag": "0.45.0-wolfi-v2",
+          "scan_digest": "sha256:0f0c872962c636bc0a7790c548a93266d4176cc15f7ae55efebf38a9dde58eef",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
-          "scan_result": "reported",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123-v2",
+          "scan_result": "absent-from-report",
           "remediation_tag": "0.45.0-wolfi-v2",
-          "remaining": "Rescan the exact published digest in Artifactory Xray."
+          "remaining": "Absent from the supplied Xray report for this exact v2 digest. Later digests require separate evidence.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "4.3.0",
+            "packages": [
+              "filelock"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261123.md",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.45.0-wolfi-v1",
+            "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+            "scan_result": "reported",
+            "remediation_tag": "0.45.0-wolfi-v2",
+            "remaining": "Rescan the exact published digest in Artifactory Xray."
+          }
         }
       },
       "remaining": "Rescan the exact published digest in Artifactory Xray."

@@ -1,6 +1,6 @@
 name: headroom-mcp
 upstream_version: 0.45.0
-revision: 2
+revision: 3
 build_args:
   BASELINE: "false"
   HEADROOM_COMMIT: ce0460cfa8598dc939243dbc7aec4b2d35f4e44a
