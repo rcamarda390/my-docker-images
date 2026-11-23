@@ -2,8 +2,8 @@ name: headroom-mcp
 upstream_version: 0.45.0
 revision: 1
 build_args:
-  # Carry forward the Wolfi remediation pins from the 0.44.0 Xray baseline.
-  BASELINE: "false"
+  # Build the first 0.45.0 image as a baseline for Artifactory Xray.
+  BASELINE: "true"
   HEADROOM_COMMIT: ce0460cfa8598dc939243dbc7aec4b2d35f4e44a
   LITELLM_VERSION: 1.103.10
   GLIBC_SOURCE_SUITE: forky
