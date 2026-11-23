@@ -323,6 +323,7 @@ ENV HEADROOM_HOST=0.0.0.0 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH=/opt/venv/bin:/usr/local/bin:/usr/bin:/bin \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     HF_HOME=/opt/headroom-cache/huggingface \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1 \
