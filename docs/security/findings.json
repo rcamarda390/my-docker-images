@@ -75,6 +75,13 @@
       "report_id": "sooperset-mcp-atlassian-xray-20261113",
       "validation": "Resolved compatible Python 3.14 dependencies, tested candidate Markdown patches through Confluence rendering, and ran the live Debian tracker check. Exact-digest Xray validation pending.",
       "evidence": "images/sooperset-mcp-atlassian/SECURITY-20261113.md"
+    },
+    {
+      "date": "2026-11-23",
+      "image": "headroom-mcp-wolfi",
+      "report_id": "headroom-mcp-wolfi-xray-20261123",
+      "validation": "Matched both CSV layer digests to the published baseline. Verified the Wolfi APK index, Wolfi security data and upgrade package metadata. Rechecked 117 pending entries against the live Debian tracker. Candidate image build and exact-digest Xray validation pending.",
+      "evidence": "images/headroom-mcp/SECURITY-20261123.md"
     }
   ],
   "reports": [
@@ -4005,6 +4012,740 @@
           "applicability": "Not Covered"
         }
       ]
+    },
+    {
+      "id": "headroom-mcp-wolfi-xray-20261123",
+      "image": "headroom-mcp-wolfi",
+      "tag": "0.45.0-wolfi-v1",
+      "digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+      "finding_count": 36,
+      "source": "User-supplied JFrog Xray CSV. Both reported layer digests match the Docker Hub linux/amd64 manifest; the CSV supplies no manifest digest.",
+      "source_sha256": "af21e6c74a3d3e109818021f9110938d4f1ee74a45e662befcadeac056f144f8",
+      "baseline_run": "https://github.com/rcamarda390/my-docker-images/actions/runs/45166930429",
+      "observations": [
+        {
+          "cve": "CVE-2026-91403",
+          "xray_id": "XRAY-1151793",
+          "summary": "Vulnerability in the Oracle Java SE, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition product of Oracle Java SE (component: JSSE).  Supported versions that are affected are Oracle Java SE: 8u511, 8u511-perf, 11.0.33, 17.0.21, 21.0.13, 25.0.5, 27.0.1; Oracle GraalVM for JDK: 17.0.21 and  21.0.13; Oracle GraalVM Enterprise Edition: 21.3.20. Easily exploitable vulnerability allows unauthenticated attacker with network access via multiple protocols to compromise Oracle Java SE, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition.  Successful attacks of this vulnerability can result in  unauthorized creation, deletion or modification access to critical data or all Oracle Java SE, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition accessible data as well as  unauthorized access to critical data or complete access to all Oracle Java SE, Oracle GraalVM for JDK, Oracle GraalVM Enterprise Edition accessible data. Note: This vulnerability can be exploited by using APIs in the specified Component, e.g., through a web service which supplies data to the APIs. This vulnerability also applies to Java deployments, typically in clients running sandboxed Java Web Start applications or sandboxed Java applets, that load and run untrusted code (e.g., code that comes from the internet) and rely on the Java sandbox for security. CVSS 3.1 Base Score 9.1 (Confidentiality and Integrity impacts).  CVSS Vector: (CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N).",
+          "component": "wolfi:ca-certificates-bundle",
+          "severity": "Critical",
+          "cvss": 9.1,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+          "cwe": [
+            "CWE-327"
+          ],
+          "installed_version": "20260611-r1",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ca-certificates-bundle:20260611-r1",
+          "source_id": "alpine://wolfi:ca-certificates-bundle",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ca-certificates-bundle:20260611-r1",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1170984",
+          "xray_id": "XRAY-1170984",
+          "summary": "AnyIO runs a single `PathLike` command through the shell, so an untrusted path component is command injection",
+          "component": "anyio",
+          "severity": "High",
+          "cvss": 7.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-78"
+          ],
+          "installed_version": "4.14.2",
+          "infected_range": "4.5.0 ≤ Version ≤ 4.16.0",
+          "fix_version": null,
+          "source_component_id": "pypi://anyio:4.14.2",
+          "source_id": "pypi://anyio",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/anyio-4.14.2.dist-info/anyio:4.14.2",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1167703",
+          "xray_id": "XRAY-1167703",
+          "summary": "Denial of Service via quadratic processing of request parameters",
+          "component": "fastapi",
+          "severity": "High",
+          "cvss": 7.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-407",
+            "CWE-400"
+          ],
+          "installed_version": "0.136.3",
+          "infected_range": "0.123.2 ≤ Version < 0.163.2",
+          "fix_version": "0.163.2",
+          "source_component_id": "pypi://fastapi:0.136.3",
+          "source_id": "pypi://fastapi",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/fastapi-0.136.3.dist-info/fastapi:0.136.3",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1161899",
+          "xray_id": "XRAY-1161899",
+          "summary": "Authenticated secret exfiltration via Azure Entra credential parameters in the request body",
+          "component": "litellm",
+          "severity": "High",
+          "cvss": 7.7,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:N/A:N",
+          "cwe": [
+            "CWE-209",
+            "CWE-184"
+          ],
+          "installed_version": "1.103.10",
+          "infected_range": "< 1.106.9,1.107.0.dev1 ≤ Version < 1.108.6,1.109.0.dev1 ≤ Version < 1.109.1,1.110.0.dev1 ≤ Version < 1.110.0-rc.2",
+          "fix_version": "1.106.9,1.108.6,1.109.1,1.110.0-rc.2",
+          "source_component_id": "pypi://litellm:1.103.10",
+          "source_id": "pypi://litellm",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/litellm-1.103.10.dist-info/litellm:1.103.10",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-84243",
+          "xray_id": "XRAY-1160996",
+          "summary": "The gettext family of functions in the GNU C Library version 2.0 and later accept LANGUAGE environment variable entries that contain '/' or that are equal to \"..\", unless the program is setuid or setgid (AT_SECURE).  An attacker who can set LANGUAGE in the environment of a program that uses gettext can make it load a message catalog (.mo file) from an arbitrary location in the file system.  A crafted .mo file can crash the program through out-of-range offsets, or supply translations whose format directives do not match the arguments passed by the program.  That causes undefined behaviour in the printf family of functions and may allow arbitrary code execution with the privileges of the program.  The safety of message catalogs relies on them being installed in trusted, read-only locations, and the directory traversal bypasses this.\r\n\r\nThe fix for CVE-2014-0475 rejects \"..\" path components in locale names passed to setlocale or taken from the LC_ALL, LC_* and LANG environment variables.  gettext reads LANGUAGE directly and appends each colon-separated entry to the message catalog directory, so that fix did not cover LANGUAGE.\r\n\r\nLANGUAGE is only used when the LC_MESSAGES locale is not \"C\", \"C.<encoding>\" or \"POSIX\", so the attacker must also be able to select another installed locale, for example through LANG or LC_ALL.  Exploitation also requires that the attacker can place the crafted file in a location readable by the target program, and that the environment crosses a trust boundary without the program running as AT_SECURE.  An example is an SSH server that accepts LANGUAGE and LANG from clients through the AcceptEnv directive and restricts an account to a forced command; the attacker may use this to escape the restriction.",
+          "component": "wolfi:libcrypt1-2.44",
+          "severity": "High",
+          "cvss": 7.0,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:libcrypt1-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:libcrypt1-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:libcrypt1-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-84243",
+          "xray_id": "XRAY-1160996",
+          "summary": "The gettext family of functions in the GNU C Library version 2.0 and later accept LANGUAGE environment variable entries that contain '/' or that are equal to \"..\", unless the program is setuid or setgid (AT_SECURE).  An attacker who can set LANGUAGE in the environment of a program that uses gettext can make it load a message catalog (.mo file) from an arbitrary location in the file system.  A crafted .mo file can crash the program through out-of-range offsets, or supply translations whose format directives do not match the arguments passed by the program.  That causes undefined behaviour in the printf family of functions and may allow arbitrary code execution with the privileges of the program.  The safety of message catalogs relies on them being installed in trusted, read-only locations, and the directory traversal bypasses this.\r\n\r\nThe fix for CVE-2014-0475 rejects \"..\" path components in locale names passed to setlocale or taken from the LC_ALL, LC_* and LANG environment variables.  gettext reads LANGUAGE directly and appends each colon-separated entry to the message catalog directory, so that fix did not cover LANGUAGE.\r\n\r\nLANGUAGE is only used when the LC_MESSAGES locale is not \"C\", \"C.<encoding>\" or \"POSIX\", so the attacker must also be able to select another installed locale, for example through LANG or LC_ALL.  Exploitation also requires that the attacker can place the crafted file in a location readable by the target program, and that the environment crosses a trust boundary without the program running as AT_SECURE.  An example is an SSH server that accepts LANGUAGE and LANG from clients through the AcceptEnv directive and restricts an account to a forced command; the attacker may use this to escape the restriction.",
+          "component": "wolfi:glibc-2.44",
+          "severity": "High",
+          "cvss": 7.0,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": "< 2.44-r16",
+          "fix_version": "2.44-r16",
+          "source_component_id": "alpine://wolfi:glibc-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-84243",
+          "xray_id": "XRAY-1160996",
+          "summary": "The gettext family of functions in the GNU C Library version 2.0 and later accept LANGUAGE environment variable entries that contain '/' or that are equal to \"..\", unless the program is setuid or setgid (AT_SECURE).  An attacker who can set LANGUAGE in the environment of a program that uses gettext can make it load a message catalog (.mo file) from an arbitrary location in the file system.  A crafted .mo file can crash the program through out-of-range offsets, or supply translations whose format directives do not match the arguments passed by the program.  That causes undefined behaviour in the printf family of functions and may allow arbitrary code execution with the privileges of the program.  The safety of message catalogs relies on them being installed in trusted, read-only locations, and the directory traversal bypasses this.\r\n\r\nThe fix for CVE-2014-0475 rejects \"..\" path components in locale names passed to setlocale or taken from the LC_ALL, LC_* and LANG environment variables.  gettext reads LANGUAGE directly and appends each colon-separated entry to the message catalog directory, so that fix did not cover LANGUAGE.\r\n\r\nLANGUAGE is only used when the LC_MESSAGES locale is not \"C\", \"C.<encoding>\" or \"POSIX\", so the attacker must also be able to select another installed locale, for example through LANG or LC_ALL.  Exploitation also requires that the attacker can place the crafted file in a location readable by the target program, and that the environment crosses a trust boundary without the program running as AT_SECURE.  An example is an SSH server that accepts LANGUAGE and LANG from clients through the AcceptEnv directive and restricts an account to a forced command; the attacker may use this to escape the restriction.",
+          "component": "wolfi:ld-linux-2.44",
+          "severity": "High",
+          "cvss": 7.0,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ld-linux-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:ld-linux-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ld-linux-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-84243",
+          "xray_id": "XRAY-1160996",
+          "summary": "The gettext family of functions in the GNU C Library version 2.0 and later accept LANGUAGE environment variable entries that contain '/' or that are equal to \"..\", unless the program is setuid or setgid (AT_SECURE).  An attacker who can set LANGUAGE in the environment of a program that uses gettext can make it load a message catalog (.mo file) from an arbitrary location in the file system.  A crafted .mo file can crash the program through out-of-range offsets, or supply translations whose format directives do not match the arguments passed by the program.  That causes undefined behaviour in the printf family of functions and may allow arbitrary code execution with the privileges of the program.  The safety of message catalogs relies on them being installed in trusted, read-only locations, and the directory traversal bypasses this.\r\n\r\nThe fix for CVE-2014-0475 rejects \"..\" path components in locale names passed to setlocale or taken from the LC_ALL, LC_* and LANG environment variables.  gettext reads LANGUAGE directly and appends each colon-separated entry to the message catalog directory, so that fix did not cover LANGUAGE.\r\n\r\nLANGUAGE is only used when the LC_MESSAGES locale is not \"C\", \"C.<encoding>\" or \"POSIX\", so the attacker must also be able to select another installed locale, for example through LANG or LC_ALL.  Exploitation also requires that the attacker can place the crafted file in a location readable by the target program, and that the environment crosses a trust boundary without the program running as AT_SECURE.  An example is an SSH server that accepts LANGUAGE and LANG from clients through the AcceptEnv directive and restricts an account to a forced command; the attacker may use this to escape the restriction.",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "severity": "High",
+          "cvss": 7.0,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44-locale-posix",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-85091",
+          "xray_id": "XRAY-1076681",
+          "summary": "zlib 1.2.11 through 1.3.2 contains a heap buffer overflow: after an underlying write() fails, gz_write() returns without resetting strm.next_in, leaving it pointed at the caller's buffer. A later gz* write call then derives a position from the stale pointer and writes past a heap allocation; any write() failure reaches it, including EPIPE on a blocking descriptor, and in versions before 1.3.1.2 the failed write must be followed by a gzclearerr() call.",
+          "component": "wolfi:zlib",
+          "severity": "High",
+          "cvss": 7.4,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:H",
+          "cwe": [
+            "CWE-787"
+          ],
+          "installed_version": "1.3.2-r5",
+          "infected_range": "< 1.3.2.1_rc20260601-r0",
+          "fix_version": "1.3.2.1_rc20260601-r0",
+          "source_component_id": "alpine://wolfi:zlib:1.3.2-r5",
+          "source_id": "alpine://wolfi:zlib",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:zlib:1.3.2-r5",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1173174",
+          "xray_id": "XRAY-1173174",
+          "summary": "ReadWriteLock can remove unrelated empty directories",
+          "component": "filelock",
+          "severity": "Medium",
+          "cvss": 4.4,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-610"
+          ],
+          "installed_version": "4.2.4",
+          "infected_range": "4.2.1 ≤ Version < 4.3.0",
+          "fix_version": "4.3.0",
+          "source_component_id": "pypi://filelock:4.2.4",
+          "source_id": "pypi://filelock",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/filelock-4.2.4.dist-info/filelock:4.2.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1172482",
+          "xray_id": "XRAY-1172482",
+          "summary": "Virtual keys with no assigned user can read metadata of other userless keys via /key/info",
+          "component": "litellm",
+          "severity": "Medium",
+          "cvss": 4.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+          "cwe": [
+            "CWE-639"
+          ],
+          "installed_version": "1.103.10",
+          "infected_range": "< 1.106.12,1.107.0.dev1 ≤ Version < 1.108.13,1.109.0.dev1 ≤ Version < 1.109.3,1.110.0.dev1 ≤ Version < 1.110.2",
+          "fix_version": "1.106.12,1.108.13,1.109.3,1.110.2",
+          "source_component_id": "pypi://litellm:1.103.10",
+          "source_id": "pypi://litellm",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/litellm-1.103.10.dist-info/litellm:1.103.10",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-133424",
+          "xray_id": "XRAY-1151256",
+          "summary": "When extra data is allowed, providing both the alias and the name of an aliased TypedDict or dataclass field makes the unvalidated value (provided under the name) overwrite the validated one (provided under the alias), resulting in validated data not matching the declared type.\r\n\r\nExtra items are stored in the same dictionary as the fields (the returned dictionary for TypedDict, the instance __dict__ for dataclasses). As only the alias is marked as used, the field name is treated as an extra item, and its unvalidated value overrides the validated one. The TypedDict validator (pydantic-core/src/validators/typed_dict.rs) and the dataclass validator (pydantic-core/src/validators/dataclass.rs) share this logic.\r\n\r\nThe issue was fixed in commit 34491f5328f168f14e3769cd5f0f83c0af0f4778.\r\n\r\nImpact: validation bypass, as data returned by validation doesn't match the declared type. Affected are applications validating untrusted data into TypedDict or dataclass types with aliased fields and extra data allowed (with extra='allow', or with the extra_items argument for TypedDict), using Pydantic V2 (up to and including 2.14.1).\r\n\r\nPydantic models (BaseModel) are not affected, as extra data is stored separately from fields.",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-20"
+          ],
+          "installed_version": "2.12.5",
+          "infected_range": "2.0 ≤ Version < 2.14.2",
+          "fix_version": "2.14.2",
+          "source_component_id": "pypi://pydantic:2.12.5",
+          "source_id": "pypi://pydantic",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/pydantic-2.12.5.dist-info/pydantic:2.12.5",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-133426",
+          "xray_id": "XRAY-1151241",
+          "summary": "Validating an untrusted string in exponent notation into a Fraction field computes the full power of ten without any bound: an input of a few bytes takes seconds to validate.\r\n\r\nString inputs are passed to the Fraction constructor. For strings in exponent notation (e.g. '1e8000000'), CPython computes the corresponding power of ten as an integer (in Lib/fractions.py).\r\n\r\nThe issue was fixed in commit 69ed168e9ad465eef4c8d81efb152a93b604daf5. For strings in exponent notation, the exponent is now parsed before calling the Fraction constructor, and exponents larger than 4300 (in absolute value) are rejected.\r\n\r\nImpact: denial of service through validation of untrusted input. Affected are applications validating untrusted strings into Fraction fields (in both JSON and Python mode, including in strict mode), using Pydantic from 2.10.0 up to (but excluding) 2.14.0.\r\n\r\nFrom 2.14.0, exponents larger than 4300 (in absolute value) are rejected, matching the maximum number of digits accepted for integers.",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-400"
+          ],
+          "installed_version": "2.12.5",
+          "infected_range": "2.10.0 ≤ Version < 2.14.0",
+          "fix_version": "2.14.0",
+          "source_component_id": "pypi://pydantic:2.12.5",
+          "source_id": "pypi://pydantic",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/pydantic-2.12.5.dist-info/pydantic:2.12.5",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-133428",
+          "xray_id": "XRAY-1151240",
+          "summary": "Validating an untrusted URL with a long scheme and many hosts into a multi-host URL field (e.g. PostgresDsn) takes quadratic time and memory: an input of about a hundred kilobytes takes around a gigabyte of memory to validate.\r\n\r\nThe parse_multihost_url() function (in pydantic-core/src/validators/url.rs) parses each host separately, prepending the whole URL prefix (including the scheme) to every one of them. As the scheme can be arbitrarily long, and is parsed and stored once per host, both time and memory grow quadratically with the input size. Allowed schemes (e.g. postgres for PostgresDsn) are only checked after parsing, so they don't prevent the issue.\r\n\r\nThe issue was fixed in commit b4028f9d87e34750e53be0ba011d70f3c0fcc94e.\r\n\r\nImpact: denial of service through validation of untrusted input. Affected are applications validating untrusted strings into multi-host URL fields (PostgresDsn, MongoDsn, NatsDsn, or custom types built on MultiHostUrl).",
+          "component": "pydantic",
+          "severity": "Medium",
+          "cvss": null,
+          "cvss_version": null,
+          "cvss_vector": null,
+          "cwe": [
+            "CWE-407"
+          ],
+          "installed_version": "2.12.5",
+          "infected_range": "2.0.0 ≤ Version < 2.14.0",
+          "fix_version": "2.14.0",
+          "source_component_id": "pypi://pydantic:2.12.5",
+          "source_id": "pypi://pydantic",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/pydantic-2.12.5.dist-info/pydantic:2.12.5",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-111943",
+          "xray_id": "XRAY-1141022",
+          "summary": "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+          "component": "wolfi:ca-certificates-bundle",
+          "severity": "Medium",
+          "cvss": 6.8,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N",
+          "cwe": [
+            "CWE-299"
+          ],
+          "installed_version": "20260611-r1",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ca-certificates-bundle:20260611-r1",
+          "source_id": "alpine://wolfi:ca-certificates-bundle",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ca-certificates-bundle:20260611-r1",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-86805",
+          "xray_id": "XRAY-1102315",
+          "summary": "A time-of-check to time-of-use (TOCTOU) race condition in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to escalate privileges. When expanding $ORIGIN in DT_RPATH for setuid/setgid (AT_SECURE) programs, glibc validates the lexically normalized search path against the trusted directories but then opens the raw, un-normalized path. On systems where the Linux fs.protected_hardlinks sysctl is disabled, a local attacker who hard-links such a program into an attacker-controlled directory and wins a race to replace an intermediate path component with a symbolic link can direct the loader outside the trusted directory, causing it to load an attacker-controlled shared object and execute arbitrary code with the elevated privileges of the program.\r\n\r\nExploitation requires an installed setuid or setgid binary whose DT_RPATH uses $ORIGIN followed by \"..\" traversal that normalizes into a trusted directory, and the ability to hard-link that binary and win the race by swapping a path component for a symbolic link. Major Linux-based OS distributions ship with fs.protected_hardlinks enabled by default and mitigate the vulnerability.",
+          "component": "wolfi:libcrypt1-2.44",
+          "severity": "Medium",
+          "cvss": 6.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:L",
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:libcrypt1-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:libcrypt1-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:libcrypt1-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-86805",
+          "xray_id": "XRAY-1102315",
+          "summary": "A time-of-check to time-of-use (TOCTOU) race condition in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to escalate privileges. When expanding $ORIGIN in DT_RPATH for setuid/setgid (AT_SECURE) programs, glibc validates the lexically normalized search path against the trusted directories but then opens the raw, un-normalized path. On systems where the Linux fs.protected_hardlinks sysctl is disabled, a local attacker who hard-links such a program into an attacker-controlled directory and wins a race to replace an intermediate path component with a symbolic link can direct the loader outside the trusted directory, causing it to load an attacker-controlled shared object and execute arbitrary code with the elevated privileges of the program.\r\n\r\nExploitation requires an installed setuid or setgid binary whose DT_RPATH uses $ORIGIN followed by \"..\" traversal that normalizes into a trusted directory, and the ability to hard-link that binary and win the race by swapping a path component for a symbolic link. Major Linux-based OS distributions ship with fs.protected_hardlinks enabled by default and mitigate the vulnerability.",
+          "component": "wolfi:ld-linux-2.44",
+          "severity": "Medium",
+          "cvss": 6.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:L",
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ld-linux-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:ld-linux-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ld-linux-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-86805",
+          "xray_id": "XRAY-1102315",
+          "summary": "A time-of-check to time-of-use (TOCTOU) race condition in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to escalate privileges. When expanding $ORIGIN in DT_RPATH for setuid/setgid (AT_SECURE) programs, glibc validates the lexically normalized search path against the trusted directories but then opens the raw, un-normalized path. On systems where the Linux fs.protected_hardlinks sysctl is disabled, a local attacker who hard-links such a program into an attacker-controlled directory and wins a race to replace an intermediate path component with a symbolic link can direct the loader outside the trusted directory, causing it to load an attacker-controlled shared object and execute arbitrary code with the elevated privileges of the program.\r\n\r\nExploitation requires an installed setuid or setgid binary whose DT_RPATH uses $ORIGIN followed by \"..\" traversal that normalizes into a trusted directory, and the ability to hard-link that binary and win the race by swapping a path component for a symbolic link. Major Linux-based OS distributions ship with fs.protected_hardlinks enabled by default and mitigate the vulnerability.",
+          "component": "wolfi:glibc-2.44",
+          "severity": "Medium",
+          "cvss": 6.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:L",
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": "< 2.44-r8",
+          "fix_version": "2.44-r8",
+          "source_component_id": "alpine://wolfi:glibc-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-86805",
+          "xray_id": "XRAY-1102315",
+          "summary": "A time-of-check to time-of-use (TOCTOU) race condition in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to escalate privileges. When expanding $ORIGIN in DT_RPATH for setuid/setgid (AT_SECURE) programs, glibc validates the lexically normalized search path against the trusted directories but then opens the raw, un-normalized path. On systems where the Linux fs.protected_hardlinks sysctl is disabled, a local attacker who hard-links such a program into an attacker-controlled directory and wins a race to replace an intermediate path component with a symbolic link can direct the loader outside the trusted directory, causing it to load an attacker-controlled shared object and execute arbitrary code with the elevated privileges of the program.\r\n\r\nExploitation requires an installed setuid or setgid binary whose DT_RPATH uses $ORIGIN followed by \"..\" traversal that normalizes into a trusted directory, and the ability to hard-link that binary and win the race by swapping a path component for a symbolic link. Major Linux-based OS distributions ship with fs.protected_hardlinks enabled by default and mitigate the vulnerability.",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "severity": "Medium",
+          "cvss": 6.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:L",
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44-locale-posix",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-89092",
+          "xray_id": "XRAY-1102314",
+          "summary": "The nscd service in the GNU C Library 2.3.4 onwards may crash due to a \r\nstack overflow when a malicious DNS server returns too large a response \r\nfor a DNS query, resulting in degraded DNS resolution for the system.\r\n\r\n\r\n\r\nExploitation of this bug needs a system that has nscd enabled and using \r\nan untrusted DNS server for name resolution, with the compromised DNS \r\nserver being capable of processing records large enough to result in a \r\nstack overflow in an nscd thread stack.  During experimentation, bind 9 \r\nwas unable to handle large records, but that could change in future or \r\nwith a different name server.  In typical installations, nscd is \r\nexecuted in an isolated context as its own user without a shell, due to \r\nwhich any compromise of that service is isolated.\r\n\r\n\r\n\r\nThere is a remote possibility of nscd cache corruption if an attacker \r\nmanages to get the stack pointer into a desired point in the heap, \r\npotentially resulting in other caches in nscd being overwritten with \r\ncorrupt data through the stack overflow, until the buggy code path \r\neventually results in a crash.\r\n\r\n\r\n\r\nFinally, a crash in nscd may result in performance degradation when \r\nresolving names, but it does not result in a denial of service.",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "severity": "Medium",
+          "cvss": 4.2,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-789"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44-locale-posix",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-89092",
+          "xray_id": "XRAY-1102314",
+          "summary": "The nscd service in the GNU C Library 2.3.4 onwards may crash due to a \r\nstack overflow when a malicious DNS server returns too large a response \r\nfor a DNS query, resulting in degraded DNS resolution for the system.\r\n\r\n\r\n\r\nExploitation of this bug needs a system that has nscd enabled and using \r\nan untrusted DNS server for name resolution, with the compromised DNS \r\nserver being capable of processing records large enough to result in a \r\nstack overflow in an nscd thread stack.  During experimentation, bind 9 \r\nwas unable to handle large records, but that could change in future or \r\nwith a different name server.  In typical installations, nscd is \r\nexecuted in an isolated context as its own user without a shell, due to \r\nwhich any compromise of that service is isolated.\r\n\r\n\r\n\r\nThere is a remote possibility of nscd cache corruption if an attacker \r\nmanages to get the stack pointer into a desired point in the heap, \r\npotentially resulting in other caches in nscd being overwritten with \r\ncorrupt data through the stack overflow, until the buggy code path \r\neventually results in a crash.\r\n\r\n\r\n\r\nFinally, a crash in nscd may result in performance degradation when \r\nresolving names, but it does not result in a denial of service.",
+          "component": "wolfi:glibc-2.44",
+          "severity": "Medium",
+          "cvss": 4.2,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-789"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": "< 2.44-r8",
+          "fix_version": "2.44-r8",
+          "source_component_id": "alpine://wolfi:glibc-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-89092",
+          "xray_id": "XRAY-1102314",
+          "summary": "The nscd service in the GNU C Library 2.3.4 onwards may crash due to a \r\nstack overflow when a malicious DNS server returns too large a response \r\nfor a DNS query, resulting in degraded DNS resolution for the system.\r\n\r\n\r\n\r\nExploitation of this bug needs a system that has nscd enabled and using \r\nan untrusted DNS server for name resolution, with the compromised DNS \r\nserver being capable of processing records large enough to result in a \r\nstack overflow in an nscd thread stack.  During experimentation, bind 9 \r\nwas unable to handle large records, but that could change in future or \r\nwith a different name server.  In typical installations, nscd is \r\nexecuted in an isolated context as its own user without a shell, due to \r\nwhich any compromise of that service is isolated.\r\n\r\n\r\n\r\nThere is a remote possibility of nscd cache corruption if an attacker \r\nmanages to get the stack pointer into a desired point in the heap, \r\npotentially resulting in other caches in nscd being overwritten with \r\ncorrupt data through the stack overflow, until the buggy code path \r\neventually results in a crash.\r\n\r\n\r\n\r\nFinally, a crash in nscd may result in performance degradation when \r\nresolving names, but it does not result in a denial of service.",
+          "component": "wolfi:ld-linux-2.44",
+          "severity": "Medium",
+          "cvss": 4.2,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-789"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ld-linux-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:ld-linux-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ld-linux-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-89092",
+          "xray_id": "XRAY-1102314",
+          "summary": "The nscd service in the GNU C Library 2.3.4 onwards may crash due to a \r\nstack overflow when a malicious DNS server returns too large a response \r\nfor a DNS query, resulting in degraded DNS resolution for the system.\r\n\r\n\r\n\r\nExploitation of this bug needs a system that has nscd enabled and using \r\nan untrusted DNS server for name resolution, with the compromised DNS \r\nserver being capable of processing records large enough to result in a \r\nstack overflow in an nscd thread stack.  During experimentation, bind 9 \r\nwas unable to handle large records, but that could change in future or \r\nwith a different name server.  In typical installations, nscd is \r\nexecuted in an isolated context as its own user without a shell, due to \r\nwhich any compromise of that service is isolated.\r\n\r\n\r\n\r\nThere is a remote possibility of nscd cache corruption if an attacker \r\nmanages to get the stack pointer into a desired point in the heap, \r\npotentially resulting in other caches in nscd being overwritten with \r\ncorrupt data through the stack overflow, until the buggy code path \r\neventually results in a crash.\r\n\r\n\r\n\r\nFinally, a crash in nscd may result in performance degradation when \r\nresolving names, but it does not result in a denial of service.",
+          "component": "wolfi:libcrypt1-2.44",
+          "severity": "Medium",
+          "cvss": 4.2,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-789"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:libcrypt1-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:libcrypt1-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:libcrypt1-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-8674",
+          "xray_id": "XRAY-1102306",
+          "summary": "Initializing the DNS stub resolver from an /etc/resolv.conf file, or a LOCALDOMAIN environment variable, whose search list contains a domain of roughly 200 characters or more in the GNU C Library version 2.26 to 2.44 results in an assertion failure which aborts the process.\r\n\r\nThe resolver truncates the search list when copying it into the fixed-size _res.defdname buffer, then asserts that the copy is consistent with the full configuration.  The consistency check compared against the wrong size and did not handle a first entry that does not fit, so a correctly truncated list failed the assertion.  Any process that resolves names through the library is affected, including long-running processes that reload /etc/resolv.conf on the next query after it changes.  Search domains are commonly written to /etc/resolv.conf from data received over DHCP or from a VPN server, so an attacker on the local network may be able to trigger this without privileges on the target system, subject to validation by the network configuration software.",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "severity": "Medium",
+          "cvss": 5.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-617"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44-locale-posix",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-8674",
+          "xray_id": "XRAY-1102306",
+          "summary": "Initializing the DNS stub resolver from an /etc/resolv.conf file, or a LOCALDOMAIN environment variable, whose search list contains a domain of roughly 200 characters or more in the GNU C Library version 2.26 to 2.44 results in an assertion failure which aborts the process.\r\n\r\nThe resolver truncates the search list when copying it into the fixed-size _res.defdname buffer, then asserts that the copy is consistent with the full configuration.  The consistency check compared against the wrong size and did not handle a first entry that does not fit, so a correctly truncated list failed the assertion.  Any process that resolves names through the library is affected, including long-running processes that reload /etc/resolv.conf on the next query after it changes.  Search domains are commonly written to /etc/resolv.conf from data received over DHCP or from a VPN server, so an attacker on the local network may be able to trigger this without privileges on the target system, subject to validation by the network configuration software.",
+          "component": "wolfi:glibc-2.44",
+          "severity": "Medium",
+          "cvss": 5.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-617"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": "< 2.44-r8",
+          "fix_version": "2.44-r8",
+          "source_component_id": "alpine://wolfi:glibc-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-8674",
+          "xray_id": "XRAY-1102306",
+          "summary": "Initializing the DNS stub resolver from an /etc/resolv.conf file, or a LOCALDOMAIN environment variable, whose search list contains a domain of roughly 200 characters or more in the GNU C Library version 2.26 to 2.44 results in an assertion failure which aborts the process.\r\n\r\nThe resolver truncates the search list when copying it into the fixed-size _res.defdname buffer, then asserts that the copy is consistent with the full configuration.  The consistency check compared against the wrong size and did not handle a first entry that does not fit, so a correctly truncated list failed the assertion.  Any process that resolves names through the library is affected, including long-running processes that reload /etc/resolv.conf on the next query after it changes.  Search domains are commonly written to /etc/resolv.conf from data received over DHCP or from a VPN server, so an attacker on the local network may be able to trigger this without privileges on the target system, subject to validation by the network configuration software.",
+          "component": "wolfi:libcrypt1-2.44",
+          "severity": "Medium",
+          "cvss": 5.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-617"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:libcrypt1-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:libcrypt1-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:libcrypt1-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-8674",
+          "xray_id": "XRAY-1102306",
+          "summary": "Initializing the DNS stub resolver from an /etc/resolv.conf file, or a LOCALDOMAIN environment variable, whose search list contains a domain of roughly 200 characters or more in the GNU C Library version 2.26 to 2.44 results in an assertion failure which aborts the process.\r\n\r\nThe resolver truncates the search list when copying it into the fixed-size _res.defdname buffer, then asserts that the copy is consistent with the full configuration.  The consistency check compared against the wrong size and did not handle a first entry that does not fit, so a correctly truncated list failed the assertion.  Any process that resolves names through the library is affected, including long-running processes that reload /etc/resolv.conf on the next query after it changes.  Search domains are commonly written to /etc/resolv.conf from data received over DHCP or from a VPN server, so an attacker on the local network may be able to trigger this without privileges on the target system, subject to validation by the network configuration software.",
+          "component": "wolfi:ld-linux-2.44",
+          "severity": "Medium",
+          "cvss": 5.3,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-617"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ld-linux-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:ld-linux-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ld-linux-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-85670",
+          "xray_id": "XRAY-1072459",
+          "summary": "tokenizers (Hugging Face) is affected by an out-of-bounds buffer access in BpeBuilder::build (tokenizers/src/models/bpe/model.rs). When loading a tokenizer.json via Tokenizer::from_file/from_str, the builder sizes a scratch buffer to the longest vocabulary key, then writes each concatenated merge rule into it. A merge whose concatenated token exceeds the longest vocabulary key overruns the buffer, which Rust turns into a panic that aborts the process in Rust and FFI embeddings. This occurs at load time with no encoding required, so an attacker who supplies a crafted tokenizer.json can cause a denial of service. A secondary defect at the same location can cause a usize underflow (panic in debug, potential memory corruption in release) when continuing_subword_prefix is set and a merge token is shorter than the prefix. Observed in version 0.23.1.",
+          "component": "tokenizers",
+          "severity": "Medium",
+          "cvss": 6.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
+          "cwe": [
+            "CWE-787"
+          ],
+          "installed_version": "0.22.2",
+          "infected_range": "≤ 0.23.2",
+          "fix_version": null,
+          "source_component_id": "pypi://tokenizers:0.22.2",
+          "source_id": "pypi://tokenizers",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/tokenizers-0.22.2.dist-info/tokenizers:0.22.2",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-75104",
+          "xray_id": "XRAY-1060152",
+          "summary": "Hugging Face Transformers fails to validate shard filenames in checkpoint index files, allowing attackers to read arbitrary files outside the model directory. Attackers can supply malicious index files with parent-directory references or absolute paths that are joined without validation, enabling file disclosure and filesystem reconnaissance.",
+          "component": "transformers",
+          "severity": "Medium",
+          "cvss": 5.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+          "cwe": [
+            "CWE-22"
+          ],
+          "installed_version": "5.13.1",
+          "infected_range": "All Versions",
+          "fix_version": null,
+          "source_component_id": "pypi://transformers:5.13.1",
+          "source_id": "pypi://transformers",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/transformers-5.13.1.dist-info/transformers:5.13.1",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1173186",
+          "xray_id": "XRAY-1173186",
+          "summary": "SoftFileLock recovery can admit two holders through a foreign-owned record",
+          "component": "filelock",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-367"
+          ],
+          "installed_version": "4.2.4",
+          "infected_range": "4.2.1 ≤ Version < 4.3.0",
+          "fix_version": "4.3.0",
+          "source_component_id": "pypi://filelock:4.2.4",
+          "source_id": "pypi://filelock",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/filelock-4.2.4.dist-info/filelock:4.2.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1173185",
+          "xray_id": "XRAY-1173185",
+          "summary": "SoftFileLock recovery can admit two holders through a live break name",
+          "component": "filelock",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:L",
+          "cwe": [
+            "CWE-345"
+          ],
+          "installed_version": "4.2.4",
+          "infected_range": "4.2.1 ≤ Version < 4.3.0",
+          "fix_version": "4.3.0",
+          "source_component_id": "pypi://filelock:4.2.4",
+          "source_id": "pypi://filelock",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/filelock-4.2.4.dist-info/filelock:4.2.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "XRAY-1167863",
+          "xray_id": "XRAY-1167863",
+          "summary": "FileLock on Unix lets two processes hold one lock after another user removes the lock file",
+          "component": "filelock",
+          "severity": "Low",
+          "cvss": 2.5,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N",
+          "cwe": [
+            "CWE-667"
+          ],
+          "installed_version": "4.2.4",
+          "infected_range": "3.13.2 ≤ Version < 4.2.12",
+          "fix_version": "4.2.12",
+          "source_component_id": "pypi://filelock:4.2.4",
+          "source_id": "pypi://filelock",
+          "component_physical_path": "sha256__dfc54102217b5de82024238b887b4b3f2a527d6bdd335f40f15ef5124799645b.tar.gz/opt/venv/lib/python3.13/site-packages/filelock-4.2.4.dist-info/filelock:4.2.4",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-95818",
+          "xray_id": "XRAY-1102316",
+          "summary": "A stack-based buffer overflow in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to crash or corrupt the memory of setuid/setgid (AT_SECURE) programs.\r\n\r\nWhen such a program's DT_RPATH or DT_RUNPATH begins with $ORIGIN and is followed by NUL or '/' the loader both reads past the end of the path buffer and writes past the end of a stack-allocated internal buffer. The corrupted loader stack can lead to a loader crash (denial of service) and limited disclosure of process memory.",
+          "component": "wolfi:glibc-2.44-locale-posix",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
+          "cwe": [
+            "CWE-121"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44-locale-posix",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44-locale-posix:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-95818",
+          "xray_id": "XRAY-1102316",
+          "summary": "A stack-based buffer overflow in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to crash or corrupt the memory of setuid/setgid (AT_SECURE) programs.\r\n\r\nWhen such a program's DT_RPATH or DT_RUNPATH begins with $ORIGIN and is followed by NUL or '/' the loader both reads past the end of the path buffer and writes past the end of a stack-allocated internal buffer. The corrupted loader stack can lead to a loader crash (denial of service) and limited disclosure of process memory.",
+          "component": "wolfi:libcrypt1-2.44",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
+          "cwe": [
+            "CWE-121"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:libcrypt1-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:libcrypt1-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:libcrypt1-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-95818",
+          "xray_id": "XRAY-1102316",
+          "summary": "A stack-based buffer overflow in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to crash or corrupt the memory of setuid/setgid (AT_SECURE) programs.\r\n\r\nWhen such a program's DT_RPATH or DT_RUNPATH begins with $ORIGIN and is followed by NUL or '/' the loader both reads past the end of the path buffer and writes past the end of a stack-allocated internal buffer. The corrupted loader stack can lead to a loader crash (denial of service) and limited disclosure of process memory.",
+          "component": "wolfi:glibc-2.44",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
+          "cwe": [
+            "CWE-121"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": "< 2.44-r8",
+          "fix_version": "2.44-r8",
+          "source_component_id": "alpine://wolfi:glibc-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:glibc-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:glibc-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        },
+        {
+          "cve": "CVE-2026-95818",
+          "xray_id": "XRAY-1102316",
+          "summary": "A stack-based buffer overflow in the dynamic loader (ld.so) of the GNU C Library (glibc) versions 2.14 through 2.44 allows a local attacker to crash or corrupt the memory of setuid/setgid (AT_SECURE) programs.\r\n\r\nWhen such a program's DT_RPATH or DT_RUNPATH begins with $ORIGIN and is followed by NUL or '/' the loader both reads past the end of the path buffer and writes past the end of a stack-allocated internal buffer. The corrupted loader stack can lead to a loader crash (denial of service) and limited disclosure of process memory.",
+          "component": "wolfi:ld-linux-2.44",
+          "severity": "Low",
+          "cvss": 3.6,
+          "cvss_version": "3.1",
+          "cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
+          "cwe": [
+            "CWE-121"
+          ],
+          "installed_version": "2.44-r6",
+          "infected_range": null,
+          "fix_version": null,
+          "source_component_id": "alpine://wolfi:ld-linux-2.44:2.44-r6",
+          "source_id": "alpine://wolfi:ld-linux-2.44",
+          "component_physical_path": "sha256__7f42b6c7c842cf085653b8c78d7ae7a184b4787c11efcbe028347d82e8b0f68b.tar.gz/wolfi:ld-linux-2.44:2.44-r6",
+          "applicability": "Not Covered"
+        }
+      ]
     }
   ],
   "component_treatments": {
@@ -4207,19 +4948,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2019-1010022",
       "images": {
@@ -4282,19 +5019,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2019-1010023",
       "images": {
@@ -4359,19 +5092,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Minor issue"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "6.6+20251231-1",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "6.6+20251231-1",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "6.6+20251231-1",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2025-69720",
       "images": {
@@ -4431,19 +5169,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Minor issue"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "14.4.0-3",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "14.4.0-3",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "14.4.0-3",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-95619",
       "images": {
@@ -4506,19 +5249,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-5",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-5",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-5",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-19499",
       "images": {
@@ -4584,19 +5332,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2018-20796",
       "images": {
@@ -4663,19 +5407,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2019-9192",
       "images": {
@@ -4739,9 +5479,9 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "debian_tracker_review": {
-        "date": "2026-11-10",
+        "date": "2026-11-23",
         "trixie": {
           "status": "resolved",
           "fixed_version": "1:1.3.dfsg+really1.3.1-1+deb13u1",
@@ -4757,8 +5497,8 @@
             "suite": "sid"
           }
         ],
-        "scope": "Debian tracker review only. The Headroom target uses Wolfi.",
-        "evidence": "images/headroom-mcp/SECURITY-20261110.md"
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-85091",
       "images": {
@@ -4805,28 +5545,47 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
           "prior_treatment": {
-            "treatment": "vendor-fix-pinned",
-            "suite": "wolfi",
+            "treatment": "package-pin",
             "fixed_version": "1.3.2.1_rc20260601-r0",
-            "evidence": [
-              "images/headroom-mcp/Dockerfile.wolfi"
+            "packages": [
+              "zlib"
             ],
-            "scan_status": "cleared",
-            "scan_tag": "0.42.0-wolfi-v2",
-            "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
             "scan_url": null,
-            "published_digest": null,
-            "scan_result": "absent-from-report"
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2",
+            "prior_treatment": {
+              "treatment": "vendor-fix-pinned",
+              "suite": "wolfi",
+              "fixed_version": "1.3.2.1_rc20260601-r0",
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi"
+              ],
+              "scan_status": "cleared",
+              "scan_tag": "0.42.0-wolfi-v2",
+              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "scan_url": null,
+              "published_digest": null,
+              "scan_result": "absent-from-report"
+            }
           }
         },
         "agentmemory-mcp-wolfi": {
@@ -4874,7 +5633,7 @@
           "source_package": "zlib",
           "fixed_version": "1.3.2.1_rc20260601-r0",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -4894,19 +5653,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-3",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-3",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-3",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-5435",
       "images": {
@@ -4971,19 +5735,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "2.4.0-1",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.4.0-1",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.4.0-1",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54369",
       "images": {
@@ -5040,19 +5809,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "1:2.6.0-1",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "1:2.6.0-1",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "1:2.6.0-1",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54371",
       "images": {
@@ -5112,19 +5886,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Minor issue"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "14.4.0-3",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "14.4.0-3",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "14.4.0-3",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-102010",
       "images": {
@@ -5187,19 +5966,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-3",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-3",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-3",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-6238",
       "images": {
@@ -5263,13 +6047,13 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "debian_tracker_review": {
-        "date": "2026-11-10",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
+          "status": "resolved",
+          "fixed_version": "2.41-12+deb13u5",
+          "no_dsa": null
         },
         "replacement_candidates": [
           {
@@ -5281,8 +6065,8 @@
             "suite": "sid"
           }
         ],
-        "scope": "Debian tracker review only. The Headroom target uses Wolfi.",
-        "evidence": "images/headroom-mcp/SECURITY-20261110.md"
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-86805",
       "images": {
@@ -5412,24 +6196,46 @@
         },
         "headroom-mcp-wolfi": {
           "treatment": "package-pin",
-          "fixed_version": "2.44-r8",
+          "fixed_version": "2.44-r16",
           "packages": [
-            "glibc-2.44",
-            "glibc-2.44-locale-posix",
+            "libcrypt1-2.44",
             "ld-linux-2.44",
-            "libcrypt1-2.44"
+            "glibc-2.44",
+            "glibc-2.44-locale-posix"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "2.44-r8",
+            "packages": [
+              "glibc-2.44",
+              "glibc-2.44-locale-posix",
+              "ld-linux-2.44",
+              "libcrypt1-2.44"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         }
       },
       "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending.",
@@ -5439,7 +6245,7 @@
           "source_package": "glibc-2.44",
           "fixed_version": "2.44-r8",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -5458,19 +6264,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Will be fixed first in unstable, then point release update; not to be backported by individual patches"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "2.4.0-1",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.4.0-1",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.4.0-1",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-54370",
       "images": {
@@ -5527,19 +6338,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-56391",
       "images": {
@@ -5596,19 +6403,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-56392",
       "images": {
@@ -5666,19 +6469,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-5",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-5",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-5",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-80489",
       "images": {
@@ -5744,19 +6552,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-5",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-5",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-5",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-77117",
       "images": {
@@ -5822,19 +6635,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-4",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-4",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-4",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-19542",
       "images": {
@@ -5899,19 +6717,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "1:1.3.dfsg+really1.3.2-1",
+          "fixed_version": "1:1.3.dfsg+really1.3.1-1+deb13u1",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "1:1.3.dfsg+really1.3.2-1",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "1:1.3.dfsg+really1.3.2-1",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-27171",
       "images": {
@@ -5968,19 +6791,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-102473",
       "images": {
@@ -6041,13 +6860,13 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "debian_tracker_review": {
-        "date": "2026-11-10",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
+          "status": "resolved",
+          "fixed_version": "2.41-12+deb13u5",
+          "no_dsa": null
         },
         "replacement_candidates": [
           {
@@ -6059,8 +6878,8 @@
             "suite": "sid"
           }
         ],
-        "scope": "Debian tracker review only. The Headroom target uses Wolfi.",
-        "evidence": "images/headroom-mcp/SECURITY-20261110.md"
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-8674",
       "images": {
@@ -6190,24 +7009,46 @@
         },
         "headroom-mcp-wolfi": {
           "treatment": "package-pin",
-          "fixed_version": "2.44-r8",
+          "fixed_version": "2.44-r16",
           "packages": [
-            "glibc-2.44",
             "glibc-2.44-locale-posix",
-            "ld-linux-2.44",
-            "libcrypt1-2.44"
+            "glibc-2.44",
+            "libcrypt1-2.44",
+            "ld-linux-2.44"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "2.44-r8",
+            "packages": [
+              "glibc-2.44",
+              "glibc-2.44-locale-posix",
+              "ld-linux-2.44",
+              "libcrypt1-2.44"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         }
       },
       "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending.",
@@ -6217,7 +7058,7 @@
           "source_package": "glibc-2.44",
           "fixed_version": "2.44-r8",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -6237,19 +7078,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2019-1010025",
       "images": {
@@ -6312,19 +7149,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2019-1010024",
       "images": {
@@ -6387,19 +7220,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-5",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-5",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-5",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-18374",
       "images": {
@@ -6464,19 +7302,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2017-18018",
       "images": {
@@ -6533,19 +7367,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2025-5278",
       "images": {
@@ -6601,13 +7431,13 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "debian_tracker_review": {
-        "date": "2026-11-10",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
+          "status": "resolved",
+          "fixed_version": "2.41-12+deb13u5",
+          "no_dsa": null
         },
         "replacement_candidates": [
           {
@@ -6619,8 +7449,8 @@
             "suite": "sid"
           }
         ],
-        "scope": "Debian tracker review only. The Headroom target uses Wolfi.",
-        "evidence": "images/headroom-mcp/SECURITY-20261110.md"
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-89092",
       "images": {
@@ -6761,24 +7591,46 @@
         },
         "headroom-mcp-wolfi": {
           "treatment": "package-pin",
-          "fixed_version": "2.44-r8",
+          "fixed_version": "2.44-r16",
           "packages": [
-            "glibc-2.44",
             "glibc-2.44-locale-posix",
+            "glibc-2.44",
             "ld-linux-2.44",
             "libcrypt1-2.44"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "2.44-r8",
+            "packages": [
+              "glibc-2.44",
+              "glibc-2.44-locale-posix",
+              "ld-linux-2.44",
+              "libcrypt1-2.44"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         }
       },
       "remaining": "nscd absent; libc remains required. Official fix exists in forky 2.43-7, now used by Headroom candidate (PR 78); applicability result unchanged; exact-digest rescan pending. Xray 2026-10-16 on 0.41.0-v3 (sha256:650e062a...bb12) still reports it; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. Wolfi review 2026-10-19: vendor fixes all three in 2.44-r8. Override concrete base-world r6 pins and assert matching libcrypt1 dependency in AI CLI runner and LiteLLM; candidate builds, installed-package assertions, existing runtime tests and HIGH/CRITICAL Trivy passed (PR 95). Publication and exact-digest Xray rescans pending. Existing Debian treatment preserved. agentmemory-mcp Wolfi 0.9.30-wolfi-v2: pinned in Dockerfile.wolfi with build-time version check; scan pending. Bifrost Wolfi v2 also pins this (2.3.2-wolfi-v2); scan of that digest pending.",
@@ -6788,7 +7640,7 @@
           "source_package": "glibc-2.44",
           "fixed_version": "2.44-r8",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -6807,19 +7659,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-102474",
       "images": {
@@ -6882,19 +7730,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-7",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-7",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-7",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-97399",
       "images": {
@@ -6958,13 +7811,13 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "debian_tracker_review": {
-        "date": "2026-11-10",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
+          "status": "resolved",
+          "fixed_version": "2.41-12+deb13u5",
+          "no_dsa": null
         },
         "replacement_candidates": [
           {
@@ -6976,8 +7829,8 @@
             "suite": "sid"
           }
         ],
-        "scope": "Debian tracker review only. The Headroom target uses Wolfi.",
-        "evidence": "images/headroom-mcp/SECURITY-20261110.md"
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-95818",
       "images": {
@@ -7036,24 +7889,46 @@
         },
         "headroom-mcp-wolfi": {
           "treatment": "package-pin",
-          "fixed_version": "2.44-r8",
+          "fixed_version": "2.44-r16",
           "packages": [
-            "glibc-2.44",
             "glibc-2.44-locale-posix",
-            "ld-linux-2.44",
-            "libcrypt1-2.44"
+            "libcrypt1-2.44",
+            "glibc-2.44",
+            "ld-linux-2.44"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "2.44-r8",
+            "packages": [
+              "glibc-2.44",
+              "glibc-2.44-locale-posix",
+              "ld-linux-2.44",
+              "libcrypt1-2.44"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         }
       },
       "remaining": "Fixed in forky 2.43-7; Headroom 0.41.0-v3 builds it as 2.43-7+rcamarda1 (PR 78, run 38927566443, build and smoke passed). Xray 2026-10-16 on sha256:650e062a...bb12 still reports it (trixie advisory has no fix). Needs Xray waiver; see docs/security/XRAY-WAIVERS-headroom-0.41.0-v3.md. scan_status stays pending. Bifrost Wolfi v2 also pins this (2.3.2-wolfi-v2); scan of that digest pending.",
@@ -7063,7 +7938,7 @@
           "source_package": "glibc-2.44",
           "fixed_version": "2.44-r8",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -7085,19 +7960,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Minor issue"
         },
-        "sid": {
-          "status": "resolved",
-          "fixed_version": "6.5+20251115-2",
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "6.5+20251115-2",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "6.5+20251115-2",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2025-6141",
       "images": {
@@ -7155,19 +8035,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-3",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-3",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-3",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-6791",
       "images": {
@@ -7233,19 +8118,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": null
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2010-4756",
       "images": {
@@ -7308,19 +8189,24 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": "Minor issue"
-        },
-        "sid": {
           "status": "resolved",
-          "fixed_version": "2.43-4",
+          "fixed_version": "2.41-12+deb13u5",
           "no_dsa": null
         },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [
+          {
+            "fixed_version": "2.43-4",
+            "suite": "forky"
+          },
+          {
+            "fixed_version": "2.43-4",
+            "suite": "sid"
+          }
+        ],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-6368",
       "images": {
@@ -7426,7 +8312,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -7442,49 +8328,70 @@
         },
         "headroom-mcp-wolfi": {
           "treatment": "source-patch",
-          "fixed_version": null,
+          "fixed_version": "5.17.0 with downstream checkpoint shard path guard",
           "packages": [
             "transformers"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/patch-transformers-shards.py",
-            "images/headroom-mcp/SECURITY-20261110.md",
-            "images/headroom-mcp/patch-transformers-shards.py",
-            "images/headroom-mcp/security-regression.py"
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py",
+            "images/headroom-mcp/patch-transformers-shards.py"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2",
-          "replacement_build": "Transformers 5.17.0 with downstream checkpoint shard path guard",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray. A version-based scan may continue to flag the source-patched package.",
           "prior_treatment": {
-            "treatment": "no-fix-mitigated",
-            "suite": "wolfi",
+            "treatment": "source-patch",
             "fixed_version": null,
+            "packages": [
+              "transformers"
+            ],
             "evidence": [
               "images/headroom-mcp/Dockerfile.wolfi",
-              "images/headroom-mcp/patch-transformers-shards.py"
+              "images/headroom-mcp/patch-transformers-shards.py",
+              "images/headroom-mcp/SECURITY-20261110.md",
+              "images/headroom-mcp/patch-transformers-shards.py",
+              "images/headroom-mcp/security-regression.py"
             ],
-            "scan_status": "still-reported",
-            "scan_tag": "0.42.0-wolfi-v2",
-            "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
             "scan_url": null,
-            "published_digest": null,
-            "scan_result": "still-reported",
-            "checked_upstream": {
-              "date": "2026-10-28",
-              "releases_checked": [
-                "5.17.0",
-                "5.20.2",
-                "5.21.0"
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2",
+            "replacement_build": "Transformers 5.17.0 with downstream checkpoint shard path guard",
+            "prior_treatment": {
+              "treatment": "no-fix-mitigated",
+              "suite": "wolfi",
+              "fixed_version": null,
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi",
+                "images/headroom-mcp/patch-transformers-shards.py"
               ],
-              "result": "no shard-path validation in any release; no advisory fixed_version found"
-            },
-            "mitigation": "Build-time guard in patch-transformers-shards.py rejects absolute/.. shard names and escaping local model paths; anchor and marker asserted at build."
+              "scan_status": "still-reported",
+              "scan_tag": "0.42.0-wolfi-v2",
+              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "scan_url": null,
+              "published_digest": null,
+              "scan_result": "still-reported",
+              "checked_upstream": {
+                "date": "2026-10-28",
+                "releases_checked": [
+                  "5.17.0",
+                  "5.20.2",
+                  "5.21.0"
+                ],
+                "result": "no shard-path validation in any release; no advisory fixed_version found"
+              },
+              "mitigation": "Build-time guard in patch-transformers-shards.py rejects absolute/.. shard names and escaping local model paths; anchor and marker asserted at build."
+            }
           }
         }
       },
@@ -7505,19 +8412,15 @@
       "reported_installed_version": null,
       "last_reviewed": "2026-10-16",
       "debian_tracker_review": {
-        "date": "2026-10-16",
+        "date": "2026-11-23",
         "trixie": {
           "status": "open",
           "fixed_version": null,
           "no_dsa": "Minor issue"
         },
-        "sid": {
-          "status": "open",
-          "fixed_version": null,
-          "no_dsa": null
-        },
-        "scope": "Official tracker status only; existing per-image treatment and scan status unchanged.",
-        "evidence": "docs/security/DEBIAN-AUDIT-20261016.md"
+        "replacement_candidates": [],
+        "scope": "Debian tracker review only; exact-build regression and scan evidence still applies.",
+        "evidence": "images/headroom-mcp/SECURITY-20261123.md"
       },
       "tracker_url": "https://security-tracker.debian.org/tracker/CVE-2026-42250",
       "images": {
@@ -7571,7 +8474,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": null,
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "tracker_url": null,
       "images": {
         "headroom-mcp": {
@@ -7597,39 +8500,61 @@
           "scan_url": null
         },
         "headroom-mcp-wolfi": {
-          "treatment": "downstream-source-patch",
-          "fixed_version": null,
+          "treatment": "source-patch",
+          "fixed_version": "0.23.3+rcamarda1",
           "packages": [
             "tokenizers"
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md",
-            "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py",
             "images/headroom-mcp/patches/tokenizers/0002-bpe-reject-invalid-prefix-0.22.2.patch",
-            "images/headroom-mcp/security-regression.py"
+            "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2",
-          "replacement_build": "Python tokenizers 0.23.3+rcamarda1 and guarded Rust crates 0.22.2 and 0.23.2",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray. Check Gnosis independently for the Python wheel and embedded copies. A version-based scan may continue to flag the source-patched package.",
           "prior_treatment": {
-            "treatment": "version-pinned",
-            "suite": "wolfi",
-            "fixed_version": "0.23.3",
-            "evidence": [
-              "images/headroom-mcp/Dockerfile.wolfi"
+            "treatment": "downstream-source-patch",
+            "fixed_version": null,
+            "packages": [
+              "tokenizers"
             ],
-            "scan_status": "cleared",
-            "scan_tag": "0.42.0-wolfi-v2",
-            "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md",
+              "images/headroom-mcp/patches/tokenizers/0001-bpe-reject-invalid-merges-CVE-2026-85670.patch",
+              "images/headroom-mcp/patches/tokenizers/0002-bpe-reject-invalid-prefix-0.22.2.patch",
+              "images/headroom-mcp/security-regression.py"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
             "scan_url": null,
-            "published_digest": null,
-            "scan_result": "absent-from-report"
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2",
+            "replacement_build": "Python tokenizers 0.23.3+rcamarda1 and guarded Rust crates 0.22.2 and 0.23.2",
+            "prior_treatment": {
+              "treatment": "version-pinned",
+              "suite": "wolfi",
+              "fixed_version": "0.23.3",
+              "evidence": [
+                "images/headroom-mcp/Dockerfile.wolfi"
+              ],
+              "scan_status": "cleared",
+              "scan_tag": "0.42.0-wolfi-v2",
+              "scan_digest": "sha256:39fdf5b64f40080b148f84040f71355169d649ba5e2de56698173e6054c2ed20",
+              "scan_url": null,
+              "published_digest": null,
+              "scan_result": "absent-from-report"
+            }
           }
         },
         "gnosis-mcp-wolfi": {
@@ -8856,7 +9781,7 @@
       "reported_cwe": [],
       "reported_fix_version": "20260909-r3",
       "reported_installed_version": "20260611-r1",
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "tracker_url": "https://avd.aquasec.com/nvd/cve-2026-111943",
       "official_fixed_version": null,
       "patch_sha256": null,
@@ -8889,15 +9814,34 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "20260909-r3",
+            "packages": [
+              "ca-certificates-bundle"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         },
         "sooperset-mcp-atlassian": {
           "treatment": "package-pin",
@@ -8921,7 +9865,7 @@
           "source_package": "ca-certificates",
           "fixed_version": "20260909-r3",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -9064,7 +10008,7 @@
       ],
       "reported_fix_version": "2.14.2",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-13",
+      "last_reviewed": "2026-11-23",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-3r8g-cqwr-jr29",
       "official_fixed_version": "2.14.2",
       "patch_sha256": null,
@@ -9089,15 +10033,35 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "2.14.2",
+            "packages": [
+              "pydantic"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         },
         "sooperset-mcp-atlassian": {
           "treatment": "dependency-pin",
@@ -9118,7 +10082,10 @@
           "scan_result": "reported"
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest.",
+      "cve_aliases": [
+        "CVE-2026-133424"
+      ]
     },
     {
       "cve": "XRAY-1151242",
@@ -9184,7 +10151,7 @@
       ],
       "reported_fix_version": "2.14.0",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-13",
+      "last_reviewed": "2026-11-23",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-gj4f-r7mf-jjxh",
       "official_fixed_version": "2.14.0",
       "patch_sha256": null,
@@ -9209,15 +10176,35 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "2.14.2",
+            "packages": [
+              "pydantic"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         },
         "sooperset-mcp-atlassian": {
           "treatment": "dependency-pin",
@@ -9238,7 +10225,10 @@
           "scan_result": "reported"
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest.",
+      "cve_aliases": [
+        "CVE-2026-133426"
+      ]
     },
     {
       "cve": "XRAY-1151240",
@@ -9253,7 +10243,7 @@
       ],
       "reported_fix_version": "2.14.0",
       "reported_installed_version": "2.13.4",
-      "last_reviewed": "2026-11-13",
+      "last_reviewed": "2026-11-23",
       "tracker_url": "https://github.com/pydantic/pydantic/security/advisories/GHSA-955g-x97g-8mcp",
       "official_fixed_version": "2.14.0",
       "patch_sha256": null,
@@ -9278,15 +10268,35 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "dependency-pin",
+            "fixed_version": "2.14.2",
+            "packages": [
+              "pydantic"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         },
         "sooperset-mcp-atlassian": {
           "treatment": "dependency-pin",
@@ -9307,7 +10317,10 @@
           "scan_result": "reported"
         }
       },
-      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest."
+      "remaining": "Supplied in gnosis-mcp:0.17.5-wolfi-v2 scan (2026-10-30). Locked pydantic==2.14.2 (pydantic-core 2.50.2) with build assertion. Scan pending until post-build scan of new digest.",
+      "cve_aliases": [
+        "CVE-2026-133428"
+      ]
     },
     {
       "cve": "XRAY-1154122",
@@ -9602,7 +10615,7 @@
       ],
       "reported_fix_version": null,
       "reported_installed_version": "20260611-r1",
-      "last_reviewed": "2026-11-10",
+      "last_reviewed": "2026-11-23",
       "tracker_url": "https://images.chainguard.dev/security/CGA-55f3-w584-2692",
       "official_fixed_version": "20260909-r3",
       "patch_sha256": null,
@@ -9615,15 +10628,34 @@
           ],
           "evidence": [
             "images/headroom-mcp/Dockerfile.wolfi",
-            "images/headroom-mcp/SECURITY-20261110.md"
+            "images/headroom-mcp/SECURITY-20261123.md"
           ],
           "scan_status": "pending",
-          "scan_tag": "0.44.0-wolfi-v1",
-          "scan_digest": null,
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
           "scan_url": null,
-          "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
           "scan_result": "reported",
-          "remediation_tag": "0.44.0-wolfi-v2"
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray.",
+          "prior_treatment": {
+            "treatment": "package-pin",
+            "fixed_version": "20260909-r3",
+            "packages": [
+              "ca-certificates-bundle"
+            ],
+            "evidence": [
+              "images/headroom-mcp/Dockerfile.wolfi",
+              "images/headroom-mcp/SECURITY-20261110.md"
+            ],
+            "scan_status": "pending",
+            "scan_tag": "0.44.0-wolfi-v1",
+            "scan_digest": null,
+            "scan_url": null,
+            "latest_report_id": "headroom-mcp-wolfi-xray-20261110",
+            "scan_result": "reported",
+            "remediation_tag": "0.44.0-wolfi-v2"
+          }
         },
         "sooperset-mcp-atlassian": {
           "treatment": "package-pin",
@@ -9647,7 +10679,7 @@
           "source_package": "ca-certificates",
           "fixed_version": "20260909-r3",
           "source": "https://packages.wolfi.dev/os/security.json",
-          "reviewed": "2026-11-10"
+          "reviewed": "2026-11-23"
         }
       }
     },
@@ -10561,6 +11593,391 @@
         }
       },
       "remaining": "Verify an exact-digest Xray rescan."
+    },
+    {
+      "cve": "XRAY-1170984",
+      "source_package": "anyio",
+      "suite": null,
+      "reported_packages": [
+        "anyio"
+      ],
+      "reported_score": 7.5,
+      "reported_cwe": [
+        "CWE-78"
+      ],
+      "reported_fix_version": null,
+      "reported_installed_version": "4.14.2",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://github.com/agronholm/anyio/commit/71f5af9dbdc5b4e44a3b665270ff036197187b6a",
+      "official_fixed_version": null,
+      "patch_sha256": "bc9b81020782d9580813a13deba651e098af8e39b5089631f9f9e657b03df8b5",
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "source-patch",
+          "fixed_version": "4.16.0 with upstream commit 71f5af9dbdc5b4e44a3b665270ff036197187b6a",
+          "packages": [
+            "anyio"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py",
+            "images/headroom-mcp/patches/anyio/0001-execute-pathlike-without-shell.patch"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray. Replace the backport when a stable AnyIO release contains the commit. A version-based scan may continue to flag the source-patched package."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray. Replace the backport when a stable AnyIO release contains the commit. A version-based scan may continue to flag the source-patched package."
+    },
+    {
+      "cve": "XRAY-1167703",
+      "source_package": "fastapi",
+      "suite": null,
+      "reported_packages": [
+        "fastapi"
+      ],
+      "reported_score": 7.5,
+      "reported_cwe": [
+        "CWE-407",
+        "CWE-400"
+      ],
+      "reported_fix_version": "0.163.2",
+      "reported_installed_version": "0.136.3",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/fastapi/0.163.2/",
+      "official_fixed_version": "0.163.2",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "0.163.2",
+          "packages": [
+            "fastapi"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
+    },
+    {
+      "cve": "XRAY-1161899",
+      "source_package": "litellm",
+      "suite": null,
+      "reported_packages": [
+        "litellm"
+      ],
+      "reported_score": 7.7,
+      "reported_cwe": [
+        "CWE-209",
+        "CWE-184"
+      ],
+      "reported_fix_version": "1.106.9,1.108.6,1.109.1,1.110.0-rc.2",
+      "reported_installed_version": "1.103.10",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-2rwg-2wh4-7c4f",
+      "official_fixed_version": "1.106.9,1.108.6,1.109.1,1.110.0-rc.2",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "1.110.2",
+          "packages": [
+            "litellm"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
+    },
+    {
+      "cve": "CVE-2026-84243",
+      "source_package": "glibc",
+      "suite": null,
+      "reported_packages": [
+        "libcrypt1-2.44",
+        "glibc-2.44",
+        "ld-linux-2.44",
+        "glibc-2.44-locale-posix"
+      ],
+      "reported_score": 7.0,
+      "reported_cwe": [
+        "CWE-22"
+      ],
+      "reported_fix_version": "2.44-r16",
+      "reported_installed_version": "2.44-r6",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://packages.wolfi.dev/os/security.json",
+      "official_fixed_version": "2.44-r16",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "package-pin",
+          "fixed_version": "2.44-r16",
+          "packages": [
+            "libcrypt1-2.44",
+            "glibc-2.44",
+            "ld-linux-2.44",
+            "glibc-2.44-locale-posix"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray.",
+      "vendor_fixes": {
+        "wolfi": {
+          "source_package": "glibc-2.44",
+          "fixed_version": "2.44-r16",
+          "source": "https://packages.wolfi.dev/os/security.json",
+          "reviewed": "2026-11-23"
+        }
+      }
+    },
+    {
+      "cve": "XRAY-1173174",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 4.4,
+      "reported_cwe": [
+        "CWE-610"
+      ],
+      "reported_fix_version": "4.3.0",
+      "reported_installed_version": "4.2.4",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/filelock/4.3.0/",
+      "official_fixed_version": "4.3.0",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "4.3.0",
+          "packages": [
+            "filelock"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
+    },
+    {
+      "cve": "XRAY-1172482",
+      "source_package": "litellm",
+      "suite": null,
+      "reported_packages": [
+        "litellm"
+      ],
+      "reported_score": 4.3,
+      "reported_cwe": [
+        "CWE-639"
+      ],
+      "reported_fix_version": "1.106.12,1.108.13,1.109.3,1.110.2",
+      "reported_installed_version": "1.103.10",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/litellm/1.110.2/",
+      "official_fixed_version": "1.106.12,1.108.13,1.109.3,1.110.2",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "1.110.2",
+          "packages": [
+            "litellm"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray. Standalone LiteLLM pins 1.110.1 and needs its own validation."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray. Standalone LiteLLM pins 1.110.1 and needs its own validation."
+    },
+    {
+      "cve": "XRAY-1173186",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 3.6,
+      "reported_cwe": [
+        "CWE-367"
+      ],
+      "reported_fix_version": "4.3.0",
+      "reported_installed_version": "4.2.4",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/filelock/4.3.0/",
+      "official_fixed_version": "4.3.0",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "4.3.0",
+          "packages": [
+            "filelock"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
+    },
+    {
+      "cve": "XRAY-1173185",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 3.6,
+      "reported_cwe": [
+        "CWE-345"
+      ],
+      "reported_fix_version": "4.3.0",
+      "reported_installed_version": "4.2.4",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/filelock/4.3.0/",
+      "official_fixed_version": "4.3.0",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "4.3.0",
+          "packages": [
+            "filelock"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
+    },
+    {
+      "cve": "XRAY-1167863",
+      "source_package": "filelock",
+      "suite": null,
+      "reported_packages": [
+        "filelock"
+      ],
+      "reported_score": 2.5,
+      "reported_cwe": [
+        "CWE-667"
+      ],
+      "reported_fix_version": "4.2.12",
+      "reported_installed_version": "4.2.4",
+      "last_reviewed": "2026-11-23",
+      "tracker_url": "https://pypi.org/project/filelock/4.3.0/",
+      "official_fixed_version": "4.2.12",
+      "patch_sha256": null,
+      "images": {
+        "headroom-mcp-wolfi": {
+          "treatment": "dependency-pin",
+          "fixed_version": "4.3.0",
+          "packages": [
+            "filelock"
+          ],
+          "evidence": [
+            "images/headroom-mcp/Dockerfile.wolfi",
+            "images/headroom-mcp/SECURITY-20261123.md",
+            "images/headroom-mcp/security-regression.py"
+          ],
+          "scan_status": "pending",
+          "scan_tag": "0.45.0-wolfi-v1",
+          "scan_digest": "sha256:ef441ce91e0036ed5c298e97bc848cd94c1c07ebc6b4b7c66dca70b43b7f298e",
+          "scan_url": null,
+          "latest_report_id": "headroom-mcp-wolfi-xray-20261123",
+          "scan_result": "reported",
+          "remediation_tag": "0.45.0-wolfi-v2",
+          "remaining": "Rescan the exact published digest in Artifactory Xray."
+        }
+      },
+      "remaining": "Rescan the exact published digest in Artifactory Xray."
     }
   ]
 }
