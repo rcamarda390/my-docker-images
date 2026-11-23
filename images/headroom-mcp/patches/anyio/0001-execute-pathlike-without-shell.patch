@@ -1,0 +1,26 @@
+# Backport of https://github.com/agronholm/anyio/commit/71f5af9dbdc5b4e44a3b665270ff036197187b6a
+--- a/src/anyio/_backends/_asyncio.py
++++ b/src/anyio/_backends/_asyncio.py
+@@ -2736,7 +2736,7 @@ async def open_process(
+     ) -> Process:
+         await cls.checkpoint()
+         if isinstance(command, PathLike):
+-            command = os.fspath(command)
++            command = [os.fspath(command)]
+ 
+         # Use loop.subprocess_shell()/subprocess_exec() rather than their
+         # asyncio.create_subprocess_*() counterparts to get access to
+--- a/src/anyio/_backends/_trio.py
++++ b/src/anyio/_backends/_trio.py
+@@ -1226,7 +1226,10 @@ def convert_item(item: StrOrBytesPath) -> str:
+             else:
+                 return os.fsdecode(str_or_bytes)
+ 
+-        if isinstance(command, (str, bytes, PathLike)):
++        if isinstance(command, PathLike):
++            command = [command]
++
++        if isinstance(command, (str, bytes)):
+             process = await trio.lowlevel.open_process(
+                 convert_item(command),
+                 stdin=stdin,

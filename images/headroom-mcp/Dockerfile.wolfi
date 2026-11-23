@@ -83,14 +83,13 @@ RUN --mount=type=bind,source=patches/tokenizers,target=/tmp/tokenizers-patches \
 # and botocore for AWS Bedrock.
 RUN uv sync --frozen --extra proxy --extra bedrock --no-dev --no-editable
 
-# Functionality pin, not a CVE carry: LiteLLM 1.103.10 is the version that
-# resolves cleanly with the filelock floor in upstream pyproject.
-RUN uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
-      "litellm==${LITELLM_VERSION}" \
-    && /opt/venv/bin/python -c \
-      "import importlib.metadata; assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'" \
-    && uv pip check --python /opt/venv/bin/python \
-    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null
+# Keep the compatibility pin in baseline builds. Resolve it alongside the
+# security overrides in the remediation stage below.
+RUN if [ "$BASELINE" = "true" ]; then \
+      uv pip install --python /opt/venv/bin/python --upgrade-package litellm \
+        "litellm==${LITELLM_VERSION}" \
+        && uv pip check --python /opt/venv/bin/python; \
+    fi
 
 # The published tokenizers 0.23.3 wheel still panics on malformed BPE merges.
 # Build the checked-in fix from its pinned sdist with a downstream version.
@@ -126,11 +125,23 @@ uv tool run --from 'maturin==1.15.0' maturin build --release --locked \
   --out /tmp/tokenizers-wheel --interpreter /opt/venv/bin/python
 uv pip install --python /opt/venv/bin/python \
   --upgrade-package tokenizers --upgrade-package transformers --upgrade-package pydantic \
-  /tmp/tokenizers-wheel/tokenizers-*.whl "transformers==5.17.0" "pydantic==2.14.2"
+  --upgrade-package litellm --upgrade-package fastapi \
+  --upgrade-package filelock --upgrade-package anyio \
+  /tmp/tokenizers-wheel/tokenizers-*.whl "transformers==5.17.0" "pydantic==2.14.2" \
+  "litellm==${LITELLM_VERSION}" "fastapi==0.163.2" "filelock==4.3.0" "anyio==4.16.0"
 uv pip check --python /opt/venv/bin/python
 cd /build
 rm -rf /tmp/tokenizers.tar.gz /tmp/tokenizers-0.23.3 /tmp/tokenizers-wheel
 SH
+
+# Keep AnyIO's released wheel and backport the upstream PathLike fix to
+# both subprocess backends until that fix ships in a stable release.
+RUN --mount=type=bind,source=patches/anyio,target=/tmp/anyio-patches \
+    if [ "$BASELINE" != "true" ]; then \
+      site_packages=$(/opt/venv/bin/python -c 'import sysconfig; print(sysconfig.get_path("purelib"))') \
+        && patch --batch --forward --fuzz=0 -d "$site_packages" -p2 \
+          < /tmp/anyio-patches/0001-execute-pathlike-without-shell.patch; \
+    fi
 
 # CVE-2026-75104 (transformers, all versions): no upstream fix exists, so carry
 # the checkpoint shard path guard. The patch asserts its anchor and fails the
@@ -229,11 +240,83 @@ print("✓ Hugging Face model cache population completed (may be partial)")
 HFCACHE
 EOF
 
-FROM ${WOLFI_IMAGE} AS runtime
+FROM ${WOLFI_IMAGE} AS runtime_rootfs
 ARG HEADROOM_VERSION
-ARG HEADROOM_COMMIT
 ARG LITELLM_VERSION
 ARG PYTHON_VERSION
+ARG BASELINE
+
+RUN apk upgrade --available --no-cache \
+    && apk add --no-cache python-3.13 \
+    && adduser -D -u 10001 headroom \
+    && mkdir -p /home/headroom/.headroom \
+    && chown -R headroom:headroom /home/headroom
+
+# Apply Wolfi security floors outside baseline builds.
+# glibc CVE-2026-84243 requires r16, superseding the earlier r8 floor.
+# CVE-2026-91403 and CVE-2026-111943 require ca-certificates-bundle
+# 20260909-r3. CVE-2026-85091 requires zlib 1.3.2.1_rc20260601-r0.
+RUN set -eu; \
+    if [ "$BASELINE" != "true" ]; then \
+      apk add --no-cache --upgrade \
+        'glibc-2.44>=2.44-r16' \
+        'ld-linux-2.44>=2.44-r16' \
+        'glibc-2.44-locale-posix>=2.44-r16' \
+        'libcrypt1-2.44>=2.44-r16' \
+        'ca-certificates-bundle>=20260909-r3' \
+        'zlib>=1.3.2.1_rc20260601-r0'; \
+    fi
+
+RUN set -eu; \
+    if [ "$BASELINE" != "true" ]; then \
+      check_apk_floor() { \
+        package="$1"; floor="$2"; \
+        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
+        test -n "$installed"; \
+        test "$(apk version -t "$installed" "$floor")" != '<'; \
+        printf '%s=%s\n' "$package" "$installed"; \
+      }; \
+      for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
+        check_apk_floor "$package" 2.44-r16; \
+      done; \
+      check_apk_floor ca-certificates-bundle 20260909-r3; \
+      check_apk_floor zlib 1.3.2.1_rc20260601-r0; \
+    fi
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /opt/headroom-cache /opt/headroom-cache
+COPY mcp-smoke.py /usr/local/bin/mcp-smoke.py
+COPY entrypoint.sh /usr/local/bin/headroom-entrypoint
+RUN chmod +x /usr/local/bin/headroom-entrypoint \
+    && chown -R headroom:headroom /opt/headroom-cache
+
+# Prove the final stage has the right interpreter, versions, TLS, SQLite FTS5
+# and Bedrock dependencies.
+RUN LITELLM_LOCAL_MODEL_COST_MAP=True /opt/venv/bin/python -c \
+    "import importlib.metadata, ssl, sqlite3, sys, zlib, boto3, litellm; \
+     assert importlib.metadata.version('headroom-ai') == '${HEADROOM_VERSION}'; \
+     assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'; \
+     assert '.'.join(map(str, sys.version_info[:2])) == '${PYTHON_VERSION}'; \
+     ssl.create_default_context(); \
+     db = sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); \
+     db.execute('insert into docs values (\"headroom\")'); \
+     assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',); \
+     print('Wolfi runtime OK: SQLite', sqlite3.sqlite_version, 'zlib', zlib.ZLIB_RUNTIME_VERSION)" \
+    && grep -q "^headroom:" /etc/passwd \
+    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null \
+    && test -x /opt/venv/bin/headroom
+
+RUN --mount=type=bind,source=security-regression.py,target=/tmp/security-regression.py \
+    if [ "$BASELINE" != "true" ]; then \
+      /opt/venv/bin/python /tmp/security-regression.py wolfi "$LITELLM_VERSION"; \
+    fi
+
+# Publish the upgraded filesystem, including its actual APK database. The
+# pinned Wolfi base stores an older package database in a lower layer.
+FROM scratch AS runtime
+COPY --from=runtime_rootfs / /
+ARG HEADROOM_VERSION
+ARG HEADROOM_COMMIT
 ARG BASELINE
 
 ENV HEADROOM_HOST=0.0.0.0 \
@@ -250,71 +333,6 @@ ENV HEADROOM_HOST=0.0.0.0 \
     DO_NOT_TRACK=1 \
     HEADROOM_SKIP_UPSTREAM_CHECK=1 \
     HEADROOM_OUTPUT_SHAPER=1
-
-RUN apk upgrade --available --no-cache \
-    && apk add --no-cache python-3.13 \
-    && adduser -D -u 10001 headroom \
-    && mkdir -p /home/headroom/.headroom \
-    && chown -R headroom:headroom /home/headroom
-
-# Keep the previous Wolfi security floors available outside baseline builds.
-# glibc CVE-2026-86805/89092/8674/95818 require r8.
-# CVE-2026-91403 and CVE-2026-111943 require ca-certificates-bundle
-# 20260909-r3. CVE-2026-85091 requires zlib 1.3.2.1_rc20260601-r0.
-RUN set -eu; \
-    if [ "$BASELINE" != "true" ]; then \
-      apk add --no-cache --upgrade \
-        'glibc-2.44>=2.44-r8' \
-        'ld-linux-2.44>=2.44-r8' \
-        'glibc-2.44-locale-posix>=2.44-r8' \
-        'libcrypt1-2.44>=2.44-r8' \
-        'ca-certificates-bundle>=20260909-r3' \
-        'zlib>=1.3.2.1_rc20260601-r0'; \
-    fi
-
-RUN set -eu; \
-    if [ "$BASELINE" != "true" ]; then \
-      check_apk_floor() { \
-        package="$1"; floor="$2"; \
-        installed=$(awk -F: -v name="$package" '$1 == "P" {p=$2} $1 == "V" && p == name {print $2}' /lib/apk/db/installed); \
-        test -n "$installed"; \
-        test "$(apk version -t "$installed" "$floor")" != '<'; \
-        printf '%s=%s\n' "$package" "$installed"; \
-      }; \
-      for package in glibc-2.44 ld-linux-2.44 glibc-2.44-locale-posix libcrypt1-2.44; do \
-        check_apk_floor "$package" 2.44-r8; \
-      done; \
-      check_apk_floor ca-certificates-bundle 20260909-r3; \
-      check_apk_floor zlib 1.3.2.1_rc20260601-r0; \
-    fi
-
-COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /opt/headroom-cache /opt/headroom-cache
-COPY mcp-smoke.py /usr/local/bin/mcp-smoke.py
-COPY entrypoint.sh /usr/local/bin/headroom-entrypoint
-RUN chmod +x /usr/local/bin/headroom-entrypoint \
-    && chown -R headroom:headroom /opt/headroom-cache
-
-# Prove the final stage has the right interpreter, versions, TLS, SQLite FTS5
-# and Bedrock dependencies.
-RUN /opt/venv/bin/python -c \
-    "import importlib.metadata, ssl, sqlite3, sys, zlib, boto3, litellm; \
-     assert importlib.metadata.version('headroom-ai') == '${HEADROOM_VERSION}'; \
-     assert importlib.metadata.version('litellm') == '${LITELLM_VERSION}'; \
-     assert '.'.join(map(str, sys.version_info[:2])) == '${PYTHON_VERSION}'; \
-     ssl.create_default_context(); \
-     db = sqlite3.connect(':memory:'); db.execute('create virtual table docs using fts5(body)'); \
-     db.execute('insert into docs values (\"headroom\")'); \
-     assert db.execute('select body from docs where docs match \"headroom\"').fetchone() == ('headroom',); \
-     print('Wolfi runtime OK: SQLite', sqlite3.sqlite_version, 'zlib', zlib.ZLIB_RUNTIME_VERSION)" \
-    && grep -q "^headroom:" /etc/passwd \
-    && ! /opt/venv/bin/python -c "import pip" 2>/dev/null \
-    && test -x /opt/venv/bin/headroom
-
-RUN --mount=type=bind,source=security-regression.py,target=/tmp/security-regression.py \
-    if [ "$BASELINE" != "true" ]; then \
-      /opt/venv/bin/python /tmp/security-regression.py wolfi; \
-    fi
 
 USER headroom
 WORKDIR /home/headroom

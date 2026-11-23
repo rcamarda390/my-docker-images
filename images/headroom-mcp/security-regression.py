@@ -13,6 +13,7 @@ import tempfile
 import uuid
 from importlib.metadata import version
 from pathlib import Path
+from unittest.mock import patch
 
 import tokenizers
 from tokenizers import Tokenizer, models
@@ -21,6 +22,8 @@ from transformers.utils.hub import get_checkpoint_shard_files
 mode = sys.argv[1]
 if mode == "wolfi":
     expected_versions = {
+        "anyio": "4.16.0", "fastapi": "0.163.2",
+        "filelock": "4.3.0", "litellm": sys.argv[2],
         "pydantic": "2.14.2", "pydantic-core": "2.50.2",
         "tokenizers": "0.23.3+rcamarda1", "transformers": "5.17.0",
     }
@@ -77,7 +80,16 @@ with tempfile.TemporaryDirectory() as directory:
     assert metadata["all_checkpoint_keys"] == ["weight"]
 
 if mode == "wolfi":
-    print("Headroom tokenizer and checkpoint path regressions passed")
+    import anyio
+
+    async def verify_pathlike_process():
+        loop = asyncio.get_running_loop()
+        with patch.object(loop, "subprocess_shell", side_effect=AssertionError("PathLike used a shell")):
+            result = await anyio.run_process(Path(sys.executable), stdin=subprocess.DEVNULL)
+        assert result.returncode == 0
+
+    anyio.run(verify_pathlike_process)
+    print("Headroom AnyIO, tokenizer and checkpoint path regressions passed")
     sys.exit(0)
 
 
