@@ -16,16 +16,17 @@ from pathlib import Path
 from unittest.mock import patch
 
 import tokenizers
+import transformers
 from tokenizers import Tokenizer, models
 from transformers.utils.hub import get_checkpoint_shard_files
 
 mode = sys.argv[1]
 if mode == "wolfi":
     expected_versions = {
-        "anyio": "4.16.0", "fastapi": "0.163.2",
+        "anyio": "4.16.0+rcamarda1", "fastapi": "0.163.2",
         "filelock": "4.3.0", "litellm": sys.argv[2],
         "pydantic": "2.14.2", "pydantic-core": "2.50.2",
-        "tokenizers": "0.23.3+rcamarda1", "transformers": "5.17.0",
+        "tokenizers": "0.23.3+rcamarda1", "transformers": "5.17.0+rcamarda1",
     }
 else:
     expected_versions = {
@@ -37,6 +38,7 @@ for name, expected in expected_versions.items():
     assert version(name) == expected, (name, version(name))
 
 assert tokenizers.__version__ == expected_versions["tokenizers"], tokenizers.__version__
+assert transformers.__version__ == expected_versions["transformers"], transformers.__version__
 print("Headroom Python package versions:", expected_versions)
 
 # PanicException derives from BaseException: catching Exception deliberately
@@ -56,6 +58,14 @@ for vocab, merges, prefix in (
 valid = Tokenizer(models.BPE(vocab={"a": 0, "b": 1, "ab": 2}, merges=[("a", "b")]))
 assert valid.encode("ab").ids == [2]
 
+def reject_checkpoint(model, index, **kwargs):
+    try:
+        get_checkpoint_shard_files(str(model), str(index), local_files_only=True, **kwargs)
+    except ValueError:
+        return
+    raise AssertionError(f"Invalid checkpoint accepted for {model}")
+
+
 with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)
     root = base / "model"
@@ -64,20 +74,37 @@ with tempfile.TemporaryDirectory() as directory:
     outside = base / "outside.safetensors"
     outside.write_bytes(b"outside")
     (root / "linked.safetensors").symlink_to(outside)
-    for filename in ("../outside.safetensors", str(outside), "linked.safetensors", r"..\outside.safetensors"):
+    for filename in ("../outside.safetensors", str(outside), "linked.safetensors", r"..\outside.safetensors", None):
         index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": filename}}))
-        try:
-            get_checkpoint_shard_files(str(root), str(index), local_files_only=True)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError(f"Escaping checkpoint accepted: {filename}")
+        reject_checkpoint(root, index)
     (root / "nested").mkdir()
     (root / "nested" / "weights.safetensors").write_bytes(b"valid")
     index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": "nested/weights.safetensors"}}))
     files, metadata = get_checkpoint_shard_files(str(root), str(index), local_files_only=True)
     assert files == [str(root / "nested" / "weights.safetensors")], files
     assert metadata["all_checkpoint_keys"] == ["weight"]
+
+    index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": "weights.safetensors"}}))
+    files, _ = get_checkpoint_shard_files(str(root), str(index), subfolder="nested", local_files_only=True)
+    assert files == [str(root / "nested" / "weights.safetensors")]
+
+    (root / "nested" / "linked.safetensors").symlink_to(root / "adjacent.safetensors")
+    (root / "adjacent.safetensors").touch()
+    index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": "linked.safetensors"}}))
+    reject_checkpoint(root, index, subfolder="nested")
+    (root / "linked-subfolder").symlink_to(base, target_is_directory=True)
+    reject_checkpoint(root, index, subfolder="linked-subfolder")
+
+    with patch("transformers.utils.hub.cached_files", return_value=["cached-weight"]) as cached_files:
+        index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": str(outside)}}))
+        reject_checkpoint("example/model", index)
+        cached_files.assert_not_called()
+
+        index.write_text(json.dumps({"metadata": {}, "weight_map": {"weight": "weights.safetensors"}}))
+        files, _ = get_checkpoint_shard_files("example/model", str(index), subfolder="nested", local_files_only=True)
+        assert files == ["cached-weight"]
+        assert cached_files.call_args.args == ("example/model", ["weights.safetensors"])
+        assert cached_files.call_args.kwargs["subfolder"] == "nested"
 
 if mode == "wolfi":
     import anyio
